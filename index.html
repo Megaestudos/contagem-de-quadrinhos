@@ -104,15 +104,6 @@
   }
   tbody tr:nth-child(odd){ background: linear-gradient(180deg, rgba(255,255,255,0.0), rgba(255,255,255,0.01)); }
   tbody tr:hover{ background: linear-gradient(90deg, rgba(255,255,255,0.15), rgba(255,255,255,0.05)); }
-
-  .muted{ color: rgba(11,36,64,0.5); font-size:13px; }
-  .small{ font-size:13px; color: rgba(11,36,64,0.55) }
-  .top1 { box-shadow: 0 6px 18px rgba(0,0,0,0.12); transform: translateY(-4px); }
-
-  @media(max-width:720px){
-    .ranking-card{min-height:72px;padding:12px}
-    thead th, tbody td{padding:10px;font-size:13px}
-  }
 </style>
 </head>
 <body>
@@ -143,14 +134,13 @@
   </section>
 
   <section class="panel">
-    <div class="section-head" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap">
+    <div class="section-head">
       <div>
-        <div class="section-title" style="margin:0 0 6px 0">Registros — Antes do expediente</div>
-        <div class="muted">Exibindo registros mais recentes primeiro</div>
+        <div class="section-title">Registros — Antes do expediente</div>
       </div>
     </div>
 
-    <div class="table-wrap" style="margin-top:12px">
+    <div class="table-wrap">
       <table id="tableAntes">
         <thead>
           <tr><th>Motorista</th><th>Data</th><th>Horário</th><th>Missão</th></tr>
@@ -161,14 +151,13 @@
   </section>
 
   <section class="panel">
-    <div class="section-head" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap">
+    <div class="section-head">
       <div>
-        <div class="section-title" style="margin:0 0 6px 0">Registros — Depois do expediente</div>
-        <div class="muted">Exibindo registros mais recentes primeiro</div>
+        <div class="section-title">Registros — Depois do expediente</div>
       </div>
     </div>
 
-    <div class="table-wrap" style="margin-top:12px">
+    <div class="table-wrap">
       <table id="tableDepois">
         <thead>
           <tr><th>Motorista</th><th>Data</th><th>Horário</th><th>Missão</th></tr>
@@ -180,121 +169,29 @@
 </main>
 
 <script>
-/* =================== CONFIG =================== */
 const SHEET_ID = "1eaFPPSEpMxsdUY9m3vT_fOhoYUKYBzATv55nRHQwyTY";
 const ABA_ANTES = "ANTES DO EXPEDIENTE";
 const ABA_DEPOIS = "DEPOIS DO EXPEDIENTE";
 const BASE_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=`;
 
-/* =================== PARSE DE DATAS (CORRIGIDO) =================== */
-function parseGoogleCell(value){
-  if (value === null || value === undefined) return {date:null, text:""}; 
-
-  const s = String(value).trim();
-
-  const m = s.match(/^Date\(([-\d,\s]+)\)$/i);
-  if (m){
-    const p = m[1].split(',').map(n=>parseInt(n.trim(),10));
-    if (p.length>=3){
-      let [y,mn,d,h=0,mi=0,s2=0] = p;
-      return {date:new Date(y,mn,d,h,mi,s2), text:""};
-    }
-  }
-
-  const br = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
-  if (br){
-    const dia = parseInt(br[1],10);
-    const mes = parseInt(br[2],10)-1;
-    const ano = parseInt(br[3],10);
-    return {date:new Date(ano,mes,dia), text:""};
-  }
-
-  const iso = Date.parse(s);
-  if (!isNaN(iso)){
-    return {date:new Date(iso), text:""};
-  }
-
-  return {date:null, text:s};
-}
-
-function formatDate(d){
-  if (!d) return "";
-  const dd = String(d.getDate()).padStart(2,"0");
-  const mm = String(d.getMonth()+1).padStart(2,"0");
-  const yy = d.getFullYear();
-  return `${dd}/${mm}/${yy}`;
-}
-
-function formatTime(d){
-  if (!d) return "";
-  const hh = String(d.getHours()).padStart(2,"0");
-  const mm = String(d.getMinutes()).padStart(2,"0");
-  return `${hh}:${mm}`;
-}
-
-/* =================== FETCH SHEET =================== */
+/* ======= NOVO: Data como TEXTO puro ======= */
 async function fetchSheet(aba){
-  const res = await fetch(BASE_URL + encodeURIComponent(aba), {cache:'no-store'}); 
+  const res = await fetch(BASE_URL + encodeURIComponent(aba), {cache:'no-store'});
   const txt = await res.text();
   const start = txt.indexOf('{');
   const end = txt.lastIndexOf('}');
   const json = JSON.parse(txt.slice(start,end+1));
   const rows = json.table.rows || [];
-  return rows.map(r => (r.c||[]).map(c => {
-    if (!c) return null;
-    if (c.f) return c.f;
-    if (c.v!==undefined) return String(c.v);
-    return null;
-  }));
+  return rows.map(r => (r.c||[]).map(c => c ? (c.f ?? c.v ?? "") : ""));
 }
 
-/* =================== NORMALIZE =================== */
 function normalize(rows){
-  return rows.map(r => {
-    const motorista = (r[0] || "").trim();
-    const dataRaw = r[1] || "";
-    const horaRaw = r[2] || "";
-    const missao = r[3] || "";
-
-    const d = parseGoogleCell(dataRaw);
-    const h = parseGoogleCell(horaRaw);
-
-    let dateObj = null;
-    if (d.date && h.date){
-      dateObj = new Date(d.date.getFullYear(), d.date.getMonth(), d.date.getDate(), h.date.getHours(), h.date.getMinutes());
-    } else if (d.date){
-      dateObj = d.date;
-    }
-
-    return {
-      motorista,
-      displayDate: d.date ? formatDate(d.date) : d.text,
-      displayTime: h.date ? formatTime(h.date) : h.text,
-      missao,
-      dateObj
-    };
-  });
-}
-
-/* =================== ORDER =================== */
-function orderByDateDesc(items){
-  return items.slice().sort((a,b) => {
-    if (!a.dateObj && !b.dateObj) return 0;
-    if (!a.dateObj) return 1;
-    if (!b.dateObj) return -1;
-    return b.dateObj - a.dateObj;
-  });
-}
-
-/* =================== RENDER =================== */
-function escapeHtml(s){
-  return String(s || "").replace(/[&<>"']/g, m => ({
-    '&':'&amp;',
-    '<':'&lt;',
-    '>':'&gt;',
-    '"':'&quot;',
-    "'":'&#39;'
-  })[m]);
+  return rows.map(r => ({
+    motorista: r[0] || "",
+    displayDate: r[1] || "",   // <-- TEXTO PURO
+    displayTime: r[2] || "",   // <-- TEXTO PURO
+    missao: r[3] || ""
+  }));
 }
 
 function renderTable(id, items){
@@ -303,57 +200,36 @@ function renderTable(id, items){
   items.forEach(it => {
     const tr = document.createElement("tr");
     tr.innerHTML = `
-      <td>${escapeHtml(it.motorista)}</td>
-      <td>${escapeHtml(it.displayDate)}</td>
-      <td>${escapeHtml(it.displayTime)}</td>
-      <td>${escapeHtml(it.missao)}</td>`;
+      <td>${it.motorista}</td>
+      <td>${it.displayDate}</td>
+      <td>${it.displayTime}</td>
+      <td>${it.missao}</td>`;
     tbody.appendChild(tr);
   });
 }
 
 function renderRanking(id, items){
   const counts = {};
-  items.forEach(i => {
-    const k = i.motorista || "Sem nome";
-    counts[k] = (counts[k] || 0) + 1;
-  });
-  const rank = Object.entries(counts).sort((a,b) => b[1] - a[1]).slice(0, 7);
-  const el = document.getElementById(id);
-  el.innerHTML = "";
-  rank.forEach(([name, qty], i) => {
-    const div = document.createElement("div");
-    if (i === 0){
-      div.className = "top1";
-      div.style.padding = "8px";
-      div.style.borderRadius = "8px";
-      div.style.background = "rgba(255,255,255,0.06)";
-      div.style.marginBottom = "8px";
-    } else {
-      div.style.marginBottom = "6px";
-    }
-    div.innerHTML = `${i + 1}. <strong>${escapeHtml(name)}</strong> — ${qty} registro(s)`;
-    el.appendChild(div);
-  });
+  items.forEach(i => counts[i.motorista] = (counts[i.motorista] || 0) + 1);
+  const rank = Object.entries(counts).sort((a,b)=>b[1]-a[1]).slice(0,7);
+  document.getElementById(id).innerHTML =
+    rank.map((r,i)=>`${i+1}. <strong>${r[0]}</strong> — ${r[1]} registro(s)` ).join("<br>");
 }
 
-/* =================== MAIN =================== */
 async function loadAll(){
-  try {
-    document.getElementById("status").textContent = "Carregando dados...";
-    const [a, b] = await Promise.all([
-      fetchSheet(ABA_ANTES),
-      fetchSheet(ABA_DEPOIS)
-    ]);
-    const na = orderByDateDesc(normalize(a));
-    const nd = orderByDateDesc(normalize(b));
+  try{
+    document.getElementById("status").textContent = "Carregando...";
+    const [a, b] = await Promise.all([fetchSheet(ABA_ANTES), fetchSheet(ABA_DEPOIS)]);
+    const na = normalize(a);
+    const nd = normalize(b);
     renderTable("tableAntes", na);
     renderTable("tableDepois", nd);
     renderRanking("rankListAntes", na);
     renderRanking("rankListDepois", nd);
     document.getElementById("status").textContent = "Dados carregados.";
-  } catch (e) {
-    document.getElementById("status").textContent = "Erro ao carregar: " + e.message;
+  } catch(e){
     console.error(e);
+    document.getElementById("status").textContent = "Erro ao carregar: " + e.message;
   }
 }
 
