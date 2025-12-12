@@ -3,236 +3,268 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>Dashboard — Motoristas (Material)</title>
+<title>Contagem de Motoristas — Painel</title>
+<link id="manifestPlaceholder" rel="manifest"/>
 <style>
+  /* ===== Base & Background (glass / neomorphism) ===== */
   :root{
-    --bg:#f4f6fb;
-    --surface:#ffffff;
-    --primary:#0b63d4;
-    --secondary:#06b6d4;
-    --danger:#e94545;
-    --text:#0f1724;
-    --muted:#546e7a;
-    --card-radius:12px;
-    --elevation-1: 0 1px 3px rgba(16,24,40,0.08);
-    --elevation-2: 0 6px 18px rgba(16,24,40,0.12);
-    font-family: "Roboto", "Inter", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+    --bg-1:#e8f7ff;
+    --bg-2:#d8efff;
+    --card-bg: rgba(255,255,255,0.72);
+    --glass-border: rgba(255,255,255,0.5);
+    --accent:#1e90ff;
+    --muted:#234b60;
+    --card-radius:16px;
+    --shadow: 0 10px 30px rgba(11,36,64,0.10);
   }
-  html,body{height:100%;margin:0;background:linear-gradient(180deg,var(--bg),#eef6ff);color:var(--text)}
-  .wrap{max-width:1200px;margin:20px auto;padding:20px}
-  header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:18px}
-  .brand{display:flex;align-items:center;gap:12px}
-  .logo{width:54px;height:54px;border-radius:12px;background:linear-gradient(135deg,var(--primary),var(--secondary));display:flex;align-items:center;justify-content:center;color:white;font-weight:700;box-shadow:var(--elevation-2);}
-  h1{font-size:20px;margin:0}
-  .subtitle{color:var(--muted);font-size:13px}
-  .controls{display:flex;gap:12px;align-items:center}
-  .btn{background:var(--primary);color:white;padding:10px 14px;border-radius:10px;border:none;font-weight:600;cursor:pointer;box-shadow:var(--elevation-1);}
-  .chip{background:var(--surface);border-radius:999px;padding:8px 12px;border:1px solid rgba(16,24,40,0.04);font-weight:600;color:var(--muted)}
-  .grid{display:grid;grid-template-columns:1fr 380px;gap:18px}
-  @media(max-width:980px){.grid{grid-template-columns:1fr}}
-  .card{background:var(--surface);border-radius:var(--card-radius);padding:16px;box-shadow:var(--elevation-1)}
-  .stats{display:flex;gap:12px;flex-wrap:wrap}
-  .stat-card{flex:1;min-width:140px;background:linear-gradient(180deg,#ffffff,#f7fbff);padding:12px;border-radius:10px;border:1px solid rgba(16,24,40,0.03)}
-  .stat-num{font-size:20px;font-weight:800;color:var(--primary)}
-  .stat-label{font-size:13px;color:var(--muted);margin-top:6px}
-  .ranking{display:flex;flex-direction:column;gap:10px}
-  .rank-item{display:flex;align-items:center;justify-content:space-between;padding:8px;border-radius:8px;background:rgba(0,0,0,0.03)}
-  .avatar{width:40px;height:40px;border-radius:8px;background:rgba(0,0,0,0.05);display:flex;align-items:center;justify-content:center;font-weight:700}
-  .bar{height:8px;border-radius:999px;background:rgba(0,0,0,0.06);overflow:hidden;margin-left:8px;min-width:120px}
-  .bar-fill{height:100%;background:linear-gradient(90deg,var(--primary),var(--secondary));border-radius:999px}
-  .table-wrap{margin-top:12px;border-radius:10px;overflow:hidden;border:1px solid rgba(16,24,40,0.04)}
-  table{width:100%;border-collapse:collapse;background:var(--surface);min-width:720px}
-  thead th{position:sticky;top:0;background:#f6fbff;padding:12px;text-align:left;font-weight:700;border-bottom:1px solid rgba(16,24,40,0.06)}
-  tbody td{padding:12px;border-bottom:1px solid rgba(16,24,40,0.03);font-size:14px;color:var(--text)}
-  tbody tr:nth-child(odd){background:#ffffff}
-  tbody tr:nth-child(even){background:#fbfdff}
-  .muted{color:var(--muted);font-size:13px}
-  .right-panel{display:flex;flex-direction:column;gap:12px}
-  .mini-card{padding:12px;border-radius:10px;background:linear-gradient(180deg,#fff,#f7fbff);border:1px solid rgba(16,24,40,0.03)}
-  .badge{display:inline-block;padding:6px 10px;border-radius:8px;background:var(--primary);color:white;font-weight:700;font-size:13px}
-  @media(max-width:720px){.grid{grid-template-columns:1fr}.right-panel{order:2}}
+  *{box-sizing:border-box}
+  body{
+    margin:0;
+    font-family: "Inter", "Segoe UI", Roboto, Arial, sans-serif;
+    background: linear-gradient(180deg,var(--bg-1),var(--bg-2));
+    -webkit-font-smoothing:antialiased;
+    color:var(--muted);
+  }
+  header{
+    padding:26px 16px;
+    text-align:center;
+  }
+  h1{
+    margin:0;
+    font-size:26px;
+    color:var(--accent);
+    letter-spacing:0.2px;
+  }
+  .container{
+    max-width:1100px;
+    margin:18px auto 60px;
+    padding:0 16px;
+  }
+
+  /* ===== Cards ===== */
+  .panel{
+    background:var(--card-bg);
+    border-radius:var(--card-radius);
+    padding:18px;
+    margin:18px 0;
+    box-shadow:var(--shadow);
+    border:1px solid rgba(255,255,255,0.4);
+    backdrop-filter: blur(6px) saturate(120%);
+  }
+  .row{display:flex;gap:18px;align-items:stretch}
+  @media(max-width:880px){ .row{flex-direction:column} }
+
+  .ranking-card{
+    flex:1;
+    border-radius:12px;
+    padding:14px;
+    color:#fff;
+    position:relative;
+    overflow:hidden;
+    min-height:86px;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+  }
+  /* gradient variants */
+  .rank-antes{ background: linear-gradient(135deg,#50a8ff,#2b9ed8); box-shadow: 0 8px 30px rgba(43,158,216,0.26); }
+  .rank-depois{ background: linear-gradient(135deg,#00b894,#01936b); box-shadow: 0 8px 30px rgba(1,147,107,0.26); }
+
+  .rank-title{ font-weight:700; font-size:15px; opacity:0.95; margin-bottom:8px; }
+  .rank-list{ font-size:15px; line-height:1.5; }
+  .leader{
+    display:inline-block;
+    padding:6px 10px;
+    border-radius:999px;
+    background:rgba(255,255,255,0.14);
+    font-weight:700;
+    margin-right:10px;
+  }
+
+  /* ===== Table modern ===== */
+  .table-wrap{ overflow:auto; border-radius:12px; margin-top:12px; }
+  table{
+    width:100%;
+    border-collapse:collapse;
+    background:rgba(255,255,255,0.95);
+    min-width:720px;
+  }
+  thead th{
+    text-align:left;
+    padding:12px;
+    background: linear-gradient(90deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02));
+    border-bottom:2px solid rgba(14,74,110,0.06);
+    color: #0d3b52;
+    font-size:13px;
+    position:sticky;
+    top:0;
+    z-index:2;
+  }
+  tbody td{
+    padding:12px;
+    border-bottom:1px solid rgba(14,74,110,0.04);
+    font-size:14px;
+    color: #0b3d51;
+  }
+  tbody tr:nth-child(odd){ background: linear-gradient(180deg, rgba(255,255,255,0.0), rgba(255,255,255,0.01)); }
+  tbody tr:hover{ background: linear-gradient(90deg, rgba(255,255,255,0.15), rgba(255,255,255,0.05)); }
+
+  .muted{ color: rgba(11,36,64,0.5); font-size:13px; }
+  .small{ font-size:13px; color: rgba(11,36,64,0.55) }
+
+  /* highlight top1 */
+  .top1 { box-shadow: 0 6px 18px rgba(0,0,0,0.12); transform: translateY(-4px); }
+
+  @media(max-width:720px){
+    .ranking-card{min-height:72px;padding:12px}
+    thead th, tbody td{padding:10px;font-size:13px}
+  }
 </style>
 </head>
 <body>
-<div class="wrap">
-  <header>
-    <div class="brand">
-      <div class="logo">MG</div>
+<header><h1>Contagem de Motoristas</h1></header>
+
+<main class="container">
+  <div id="status" class="panel muted">Carregando dados da planilha...</div>
+
+  <section class="panel">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">
       <div>
-        <h1>Dashboard Motoristas</h1>
-        <div class="subtitle">Chegadas cedo · Saídas após expediente</div>
+        <div class="small" style="font-weight:700;color:var(--muted)">Top 7 — Chegadas Cedo</div>
+        <div class="muted">Aba: <strong>ANTES DO EXPEDIENTE</strong></div>
       </div>
     </div>
-    <div class="controls">
-      <div class="chip">Planilha: pública</div>
-      <button class="btn" id="refreshBtn">Atualizar</button>
+
+    <div class="row" style="margin-top:12px;">
+      <div id="cardAntes" class="ranking-card rank-antes">
+        <div class="rank-title">Chegadas cedo — Top 7</div>
+        <div id="rankListAntes" class="rank-list">Carregando...</div>
+      </div>
+
+      <div id="cardDepois" class="ranking-card rank-depois">
+        <div class="rank-title">Saídas tarde — Top 7</div>
+        <div id="rankListDepois" class="rank-list">Carregando...</div>
+      </div>
     </div>
-  </header>
+  </section>
 
-  <main class="grid">
-    <section>
-      <div class="card">
-        <div class="stats">
-          <div class="stat-card">
-            <div class="stat-num" id="statTotal">—</div>
-            <div class="stat-label">Registros (total)</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-num" id="statEarly">—</div>
-            <div class="stat-label">Chegadas cedo</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-num" id="statLate">—</div>
-            <div class="stat-label">Saídas tarde</div>
-          </div>
-        </div>
+  <section class="panel">
+    <div class="section-head" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap">
+      <div>
+        <div class="section-title" style="margin:0 0 6px 0">Registros — Antes do expediente</div>
+        <div class="muted">Exibindo registros mais recentes primeiro</div>
       </div>
+    </div>
 
-      <div class="card" style="margin-top:14px;">
-        <div style="display:flex;justify-content:space-between;align-items:center">
-          <div style="font-weight:800">Top 7 — Chegadas cedo</div>
-          <div class="muted">ANTES DO EXPEDIENTE</div>
-        </div>
-        <div class="ranking" id="rankingEarly" style="margin-top:10px"></div>
-      </div>
+    <div class="table-wrap" style="margin-top:12px">
+      <table id="tableAntes">
+        <thead>
+          <tr><th>Motorista</th><th>Data</th><th>Horário</th><th>Missão</th></tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </section>
 
-      <div class="card" style="margin-top:14px;">
-        <div style="display:flex;justify-content:space-between;align-items:center">
-          <div style="font-weight:800">Top 7 — Saídas tarde</div>
-          <div class="muted">DEPOIS DO EXPEDIENTE</div>
-        </div>
-        <div class="ranking" id="rankingLate" style="margin-top:10px"></div>
+  <section class="panel">
+    <div class="section-head" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap">
+      <div>
+        <div class="section-title" style="margin:0 0 6px 0">Registros — Depois do expediente</div>
+        <div class="muted">Exibindo registros mais recentes primeiro</div>
       </div>
+    </div>
 
-      <div class="card" style="margin-top:14px">
-        <div style="display:flex;justify-content:space-between;align-items:center">
-          <div style="font-weight:800">Registros — Antes do expediente</div>
-          <div class="muted">Mais recentes primeiro</div>
-        </div>
-        <div class="table-wrap" style="margin-top:10px">
-          <table id="tableEarly">
-            <thead>
-              <tr><th>Motorista</th><th>Data</th><th>Horário</th><th>Missão</th></tr>
-            </thead>
-            <tbody></tbody>
-          </table>
-        </div>
-      </div>
-
-      <div class="card" style="margin-top:14px">
-        <div style="display:flex;justify-content:space-between;align-items:center">
-          <div style="font-weight:800">Registros — Depois do expediente</div>
-          <div class="muted">Mais recentes primeiro</div>
-        </div>
-        <div class="table-wrap" style="margin-top:10px">
-          <table id="tableLate">
-            <thead>
-              <tr><th>Motorista</th><th>Data</th><th>Horário</th><th>Missão</th></tr>
-            </thead>
-            <tbody></tbody>
-          </table>
-        </div>
-      </div>
-    </section>
-
-    <aside class="right-panel">
-      <div class="mini-card">
-        <div style="display:flex;justify-content:space-between;align-items:center">
-          <div style="font-weight:800">Resumo Rápido</div>
-          <div class="badge" id="badgeStatus">OK</div>
-        </div>
-        <div class="mini-list" id="miniList" style="margin-top:8px">
-          <div class="muted">Carregando resumo...</div>
-        </div>
-      </div>
-
-      <div class="mini-card">
-        <div style="font-weight:800">Últimas 5 ocorrências</div>
-        <div id="lastFive" style="margin-top:10px" class="muted">Carregando...</div>
-      </div>
-
-      <div class="mini-card">
-        <div style="font-weight:800">Ajuda</div>
-        <div class="muted" style="margin-top:8px">Planilha pública (Arquivo → Publicar na web). Colunas: motorista | data | horário | missão</div>
-      </div>
-    </aside>
-  </main>
-</div>
+    <div class="table-wrap" style="margin-top:12px">
+      <table id="tableDepois">
+        <thead>
+          <tr><th>Motorista</th><th>Data</th><th>Horário</th><th>Missão</th></tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </section>
+</main>
 
 <script>
-/* ---------------- CONFIGURAÇÃO ---------------- */
+/* =================== CONFIGURAÇÃO (já com seu ID e abas) =================== */
 const SHEET_ID = "1eaFPPSEpMxsdUY9m3vT_fOhoYUKYBzATv55nRHQwyTY";
-const SHEET_EARLY = "ANTES DO EXPEDIENTE";
-const SHEET_LATE = "DEPOIS DO EXPEDIENTE";
-const BASE = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=`;
+const ABA_ANTES = "ANTES DO EXPEDIENTE";
+const ABA_DEPOIS = "DEPOIS DO EXPEDIENTE";
+const BASE_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=`;
 
-/* ---------------- util: robust date parser ---------------- */
-function parseCell(v){
-  if (v == null) return {date:null,text:""};
-  const s = String(v).trim();
+/* =================== PARSE UTILITÁRIOS =================== */
 
-  // 1) Google Date(...) pattern
+/* Interpreta strings vindo do Google GViz (Date(...) ou textos)
+   Retorna objeto { date: Date|null, text: string } */
+function parseGoogleCell(value){
+  if (value === null || value === undefined) return {date:null, text:""};
+  const s = String(value).trim();
+
+  // Date(...) pattern
   const m = s.match(/^Date\(([-\d,\s]+)\)$/i);
   if (m){
     const parts = m[1].split(',').map(x=>parseInt(x.trim(),10));
+    // Google uses Date(year,monthZeroBased,day, hour?, minute?, second?)
     if (parts.length >= 3){
-      const [yr, mon0, day, hr=0, min=0, sec=0] = parts;
-      if (!isNaN(yr) && !isNaN(mon0) && !isNaN(day)){
-        // when year < 1900 Google sometimes encodes time-only -> treat as time-of-day
-        if (yr < 1900){
-          const now = new Date();
-          return { date: new Date(now.getFullYear(), now.getMonth(), now.getDate(), hr, min, sec), text: "" };
-        }
-        return { date: new Date(yr, mon0, day, hr, min, sec), text: "" };
+      let [year, month, day, hour=0, minute=0, second=0] = parts;
+      // If year < 1900 (e.g. 1899) Google used a time-only representation; treat as time
+      if (year < 1900){
+        // Use today's date combined with this time for ordering/display
+        const now = new Date();
+        const dt = new Date(now.getFullYear(), now.getMonth(), now.getDate(), hour, minute, second);
+        return {date:dt, text: ""};
+      } else {
+        const dt = new Date(year, month, day, hour, minute, second);
+        return {date:dt, text: ""};
       }
     }
   }
 
-  // 2) numeric timestamp (seconds or ms)
-  if (/^-?\d+$/.test(s)){
-    const num = Number(s);
-    const ms = Math.abs(num) < 1e12 ? num * 1000 : num;
-    const d = new Date(ms);
-    if (!isNaN(d)) return {date:d,text:""};
-  }
-
-  // 3) ISO date string (YYYY-MM-DD or variants) - safe parse
+  // Try ISO parse
   const iso = Date.parse(s);
-  if (!isNaN(iso)) return { date: new Date(iso), text: "" };
-
-  // 4) dd/mm/yyyy or dd-mm-yyyy (pt-BR) -> parse as day/month/year
-  const dm = s.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})$/);
-  if (dm){
-    let day = parseInt(dm[1],10), month = parseInt(dm[2],10), year = parseInt(dm[3],10);
-    if (year < 100) year += 2000;
-    // JS months are 0-based
-    const d = new Date(year, month - 1, day);
-    if (!isNaN(d)) return {date:d, text:""};
+  if (!isNaN(iso)){
+    return {date:new Date(iso), text:""};
   }
 
-  // fallback -> text
+  // Otherwise treat as text
   return {date:null, text:s};
 }
 
-/* ---------------- fetch and parse sheet (GViz) ---------------- */
-async function fetchSheet(name){
-  const url = BASE + encodeURIComponent(name);
+function formatDate(d){
+  if (!d) return "";
+  return d.toLocaleDateString('pt-BR');
+}
+function formatTime(d){
+  if (!d) return "";
+  return d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+}
+
+/* =================== FETCH SHEET =================== */
+async function fetchSheet(aba){
+  const url = BASE_URL + encodeURIComponent(aba);
   const res = await fetch(url, {cache:'no-store'});
-  if (!res.ok) throw new Error('HTTP ' + res.status);
+  if (!res.ok) throw new Error(`Falha HTTP ${res.status}`);
   const txt = await res.text();
-  const start = txt.indexOf('{'), end = txt.lastIndexOf('}');
+
+  // Trim wrapper: google returns something like "/*O_o*/\ngoogle.visualization.Query.setResponse({...});"
+  const start = txt.indexOf('{');
+  const end = txt.lastIndexOf('}');
   if (start === -1 || end === -1) throw new Error('Resposta inesperada do Google Sheets');
-  const obj = JSON.parse(txt.slice(start, end+1));
-  const rows = (obj.table && obj.table.rows) ? obj.table.rows : [];
+  const json = JSON.parse(txt.slice(start, end+1));
+  const rows = (json.table && json.table.rows) ? json.table.rows : [];
+  // convert each row to array of cell strings (prefer formatted string c.f when available)
   return rows.map(r => (r.c || []).map(c => {
     if (!c) return null;
+    // prefer c.f when it exists and is string (more human readable), else c.v
     if (c.f && typeof c.f === 'string') return c.f;
     if (c.v !== undefined && c.v !== null) return String(c.v);
     return null;
   }));
 }
 
-/* ---------------- normalize rows ---------------- */
+/* =================== NORMALIZAÇÃO =================== */
+/* Expect columns: motorista | data | horário | missão
+   Only first 4 columns used; ignore extras. */
 function normalize(rows){
   return rows.map(r => {
     const motoristaRaw = r[0] || "";
@@ -241,123 +273,95 @@ function normalize(rows){
     const missaoRaw = r[3] || "";
 
     const motorista = String(motoristaRaw).trim();
-    const pd = parseCell(dataRaw);
-    const pt = parseCell(horaRaw);
 
+    const parsedData = parseGoogleCell(dataRaw);
+    const parsedHora = parseGoogleCell(horaRaw);
+
+    // determine a dateObj for sorting
     let dateObj = null;
-    if (pd.date && pt.date){
-      const d = pd.date, t = pt.date;
+    if (parsedData.date && parsedHora.date){
+      // combine date and time
+      const d = parsedData.date, t = parsedHora.date;
       dateObj = new Date(d.getFullYear(), d.getMonth(), d.getDate(), t.getHours(), t.getMinutes(), t.getSeconds());
-    } else if (pd.date){
-      dateObj = pd.date;
-    } else if (pt.date){
+    } else if (parsedData.date && !parsedHora.date){
+      dateObj = parsedData.date;
+    } else if (!parsedData.date && parsedHora.date){
+      // only time provided -> use today's date with that time
       const now = new Date();
-      const t = pt.date;
+      const t = parsedHora.date;
       dateObj = new Date(now.getFullYear(), now.getMonth(), now.getDate(), t.getHours(), t.getMinutes(), t.getSeconds());
     } else {
-      const attempt = Date.parse(String(dataRaw) + ' ' + String(horaRaw));
-      if (!isNaN(attempt)) dateObj = new Date(attempt);
+      // try parse both combined
+      const combined = (String(dataRaw) + ' ' + String(horaRaw)).trim();
+      const p = Date.parse(combined);
+      if (!isNaN(p)) dateObj = new Date(p);
     }
 
-    const displayDate = pd.date ? pd.date.toLocaleDateString('pt-BR') : (pd.text || "");
-    const displayTime = pt.date ? pt.date.toLocaleTimeString('pt-BR', {hour:'2-digit',minute:'2-digit'}) : (pt.text || "");
+    // display strings
+    const displayDate = parsedData.date ? formatDate(parsedData.date) : (parsedData.text || String(dataRaw));
+    const displayTime = parsedHora.date ? formatTime(parsedHora.date) : (parsedHora.text || String(horaRaw));
 
-    return {motorista, displayDate, displayTime, missao: String(missaoRaw||""), dateObj};
+    const missao = String(missaoRaw || "");
+
+    return { motorista, displayDate, displayTime, missao, dateObj };
   });
 }
 
-/* ---------------- render helpers ---------------- */
-function escapeHtml(s){ if (s==null) return ''; return String(s).replace(/[&<>"']/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+/* =================== ORDER & RENDER =================== */
+function orderByDateDesc(items){
+  // most recent first, nulls last
+  return items.slice().sort((a,b)=>{
+    if (!a.dateObj && !b.dateObj) return 0;
+    if (!a.dateObj) return 1;
+    if (!b.dateObj) return -1;
+    return b.dateObj - a.dateObj;
+  });
+}
+
 function renderTable(tableId, items){
   const tbody = document.querySelector(`#${tableId} tbody`);
   tbody.innerHTML = '';
   items.forEach(it => {
     const tr = document.createElement('tr');
-    tr.innerHTML = `<td>${escapeHtml(it.motorista)}</td><td>${escapeHtml(it.displayDate)}</td><td>${escapeHtml(it.displayTime)}</td><td>${escapeHtml(it.missao)}</td>`;
+    tr.innerHTML = `
+      <td>${escapeHtml(it.motorista)}</td>
+      <td>${escapeHtml(it.displayDate)}</td>
+      <td>${escapeHtml(it.displayTime)}</td>
+      <td>${escapeHtml(it.missao)}</td>
+    `;
     tbody.appendChild(tr);
   });
 }
-function renderRanking(containerId, items){
+
+function renderRanking(containerId, items, highlightFirst=true){
+  // count occurrences by motorista
   const counts = {};
-  items.forEach(i => { const k = i.motorista || 'Sem nome'; counts[k] = (counts[k]||0)+1; });
-  const ranked = Object.entries(counts).sort((a,b)=>b[1]-a[1]).slice(0,7);
-  const container = document.getElementById(containerId);
-  container.innerHTML = '';
-  if (ranked.length===0){ container.innerHTML = '<div class="muted">Sem registros</div>'; return; }
-  const max = ranked[0][1] || 1;
-  ranked.forEach(([name,qty],idx)=>{
-    const card = document.createElement('div');
-    card.className = 'rank-item';
-    const left = document.createElement('div'); left.style.display='flex'; left.style.alignItems='center'; left.style.gap='12px';
-    const avatar = document.createElement('div'); avatar.className='avatar'; avatar.textContent = name.split(' ').map(w=>w[0]||'').slice(0,2).join('').toUpperCase();
-    const ndiv = document.createElement('div'); ndiv.innerHTML = `<div style="font-weight:700">${escapeHtml(name)}</div><div style="font-size:12px;color:var(--muted)">${qty} ocorrência(s)</div>`;
-    const barWrap = document.createElement('div'); barWrap.className='bar';
-    const fill = document.createElement('div'); fill.className='bar-fill'; fill.style.width = Math.round((qty/max)*100) + '%';
-    barWrap.appendChild(fill);
-    left.appendChild(avatar); left.appendChild(ndiv); left.appendChild(barWrap);
-    const right = document.createElement('div'); right.style.fontWeight='800'; right.style.minWidth='48px'; right.style.textAlign='right'; right.textContent = qty;
-    card.appendChild(left); card.appendChild(right);
-    container.appendChild(card);
+  items.forEach(it => {
+    const k = it.motorista || 'Sem nome';
+    counts[k] = (counts[k] || 0) + 1;
   });
-}
-function updateSummary(total, earlyCount, lateCount, lastFive){
-  document.getElementById('statTotal').textContent = total;
-  document.getElementById('statEarly').textContent = earlyCount;
-  document.getElementById('statLate').textContent = lateCount;
-  document.getElementById('miniList').innerHTML = `<div>Chegadas cedo: ${earlyCount}</div><div>Saídas tarde: ${lateCount}</div>`;
-  document.getElementById('lastFive').innerHTML = lastFive.map(it=>`${escapeHtml(it.motorista)} — ${escapeHtml(it.displayDate)} ${escapeHtml(it.displayTime)}<br>`).join('');
-  document.getElementById('badgeStatus').textContent = 'OK';
-}
+  const ranked = Object.entries(counts).sort((a,b)=>b[1]-a[1]).slice(0,7);
 
-/* ---------------- main flow ---------------- */
-async function loadAll(){
-  try {
-    document.getElementById('badgeStatus').textContent = 'Carregando...';
-    const [rawEarly, rawLate] = await Promise.all([fetchSheet(SHEET_EARLY), fetchSheet(SHEET_LATE)]);
-    const normEarly = normalize(rawEarly).filter(r => r.motorista || r.displayDate || r.displayTime);
-    const normLate = normalize(rawLate).filter(r => r.motorista || r.displayDate || r.displayTime);
-    const orderDesc = arr => arr.slice().sort((a,b)=>{
-      if (!a.dateObj && !b.dateObj) return 0;
-      if (!a.dateObj) return 1;
-      if (!b.dateObj) return -1;
-      return b.dateObj - a.dateObj;
-    });
-    const orderedEarly = orderDesc(normEarly);
-    const orderedLate = orderDesc(normLate);
-    renderTable('tableEarly', orderedEarly);
-    renderTable('tableLate', orderedLate);
-    renderRanking('rankingEarly', normEarly);
-    renderRanking('rankingLate', normLate);
-    const lastFive = orderedEarly.slice(0,3).concat(orderedLate.slice(0,2));
-    updateSummary(normEarly.length + normLate.length, normEarly.length, normLate.length, lastFive);
-    document.getElementById('badgeStatus').textContent = 'Concluído';
-  } catch (err){
-    console.error(err);
-    document.getElementById('badgeStatus').textContent = 'Erro';
-    document.getElementById('miniList').innerHTML = `<div class="muted">Erro: ${escapeHtml(err.message || String(err))}</div>`;
+  if (ranked.length === 0){
+    document.getElementById(containerId).innerHTML = '<span class="muted">Sem registros</span>';
+    return;
   }
-}
 
-/* ---------------- fetch helper GViz ---------------- */
-async function fetchSheet(name){
-  const url = BASE + encodeURIComponent(name);
-  const res = await fetch(url, {cache:'no-store'});
-  if (!res.ok) throw new Error('HTTP ' + res.status);
-  const txt = await res.text();
-  const start = txt.indexOf('{'), end = txt.lastIndexOf('}');
-  if (start===-1 || end===-1) throw new Error('Formato inesperado');
-  const obj = JSON.parse(txt.slice(start,end+1));
-  const rows = (obj.table && obj.table.rows) ? obj.table.rows : [];
-  return rows.map(r => (r.c||[]).map(c=>{
-    if (!c) return null;
-    if (c.f && typeof c.f === 'string') return c.f;
-    if (c.v !== undefined && c.v !== null) return String(c.v);
-    return null;
-  }));
-}
+  const frag = document.createDocumentFragment();
+  ranked.forEach((entry, idx) => {
+    const [name, qty] = entry;
+    const div = document.createElement('div');
+    if (idx === 0 && highlightFirst){
+      div.className = 'top1';
+      div.style.padding = '8px';
+      div.style.borderRadius = '8px';
+      div.style.background = 'rgba(255,255,255,0.06)';
+      div.style.marginBottom = '8px';
+    } else {
+      div.style.marginBottom = '6px';
+    }
+    div.innerHTML = `<span style="font-weight:700">${idx+1}. ${escapeHtml(name)}</span> — <span style="opacity:0.95">${qty} registro(s)</span>`;
+    frag.appendChild(div);
+  });
 
-document.getElementById('refreshBtn').addEventListener('click', ()=>loadAll());
-loadAll();
-</script>
-</body>
-</html>
+  const container = document.ge
