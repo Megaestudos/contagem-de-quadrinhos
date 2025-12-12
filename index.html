@@ -192,33 +192,6 @@ const ABA_ANTES = "ANTES DO EXPEDIENTE";
 const ABA_DEPOIS = "DEPOIS DO EXPEDIENTE";
 const BASE_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=`;
 
-/* =================== PARSE UTILITÁRIOS =================== */
-
-/* Interpreta strings vindo do Google GViz (Date(...) ou textos)
-   Retorna objeto { date: Date|null, text: string } */
-function parseGoogleCell(value){
-  if (value === null || value === undefined) return {date:null, text:""};
-  const s = String(value).trim();
-
-  // Date(...) pattern
-  const m = s.match(/^Date\(([-\d,\s]+)\)$/i);
-  if (m){
-    const parts = m[1].split(',').map(x=>parseInt(x.trim(),10));
-    // Google uses Date(year,monthZeroBased,day, hour?, minute?, second?)
-    if (parts.length >= 3){
-      let [year, month, day, hour=0, minute=0, second=0] = parts;
-      // If year < 1900 (e.g. 1899) Google used a time-only representation; treat as time
-      if (year < 1900){
-        // Use today's date combined with this time for ordering/display
-        const now = new Date();
-        const dt = new Date(now.getFullYear(), now.getMonth(), now.getDate(), hour, minute, second);
-        return {date:dt, text: ""};
-      } else {
-        const dt = new Date(year, month, day, hour, minute, second);
-        return {date:dt, text: ""};
-      }
-    }
-  }
 
   // Try ISO parse
   const iso = Date.parse(s);
