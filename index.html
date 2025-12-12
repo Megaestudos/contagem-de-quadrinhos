@@ -1,182 +1,189 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Contagem Motoristas</title>
-
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet" />
-
-    <style>
-        body {
-            font-family: Roboto, sans-serif;
-            background: #f4f7fb;
-            margin: 0;
-            padding: 0;
-        }
-
-        .container {
-            width: 95%;
-            margin: auto;
-            padding-top: 20px;
-        }
-
-        h2 {
-            font-size: 22px;
-            font-weight: 700;
-            color: #1a1a1a;
-        }
-
-        .card {
-            background: #ffffff;
-            padding: 18px;
-            margin: 18px 0;
-            border-radius: 16px;
-            box-shadow: 0 3px 10px rgba(0,0,0,0.08);
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 10px;
-            font-size: 15px;
-        }
-
-        thead {
-            background: #1976d2;
-            color: white;
-        }
-
-        th, td {
-            padding: 10px;
-            text-align: left;
-        }
-
-        tbody tr:nth-child(even) {
-            background: #f1f5f9;
-        }
-
-        .loading {
-            text-align: center;
-            padding: 12px;
-            font-size: 16px;
-            font-weight: 500;
-        }
-    </style>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Contagem de Motoristas — Painel</title>
+<link id="manifestPlaceholder" rel="manifest"/>
+<style>
+  :root{
+    --bg-1:#e8f7ff;
+    --bg-2:#d8efff;
+    --card-bg: rgba(255,255,255,0.72);
+    --glass-border: rgba(255,255,255,0.5);
+    --accent:#1e90ff;
+    --muted:#234b60;
+    --card-radius:16px;
+    --shadow: 0 10px 30px rgba(11,36,64,0.10);
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;
+    font-family: "Inter", "Segoe UI", Roboto, Arial, sans-serif;
+    background: linear-gradient(180deg,var(--bg-1),var(--bg-2));
+    -webkit-font-smoothing:antialiased;
+    color:var(--muted);
+  }
+  header{
+    padding:26px 16px;
+    text-align:center;
+  }
+  h1{
+    margin:0;
+    font-size:26px;
+    color:var(--accent);
+    letter-spacing:0.2px;
+  }
+  .container{
+    max-width:1100px;
+    margin:18px auto 60px;
+    padding:0 16px;
+  }
+  .panel{
+    background:var(--card-bg);
+    border-radius:var(--card-radius);
+    padding:18px;
+    margin:18px 0;
+    box-shadow:var(--shadow);
+    border:1px solid rgba(255,255,255,0.4);
+    backdrop-filter: blur(6px) saturate(120%);
+  }
+  .row{display:flex;gap:18px;align-items:stretch}
+  @media(max-width:880px){ .row{flex-direction:column} }
+  .ranking-card{
+    flex:1;
+    border-radius:12px;
+    padding:14px;
+    color:#fff;
+    min-height:86px;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+  }
+  .rank-antes{ background: linear-gradient(135deg,#50a8ff,#2b9ed8); }
+  .rank-depois{ background: linear-gradient(135deg,#00b894,#01936b); }
+  .rank-title{ font-weight:700; font-size:15px; opacity:0.95; margin-bottom:8px; }
+  .rank-list{ font-size:15px; line-height:1.5; }
+  .table-wrap{ overflow:auto; border-radius:12px; margin-top:12px; }
+  table{
+    width:100%;
+    border-collapse:collapse;
+    background:rgba(255,255,255,0.95);
+    min-width:720px;
+  }
+  thead th{
+    text-align:left;
+    padding:12px;
+    background: rgba(255,255,255,0.12);
+    border-bottom:2px solid rgba(14,74,110,0.06);
+    color:#0d3b52;
+    font-size:13px;
+    position:sticky;
+    top:0;
+  }
+  tbody td{
+    padding:12px;
+    border-bottom:1px solid rgba(14,74,110,0.04);
+    font-size:14px;
+  }
+  .muted{ color: rgba(11,36,64,0.5); font-size:13px; }
+  .small{ font-size:13px; color: rgba(11,36,64,0.55) }
+</style>
 </head>
 <body>
-    <div class="container">
-        <h2>Registros — Antes do expediente</h2>
-        <div class="card">
-            <div id="loadingBefore" class="loading">Carregando...</div>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Motorista</th>
-                        <th>Data</th>
-                        <th>Horário</th>
-                        <th>Missão</th>
-                    </tr>
-                </thead>
-                <tbody id="tableBefore"></tbody>
-            </table>
-        </div>
+<header><h1>Contagem de Motoristas</h1></header>
 
-        <h2>Registros — Depois do expediente</h2>
-        <div class="card">
-            <div id="loadingAfter" class="loading">Carregando...</div>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Motorista</th>
-                        <th>Data</th>
-                        <th>Horário</th>
-                        <th>Missão</th>
-                    </tr>
-                </thead>
-                <tbody id="tableAfter"></tbody>
-            </table>
-        </div>
+<main class="container">
+  <div id="status" class="panel muted">Carregando dados da planilha...</div>
+
+  <section class="panel">
+    <div class="row" style="margin-top:12px;">
+      <div id="cardAntes" class="ranking-card rank-antes">
+        <div class="rank-title">Chegadas cedo — Top 7</div>
+        <div id="rankListAntes" class="rank-list">Carregando...</div>
+      </div>
+      <div id="cardDepois" class="ranking-card rank-depois">
+        <div class="rank-title">Saídas tarde — Top 7</div>
+        <div id="rankListDepois" class="rank-list">Carregando...</div>
+      </div>
     </div>
+  </section>
+
+  <section class="panel">
+    <div class="muted">Registros — Antes do expediente</div>
+    <div class="table-wrap" style="margin-top:12px">
+      <table id="tableAntes"><thead><tr><th>Motorista</th><th>Data</th><th>Horário</th><th>Missão</th></tr></thead><tbody></tbody></table>
+    </div>
+  </section>
+
+  <section class="panel">
+    <div class="muted">Registros — Depois do expediente</div>
+    <div class="table-wrap" style="margin-top:12px">
+      <table id="tableDepois"><thead><tr><th>Motorista</th><th>Data</th><th>Horário</th><th>Missão</th></tr></thead><tbody></tbody></table>
+    </div>
+  </section>
+</main>
 
 <script>
-const sheetId = "1IWumCgnvV5ajr1plgYhsVano_xAC-jCk1hssBBYQnEU";
+const SHEET_ID="1eaFPPSEpMxsdUY9m3vT_fOhoYUKYBzATv55nRHQwyTY";
+const ABA_ANTES="ANTES DO EXPEDIENTE";
+const ABA_DEPOIS="DEPOIS DO EXPEDIENTE";
+const BASE_URL=`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=`;
 
-async function fetchTab(range) {
-    const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json&tq=SELECT%20*%20WHERE%20A%20IS%20NOT%20NULL&range=${range}`;
-
-    const response = await fetch(url);
-    const text = await response.text();
-    const json = JSON.parse(text.substring(text.indexOf('{'), text.lastIndexOf('}') + 1));
-
-    return json.table.rows.map(r => r.c.map(c => c ? c.v : ""));
+function parseGoogleCell(v){
+  if(!v) return {date:null,text:""};
+  if(/Date\(/.test(v)){
+    const nums=v.replace(/[^0-9,]/g,"").split(",").map(n=>parseInt(n));
+    return {date:new Date(nums[0],nums[1],nums[2])};
+  }
+  if(/\//.test(v)){
+    const [d,m,a]=v.split("/").map(n=>parseInt(n));
+    return {date:new Date(a,m-1,d)};
+  }
+  const parsed=Date.parse(v);
+  if(!isNaN(parsed)) return {date:new Date(parsed)};
+  return {date:null,text:v};
 }
 
-function fixDate(value) {
-    if (!value) return "";
-
-    if (!isNaN(value)) {
-        const base = new Date(1899, 11, 30);
-        const corrected = new Date(base.getTime() + value * 86400000);
-
-        const d = String(corrected.getDate()).padStart(2, "0");
-        const m = String(corrected.getMonth() + 1).padStart(2, "0");
-        const y = corrected.getFullYear();
-
-        return `${d}/${m}/${y}`;
-    }
-
-    if (value.includes("/")) {
-        return value;
-    }
-
-    return value;
+function formatDate(d){
+  if(!d) return "";
+  return String(d.getDate()).padStart(2,"0")+"/"+String(d.getMonth()+1).padStart(2,"0")+"/"+d.getFullYear();
+}
+function formatTime(d){
+  if(!d) return "";
+  return String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0");
 }
 
-async function loadData() {
-    try {
-        const beforeRows = await fetchTab("ANTES DO EXPEDIENTE!A:D");
-        const afterRows = await fetchTab("DEPOIS DO EXPEDIENTE!A:D");
-
-        const before = beforeRows.map(r => ({
-            motorista: r[0],
-            date: fixDate(r[1]),
-            horario: r[2],
-            missao: r[3]
-        }));
-
-        const after = afterRows.map(r => ({
-            motorista: r[0],
-            date: fixDate(r[1]),
-            horario: r[2],
-            missao: r[3]
-        }));
-
-        renderTable(before, "tableBefore", "loadingBefore");
-        renderTable(after, "tableAfter", "loadingAfter");
-
-    } catch (e) {
-        console.error("Erro ao carregar planilha", e);
-    }
+async function fetchSheet(aba){
+  const res=await fetch(BASE_URL+encodeURIComponent(aba),{cache:'no-store'});
+  const txt=await res.text();
+  const json=JSON.parse(txt.substring(txt.indexOf('{'),txt.lastIndexOf('}')+1));
+  return (json.table.rows||[]).map(r=> (r.c||[]).map(c=>c? (c.f||c.v||"") :""));
 }
 
-function renderTable(data, tableId, loadingId) {
-    document.getElementById(loadingId).style.display = "none";
-    const table = document.getElementById(tableId);
-    table.innerHTML = "";
-
-    data.forEach(row => {
-        table.innerHTML += `
-            <tr>
-                <td>${row.motorista}</td>
-                <td>${row.date}</td>
-                <td>${row.horario}</td>
-                <td>${row.missao}</td>
-            </tr>`;
-    });
+function normalize(rows){
+  return rows.map(r=>{
+    const motorista=r[0]||"";
+    const d=parseGoogleCell(r[1]);
+    const h=parseGoogleCell(r[2]);
+    let final=null;
+    if(d.date&&h.date){final=new Date(d.date.getFullYear(),d.date.getMonth(),d.date.getDate(),h.date.getHours(),h.date.getMinutes());}
+    else if(d.date){final=d.date;}
+    return{
+      motorista,
+      displayDate: formatDate(d.date),
+      displayTime: formatTime(h.date),
+      missao:r[3]||"",
+      dateObj: final
+    };
+  });
 }
 
-loadData();
-</script>
-</body>
-</html>
+function orderByDateDesc(arr){return arr.slice().sort((a,b)=> (b.dateObj||0)-(a.dateObj||0));}
+
+function renderTable(id,items){
+  const tb=document.querySelector(`#${id} tbody`);
+  tb.innerHTML="";
+  items.forEach(i=>{
+    const tr=document.createElement("tr");
+    tr.innerHTML=`<td>${i.motorista}</td><td>${i.display
