@@ -1,308 +1,223 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Ranking Motoristas - Chegadas e Saídas</title>
-<style>
-    :root{
-      --bg-a: #b7e3ff;
-      --bg-b: #e6f7ff;
-      --card:#ffffff;
-      --accent:#0b659d;
-      --muted:#28506e;
-    }
-    *{box-sizing:border-box}
-    body{
-        font-family: Arial, Helvetica, sans-serif;
-        margin: 0;
-        background: linear-gradient(to bottom, var(--bg-a), var(--bg-b));
-        color: var(--muted);
-        -webkit-font-smoothing:antialiased;
-    }
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Contagem de Motoristas</title>
 
-    header { text-align:center; padding:20px 12px; }
-    h1 { margin:0; color:var(--accent); font-size:20px; }
+    <!-- Manifest dinâmico (criado via JS) -->
+    <link id="manifestPlaceholder" rel="manifest" />
 
-    .container {
-        width: 95%;
-        max-width: 1200px;
-        margin: 12px auto 40px;
-    }
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: linear-gradient(to bottom right, #87CEFA, #1E90FF);
+            color: #000;
+        }
 
-    .card {
-        background: var(--card);
-        border-radius: 12px;
-        padding: 16px;
-        margin: 14px 0;
-        box-shadow: 0 6px 20px rgba(0,0,0,0.08);
-        min-height: 60px;
-    }
+        h1 {
+            text-align: center;
+            padding: 20px 0;
+            font-size: 26px;
+        }
 
-    .ranking-box {
-        padding: 14px;
-        border-radius: 12px;
-        margin: 8px 0;
-        background: linear-gradient(135deg, #7cc9ff 0%, #4aa8ff 50%, #2b9ed8 100%);
-        color: white;
-        box-shadow: 0 6px 20px rgba(0,0,0,0.18);
-        min-height: 80px;
-    }
+        .container {
+            width: 95%;
+            margin: auto;
+        }
 
-    .section-title{ margin:6px 0 12px 0; color:var(--accent); font-size:16px }
+        .section-title {
+            font-size: 22px;
+            margin-top: 25px;
+            font-weight: bold;
+        }
 
-    table {
-        width: 100%;
-        border-collapse: collapse;
-        margin-top: 8px;
-        font-size: 13px;
-    }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 10px;
+            overflow: hidden;
+        }
 
-    th, td {
-        padding: 8px 10px;
-        border: 1px solid #e6f7ff;
-        text-align: left;
-        vertical-align: middle;
-    }
+        th, td {
+            padding: 10px;
+            border-bottom: 1px solid #ccc;
+            text-align: left;
+            font-size: 15px;
+        }
 
-    th {
-        background: #f1fbff;
-        color: var(--muted);
-    }
+        th {
+            background: #4682B4;
+            color: white;
+        }
 
-    .status {
-        font-size: 14px;
-        color: var(--muted);
-        padding: 8px 0;
-    }
-
-    .error {
-        color: #8b1a1a;
-        background: #ffecec;
-        padding:8px;
-        border-radius:8px;
-        margin-top:8px;
-    }
-
-    .center { text-align:center; }
-</style>
+        .ranking-box {
+            padding: 15px;
+            margin-top: 15px;
+            border-radius: 12px;
+            background: linear-gradient(to right, #6EC6FF, #2980FF);
+            color: #fff;
+            font-size: 18px;
+        }
+    </style>
 </head>
 <body>
-<header>
-    <h1>Relatório — Chegadas Cedo & Saídas Tarde</h1>
-</header>
 
+<h1>Contagem de Motoristas</h1>
 <div class="container">
+    <div class="section-title">Antes do Expediente</div>
+    <div class="ranking-box" id="rankingAntes">Carregando ranking...</div>
+    <table id="tabelaAntes">
+        <thead>
+            <tr>
+                <th>Motorista</th>
+                <th>Data</th>
+                <th>Horário</th>
+                <th>Missão</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
 
-    <div id="globalStatus" class="card center">
-        <div id="loadingText" class="status">Carregando dados...</div>
-    </div>
-
-    <div class="card">
-        <div class="section-title">Top 7 — Chegadas Cedo (antes do expediente)</div>
-        <div id="rankingChegadas" class="ranking-box">Carregando...</div>
-
-        <div class="section-title" style="margin-top:14px">Top 7 — Saídas Tarde (depois do expediente)</div>
-        <div id="rankingSaidas" class="ranking-box">Carregando...</div>
-    </div>
-
-    <div class="card">
-        <div class="section-title">Registros — Antes do expediente</div>
-        <div id="tabelaAntes">Carregando...</div>
-        <div id="errorAntes"></div>
-    </div>
-
-    <div class="card">
-        <div class="section-title">Registros — Depois do expediente</div>
-        <div id="tabelaDepois">Carregando...</div>
-        <div id="errorDepois"></div>
-    </div>
-
-    <div class="card center small" style="font-size:12px;color:var(--muted)">
-        Observação: a planilha deve estar publicada (Arquivo → Publicar na web) e as abas nomeadas exatamente:
-        <strong>"antes do expediente"</strong> e <strong>"depois do expediente"</strong>.<br>
-        Colunas esperadas (nomes no cabeçalho): <em>motorista, data, horário, missão</em> (case-insensitive).
-    </div>
-
+    <div class="section-title">Depois do Expediente</div>
+    <div class="ranking-box" id="rankingDepois">Carregando ranking...</div>
+    <table id="tabelaDepois">
+        <thead>
+            <tr>
+                <th>Motorista</th>
+                <th>Data</th>
+                <th>Horário</th>
+                <th>Missão</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
 </div>
 
 <script>
-/* -------- CONFIGURAÇÃO -------- */
+/*********************************************************
+ CONFIGURAÇÕES
+*********************************************************/
 const SHEET_ID = "1eaFPPSEpMxsdUY9m3vT_fOhoYUKYBzATv55nRHQwyTY";
-const ABA_ANTES = "antes do expediente";
-const ABA_DEPOIS = "depois do expediente";
-/* ------------------------------ */
+const API_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=`;
 
-/* util — escape HTML simples */
-function esc(s){ return (s==null) ? '' : String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
-
-/* CSV parser simples, suporta campos entre aspas contendo vírgulas e quebras de linha */
-function parseCSV(text) {
-    // remove possíveis prefixos do Google viz (quando a resposta contém )]}') )
-    text = text.replace(/^\)\]\}'\n/, '').replace(/\r\n/g, '\n').replace(/\r/g, '\n');
-
-    const rows = [];
-    let row = [];
-    let cur = '';
-    let inQuotes = false;
-    for (let i = 0; i < text.length; i++) {
-        const ch = text[i];
-        const nxt = text[i+1];
-        if (ch === '"' ) {
-            if (inQuotes && nxt === '"') { // escaped quote
-                cur += '"';
-                i++; // skip next
-            } else {
-                inQuotes = !inQuotes;
-            }
-            continue;
-        }
-        if (!inQuotes && ch === ',') {
-            row.push(cur);
-            cur = '';
-            continue;
-        }
-        if (!inQuotes && ch === '\n') {
-            row.push(cur);
-            rows.push(row);
-            row = [];
-            cur = '';
-            continue;
-        }
-        cur += ch;
-    }
-    // push last cell/row
-    if (cur !== '' || inQuotes) row.push(cur);
-    if (row.length) rows.push(row);
-
-    if (rows.length === 0) return [];
-
-    const headers = rows[0].map(h => h ? h.trim().toLowerCase() : '');
-    const data = [];
-    for (let r = 1; r < rows.length; r++) {
-        const rowVals = rows[r];
-        // skip empty rows
-        if (rowVals.every(c => c === undefined || c === null || String(c).trim() === '')) continue;
-        const obj = {};
-        for (let c = 0; c < headers.length; c++) {
-            obj[headers[c] || `col${c}`] = rowVals[c] !== undefined ? String(rowVals[c]).trim() : '';
-        }
-        data.push(obj);
-    }
-    return data;
-}
-
-async function fetchCsv(sheetName) {
-    const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(sheetName)}`;
-    const res = await fetch(url, {cache: "no-store"});
-    if (!res.ok) {
-        const msg = `Falha ao carregar aba "${sheetName}" — HTTP ${res.status} ${res.statusText}`;
-        throw new Error(msg);
-    }
-    const text = await res.text();
-    return parseCSV(text);
-}
-
-function generateTableHTML(data) {
-    if (!Array.isArray(data) || data.length === 0) return "<p>Nenhum registro encontrado.</p>";
-    const columns = Object.keys(data[0]);
-    let html = "<table><thead><tr>";
-    columns.forEach(c => html += `<th>${esc(c)}</th>`);
-    html += "</tr></thead><tbody>";
-    data.forEach(row => {
-        html += "<tr>";
-        columns.forEach(c => html += `<td>${esc(row[c] || '')}</td>`);
-        html += "</tr>";
-    });
-    html += "</tbody></table>";
-    return html;
-}
-
-function computeTopN(data, n=7) {
-    const count = {};
-    (data || []).forEach(row => {
-        const name = (row.motorista || row['motorista'] || 'Sem nome').trim() || 'Sem nome';
-        count[name] = (count[name] || 0) + 1;
-    });
-    const sorted = Object.entries(count).sort((a,b) => b[1] - a[1]);
-    return sorted.slice(0, n);
-}
-
-function renderRankingList(entries) {
-    if (!entries || entries.length === 0) return "<p>Sem registros.</p>";
-    let html = "<ol style='margin:6px 0 0 18px;padding:0;'>";
-    entries.forEach(([name, total]) => {
-        html += `<li style="margin:6px 0"><strong>${esc(name)}</strong>: ${total} ocorrência(s)</li>`;
-    });
-    html += "</ol>";
-    return html;
-}
-
-function showGlobalMessage(msg, isError=false) {
-    const el = document.getElementById('loadingText');
-    el.textContent = msg;
-    el.style.color = isError ? '#8b1a1a' : 'var(--muted)';
-}
-
-/* inicia carregamento */
-async function iniciar() {
-    showGlobalMessage('Carregando dados (pode levar alguns segundos)...');
-
-    // elementos
-    const rankChegadasEl = document.getElementById('rankingChegadas');
-    const rankSaidasEl   = document.getElementById('rankingSaidas');
-    const tabelaAntesEl   = document.getElementById('tabelaAntes');
-    const tabelaDepoisEl  = document.getElementById('tabelaDepois');
-    const errAntesEl      = document.getElementById('errorAntes');
-    const errDepoisEl     = document.getElementById('errorDepois');
-
-    // reset UI
-    rankChegadasEl.innerHTML = 'Carregando...';
-    rankSaidasEl.innerHTML = 'Carregando...';
-    tabelaAntesEl.innerHTML = 'Carregando...';
-    tabelaDepoisEl.innerHTML = '';
-    errAntesEl.innerHTML = '';
-    errDepoisEl.innerHTML = '';
-
+/*********************************************************
+ FUNÇÃO PARA BUSCAR DADOS DE UMA ABA
+*********************************************************/
+async function carregarAba(aba) {
     try {
-        const [dadosAntes, dadosDepois] = await Promise.all([
-            fetchCsv(ABA_ANTES).catch(e => { throw new Error('Antes do expediente: ' + e.message); }),
-            fetchCsv(ABA_DEPOIS).catch(e => { throw new Error('Depois do expediente: ' + e.message); })
-        ]);
+        const res = await fetch(API_URL + aba);
+        const text = await res.text();
+        const json = JSON.parse(text.substring(47, text.length - 2));
 
-        // tabelas
-        tabelaAntesEl.innerHTML = generateTableHTML(dadosAntes);
-        tabelaDepoisEl.innerHTML = generateTableHTML(dadosDepois);
-
-        // rankings
-        const topAntes = computeTopN(dadosAntes, 7);
-        const topDepois = computeTopN(dadosDepois, 7);
-
-        rankChegadasEl.innerHTML = renderRankingList(topAntes);
-        rankSaidasEl.innerHTML   = renderRankingList(topDepois);
-
-        showGlobalMessage('Dados carregados com sucesso.');
-
-    } catch (err) {
-        // mostra mensagem de erro para o usuário em áreas apropriadas
-        showGlobalMessage('Erro ao carregar dados — veja os detalhes abaixo.', true);
-        const msg = esc(err.message || String(err));
-        // preenche as seções de tabela com o erro também
-        document.getElementById('tabelaAntes').innerHTML = `<div class="error">Erro: ${msg}</div>`;
-        document.getElementById('tabelaDepois').innerHTML = `<div class="error">Erro: ${msg}</div>`;
-        // também coloca detalhes em blocos separados
-        document.getElementById('errorAntes').innerHTML = `<div class="error">Detalhe: ${msg}</div>`;
-        document.getElementById('errorDepois').innerHTML = `<div class="error">Detalhe: ${msg}</div>`;
-        console.error(err);
+        const dados = json.table.rows.map(r => r.c.map(c => (c ? c.v : "")));
+        return dados;
+    } catch (e) {
+        console.error("Erro ao carregar aba", aba, e);
+        return [];
     }
 }
 
-/* Executa quando DOM pronto */
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', iniciar);
-} else {
-    iniciar();
+/*********************************************************
+ FUNÇÃO PARA ORDENAR POR DATA E HORÁRIO
+*********************************************************/
+function ordenar(dados) {
+    return dados.sort((a, b) => {
+        const dataA = new Date(a[1] + " " + a[2]);
+        const dataB = new Date(b[1] + " " + b[2]);
+        return dataA - dataB;
+    });
+}
+
+/*********************************************************
+ PREENCHER TABELA
+*********************************************************/
+function preencherTabela(idTabela, dados) {
+    const tbody = document.querySelector(`#${idTabela} tbody`);
+    tbody.innerHTML = "";
+
+    dados.forEach(linha => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+            <td>${linha[0]}</td>
+            <td>${linha[1]}</td>
+            <td>${linha[2]}</td>
+            <td>${linha[3]}</td>
+        `;
+        tbody.appendChild(tr);
+    });
+}
+
+/*********************************************************
+ GERAR RANKING (TOP 7 MOTORISTAS)
+*********************************************************/
+function gerarRanking(idDiv, dados) {
+    const contagem = {};
+
+    dados.forEach(l => {
+        const m = l[0];
+        if (!contagem[m]) contagem[m] = 0;
+        contagem[m]++;
+    });
+
+    const ranking = Object.entries(contagem)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 7)
+        .map(e => `${e[0]} — ${e[1]} registros`)
+        .join("<br>");
+
+    document.getElementById(idDiv).innerHTML = ranking;
+}
+
+/*********************************************************
+ CARREGAR TUDO
+*********************************************************/
+async function carregarTudo() {
+    const antes = ordenar(await carregarAba("ANTES DO EXPEDIENTE"));
+    const depois = ordenar(await carregarAba("DEPOIS DO EXPEDIENTE"));
+
+    preencherTabela("tabelaAntes", antes);
+    preencherTabela("tabelaDepois", depois);
+
+    gerarRanking("rankingAntes", antes);
+    gerarRanking("rankingDepois", depois);
+}
+
+carregarTudo();
+
+/*********************************************************
+ MANIFEST + SERVICE WORKER DINÂMICOS (PWA)
+*********************************************************/
+// Criar MANIFEST dinamicamente
+const manifest = {
+    name: "Contagem de Motoristas",
+    short_name: "Motoristas",
+    start_url: ".",
+    display: "standalone",
+    background_color: "#87CEFA",
+    theme_color: "#1E90FF",
+    icons: []
+};
+
+const blobManifest = new Blob([JSON.stringify(manifest)], { type: "application/json" });
+const manifestURL = URL.createObjectURL(blobManifest);
+document.getElementById("manifestPlaceholder").setAttribute("href", manifestURL);
+
+// Criar SERVICE WORKER dinâmico
+tif = `self.addEventListener('install', e => { self.skipWaiting(); });
+self.addEventListener('activate', e => { clients.claim(); });
+self.addEventListener('fetch', e => { e.respondWith(fetch(e.request)); });`;
+
+const swBlob = new Blob([tif], { type: "text/javascript" });
+const swURL = URL.createObjectURL(swBlob);
+
+if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.register(swURL);
 }
 </script>
+
 </body>
 </html>
