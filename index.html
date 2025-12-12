@@ -3,322 +3,422 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>Contagem de Motoristas — Chegadas / Saídas</title>
-<link id="manifestPlaceholder" rel="manifest" />
+<title>Contagem de Motoristas — Painel</title>
+<link id="manifestPlaceholder" rel="manifest"/>
 <style>
+  /* ===== Base & Background (glass / neomorphism) ===== */
   :root{
-    --bg1:#dff4ff;
-    --bg2:#bfe7ff;
-    --card:#ffffff;
-    --text:#05314a;
+    --bg-1:#e8f7ff;
+    --bg-2:#d8efff;
+    --card-bg: rgba(255,255,255,0.72);
+    --glass-border: rgba(255,255,255,0.5);
+    --accent:#1e90ff;
+    --muted:#234b60;
+    --card-radius:16px;
+    --shadow: 0 10px 30px rgba(11,36,64,0.10);
   }
   *{box-sizing:border-box}
   body{
     margin:0;
-    font-family: Inter, Roboto, Arial, sans-serif;
-    background: linear-gradient(180deg,var(--bg1),var(--bg2));
-    color:var(--text);
+    font-family: "Inter", "Segoe UI", Roboto, Arial, sans-serif;
+    background: linear-gradient(180deg,var(--bg-1),var(--bg-2));
+    -webkit-font-smoothing:antialiased;
+    color:var(--muted);
   }
-  header{padding:18px;text-align:center}
-  h1{margin:0;font-size:22px;color:#0b67a3}
-  .container{max-width:1100px;margin:18px auto;padding:12px}
-  .card{background:var(--card);border-radius:12px;padding:14px;margin:14px 0;box-shadow:0 8px 26px rgba(11,36,64,0.06)}
-  .section-title{font-weight:700;margin-bottom:10px;color:#0b4670}
-  .ranking{
-    padding:14px;border-radius:10px;color:white;font-weight:600;line-height:1.5;
-    box-shadow:0 8px 18px rgba(11,36,64,0.09);
-    margin-bottom:10px;
+  header{
+    padding:26px 16px;
+    text-align:center;
   }
-  .ranking.antes{background:linear-gradient(90deg,#2b9ed8,#66b7ff)}
-  .ranking.depois{background:linear-gradient(90deg,#2fbf7f,#1aa85f)}
-  table{width:100%;border-collapse:collapse;margin-top:8px;font-size:14px}
-  th,td{padding:10px 12px;border-bottom:1px solid #eef7fc;text-align:left}
-  th{background:#f1fbff;color:#123d59;font-weight:700}
-  .muted{color:#577a8b;font-size:13px}
-  @media(max-width:720px){ th,td{padding:8px;font-size:13px} h1{font-size:18px} }
+  h1{
+    margin:0;
+    font-size:26px;
+    color:var(--accent);
+    letter-spacing:0.2px;
+  }
+  .container{
+    max-width:1100px;
+    margin:18px auto 60px;
+    padding:0 16px;
+  }
+
+  /* ===== Cards ===== */
+  .panel{
+    background:var(--card-bg);
+    border-radius:var(--card-radius);
+    padding:18px;
+    margin:18px 0;
+    box-shadow:var(--shadow);
+    border:1px solid rgba(255,255,255,0.4);
+    backdrop-filter: blur(6px) saturate(120%);
+  }
+  .row{display:flex;gap:18px;align-items:stretch}
+  @media(max-width:880px){ .row{flex-direction:column} }
+
+  .ranking-card{
+    flex:1;
+    border-radius:12px;
+    padding:14px;
+    color:#fff;
+    position:relative;
+    overflow:hidden;
+    min-height:86px;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+  }
+  /* gradient variants */
+  .rank-antes{ background: linear-gradient(135deg,#50a8ff,#2b9ed8); box-shadow: 0 8px 30px rgba(43,158,216,0.26); }
+  .rank-depois{ background: linear-gradient(135deg,#00b894,#01936b); box-shadow: 0 8px 30px rgba(1,147,107,0.26); }
+
+  .rank-title{ font-weight:700; font-size:15px; opacity:0.95; margin-bottom:8px; }
+  .rank-list{ font-size:15px; line-height:1.5; }
+  .leader{
+    display:inline-block;
+    padding:6px 10px;
+    border-radius:999px;
+    background:rgba(255,255,255,0.14);
+    font-weight:700;
+    margin-right:10px;
+  }
+
+  /* ===== Table modern ===== */
+  .table-wrap{ overflow:auto; border-radius:12px; margin-top:12px; }
+  table{
+    width:100%;
+    border-collapse:collapse;
+    background:rgba(255,255,255,0.95);
+    min-width:720px;
+  }
+  thead th{
+    text-align:left;
+    padding:12px;
+    background: linear-gradient(90deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02));
+    border-bottom:2px solid rgba(14,74,110,0.06);
+    color: #0d3b52;
+    font-size:13px;
+    position:sticky;
+    top:0;
+    z-index:2;
+  }
+  tbody td{
+    padding:12px;
+    border-bottom:1px solid rgba(14,74,110,0.04);
+    font-size:14px;
+    color: #0b3d51;
+  }
+  tbody tr:nth-child(odd){ background: linear-gradient(180deg, rgba(255,255,255,0.0), rgba(255,255,255,0.01)); }
+  tbody tr:hover{ background: linear-gradient(90deg, rgba(255,255,255,0.15), rgba(255,255,255,0.05)); }
+
+  .muted{ color: rgba(11,36,64,0.5); font-size:13px; }
+  .small{ font-size:13px; color: rgba(11,36,64,0.55) }
+
+  /* highlight top1 */
+  .top1 { box-shadow: 0 6px 18px rgba(0,0,0,0.12); transform: translateY(-4px); }
+
+  @media(max-width:720px){
+    .ranking-card{min-height:72px;padding:12px}
+    thead th, tbody td{padding:10px;font-size:13px}
+  }
 </style>
 </head>
 <body>
-<header><h1>Contagem de Motoristas — Chegadas Cedo & Saídas Tarde</h1></header>
+<header><h1>Contagem de Motoristas</h1></header>
 
-<div class="container">
-  <div id="status" class="card muted">Carregando dados da planilha...</div>
+<main class="container">
+  <div id="status" class="panel muted">Carregando dados da planilha...</div>
 
-  <div class="card">
-    <div class="section-title">Top 7 — Chegadas Cedo (ANTES DO EXPEDIENTE)</div>
-    <div id="rankingAntes" class="ranking antes">Carregando...</div>
-  </div>
+  <section class="panel">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">
+      <div>
+        <div class="small" style="font-weight:700;color:var(--muted)">Top 7 — Chegadas Cedo</div>
+        <div class="muted">Aba: <strong>ANTES DO EXPEDIENTE</strong></div>
+      </div>
+    </div>
 
-  <div class="card">
-    <div class="section-title">Top 7 — Saídas Tarde (DEPOIS DO EXPEDIENTE)</div>
-    <div id="rankingDepois" class="ranking depois">Carregando...</div>
-  </div>
+    <div class="row" style="margin-top:12px;">
+      <div id="cardAntes" class="ranking-card rank-antes">
+        <div class="rank-title">Chegadas cedo — Top 7</div>
+        <div id="rankListAntes" class="rank-list">Carregando...</div>
+      </div>
 
-  <div class="card">
-    <div class="section-title">Registros — Antes do expediente</div>
-    <table id="tabelaAntes"><thead><tr><th>Motorista</th><th>Data</th><th>Horário</th><th>Missão</th></tr></thead><tbody></tbody></table>
-  </div>
+      <div id="cardDepois" class="ranking-card rank-depois">
+        <div class="rank-title">Saídas tarde — Top 7</div>
+        <div id="rankListDepois" class="rank-list">Carregando...</div>
+      </div>
+    </div>
+  </section>
 
-  <div class="card">
-    <div class="section-title">Registros — Depois do expediente</div>
-    <table id="tabelaDepois"><thead><tr><th>Motorista</th><th>Data</th><th>Horário</th><th>Missão</th></tr></thead><tbody></tbody></table>
-  </div>
-</div>
+  <section class="panel">
+    <div class="section-head" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap">
+      <div>
+        <div class="section-title" style="margin:0 0 6px 0">Registros — Antes do expediente</div>
+        <div class="muted">Exibindo registros mais recentes primeiro</div>
+      </div>
+    </div>
+
+    <div class="table-wrap" style="margin-top:12px">
+      <table id="tableAntes">
+        <thead>
+          <tr><th>Motorista</th><th>Data</th><th>Horário</th><th>Missão</th></tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="panel">
+    <div class="section-head" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap">
+      <div>
+        <div class="section-title" style="margin:0 0 6px 0">Registros — Depois do expediente</div>
+        <div class="muted">Exibindo registros mais recentes primeiro</div>
+      </div>
+    </div>
+
+    <div class="table-wrap" style="margin-top:12px">
+      <table id="tableDepois">
+        <thead>
+          <tr><th>Motorista</th><th>Data</th><th>Horário</th><th>Missão</th></tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </section>
+</main>
 
 <script>
-/* ---------- CONFIGURAÇÃO ---------- */
+/* =================== CONFIGURAÇÃO (já com seu ID e abas) =================== */
 const SHEET_ID = "1eaFPPSEpMxsdUY9m3vT_fOhoYUKYBzATv55nRHQwyTY";
 const ABA_ANTES = "ANTES DO EXPEDIENTE";
 const ABA_DEPOIS = "DEPOIS DO EXPEDIENTE";
 const BASE_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=`;
 
-/* ---------- UTILIDADES ---------- */
+/* =================== PARSE UTILITÁRIOS =================== */
 
-/**
- * Tenta interpretar um valor vindo do Google Visualization JSON.
- * Pode vir como:
- *  - string normal ("CB SOARES")
- *  - "Date(2025,10,12)" (data)
- *  - "Date(1899,11,30,7,20,0)" (hora)
- * Retorna objeto { text, date } onde date é Date ou null.
- */
-function interpretCell(value){
-  if (value === null || value === undefined) return { text: "", date: null };
-  if (typeof value !== "string") return { text: String(value), date: null };
+/* Interpreta strings vindo do Google GViz (Date(...) ou textos)
+   Retorna objeto { date: Date|null, text: string } */
+function parseGoogleCell(value){
+  if (value === null || value === undefined) return {date:null, text:""};
+  const s = String(value).trim();
 
-  const dateMatch = value.match(/^Date\\(([-\\d,\\s]+)\\)$/i);
-  if (dateMatch){
-    const parts = dateMatch[1].split(',').map(s=>parseInt(s.trim(),10));
-    // Google uses months zero-based in this Date() representation.
-    // If parts length >=3 => year, month, day [, hour, min, sec]
-    let dt;
+  // Date(...) pattern
+  const m = s.match(/^Date\(([-\d,\s]+)\)$/i);
+  if (m){
+    const parts = m[1].split(',').map(x=>parseInt(x.trim(),10));
+    // Google uses Date(year,monthZeroBased,day, hour?, minute?, second?)
     if (parts.length >= 3){
-      const year = parts[0], month = parts[1], day = parts[2];
-      const hour = parts[3]||0, minute = parts[4]||0, second = parts[5]||0;
-      dt = new Date(year, month, day, hour, minute, second);
-      // If the Date looks like year 1899 (time-only representation), handle as time-of-day
-      if (year === 1899 || year === 1890 || year < 1900){
-        // create a today date but with time from dt
+      let [year, month, day, hour=0, minute=0, second=0] = parts;
+      // If year < 1900 (e.g. 1899) Google used a time-only representation; treat as time
+      if (year < 1900){
+        // Use today's date combined with this time for ordering/display
         const now = new Date();
-        dt = new Date(now.getFullYear(), now.getMonth(), now.getDate(), hour, minute, second);
+        const dt = new Date(now.getFullYear(), now.getMonth(), now.getDate(), hour, minute, second);
+        return {date:dt, text: ""};
+      } else {
+        const dt = new Date(year, month, day, hour, minute, second);
+        return {date:dt, text: ""};
       }
-      return { text: null, date: dt };
     }
   }
 
-  // fallback: if seems ISO or dd/mm or similar, try Date parse
-  // try parse ISO
-  const iso = Date.parse(value);
+  // Try ISO parse
+  const iso = Date.parse(s);
   if (!isNaN(iso)){
-    return { text: null, date: new Date(iso) };
+    return {date:new Date(iso), text:""};
   }
 
-  // otherwise plain text
-  return { text: value, date: null };
+  // Otherwise treat as text
+  return {date:null, text:s};
 }
 
-function formatDateForDisplay(date){
-  if (!date) return "";
-  try{
-    return date.toLocaleDateString('pt-BR');
-  }catch(e){ return date.toISOString().slice(0,10); }
+function formatDate(d){
+  if (!d) return "";
+  return d.toLocaleDateString('pt-BR');
 }
-function formatTimeForDisplay(date){
-  if (!date) return "";
-  try{
-    return date.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
-  }catch(e){ return date.toTimeString().slice(0,5); }
+function formatTime(d){
+  if (!d) return "";
+  return d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
 }
 
-/* ---------- GOOGLE SHEETS FETCH ---------- */
-
+/* =================== FETCH SHEET =================== */
 async function fetchSheet(aba){
   const url = BASE_URL + encodeURIComponent(aba);
-  const res = await fetch(url, {cache: 'no-store'});
-  if (!res.ok) throw new Error(`HTTP ${res.status} ${res.statusText}`);
-  const text = await res.text();
-  // google returns: /**/google.visualization.Query.setResponse({...});
-  // safe parse: cut wrapper
-  const jsonText = text.replace(/^[^\\{]*/, '').replace(/;?\\s*$/, '');
-  const obj = JSON.parse(jsonText);
-  // obj.table.rows => array of rows; each row.c is array of cells; each cell may have v (value) or f (formatted) or null
-  const rows = (obj.table.rows || []).map(r => {
-    const cells = (r.c || []).map(c => {
-      // prefer c.f (formatted) if it's a Date(...) string ; c.v can already be Date() string or primitive
-      if (!c) return null;
-      if (typeof c.v === 'string') return c.v;
-      if (c.f) return c.f;
-      return c.v;
-    });
-    return cells;
-  });
-  return rows;
+  const res = await fetch(url, {cache:'no-store'});
+  if (!res.ok) throw new Error(`Falha HTTP ${res.status}`);
+  const txt = await res.text();
+
+  // Trim wrapper: google returns something like "/*O_o*/\ngoogle.visualization.Query.setResponse({...});"
+  const start = txt.indexOf('{');
+  const end = txt.lastIndexOf('}');
+  if (start === -1 || end === -1) throw new Error('Resposta inesperada do Google Sheets');
+  const json = JSON.parse(txt.slice(start, end+1));
+  const rows = (json.table && json.table.rows) ? json.table.rows : [];
+  // convert each row to array of cell strings (prefer formatted string c.f when available)
+  return rows.map(r => (r.c || []).map(c => {
+    if (!c) return null;
+    // prefer c.f when it exists and is string (more human readable), else c.v
+    if (c.f && typeof c.f === 'string') return c.f;
+    if (c.v !== undefined && c.v !== null) return String(c.v);
+    return null;
+  }));
 }
 
-/* ---------- NORMALIZAÇÃO E ORDENAÇÃO ---------- */
-
-/**
- * Normalize rows to objects:
- * Expect columns in order: motorista | data | horário | missão
- * Keep only first 4 columns, ignore extras.
- */
-function normalizeRows(rows){
+/* =================== NORMALIZAÇÃO =================== */
+/* Expect columns: motorista | data | horário | missão
+   Only first 4 columns used; ignore extras. */
+function normalize(rows){
   return rows.map(r => {
     const motoristaRaw = r[0] || "";
     const dataRaw = r[1] || "";
     const horaRaw = r[2] || "";
     const missaoRaw = r[3] || "";
-    const motorista = typeof motoristaRaw === 'string' ? motoristaRaw.trim() : String(motoristaRaw);
-    const dataCell = interpretCell(typeof dataRaw === 'string' ? dataRaw.trim() : dataRaw);
-    const horaCell = interpretCell(typeof horaRaw === 'string' ? horaRaw.trim() : horaRaw);
 
-    // Determine final dateTime:
-    // if dataCell.date exists, use it; if horaCell.date exists, combine date + time
-    let finalDate = null;
-    if (dataCell.date && horaCell.date){
-      // combine date from dataCell with time from horaCell
-      const d = dataCell.date;
-      const t = horaCell.date;
-      finalDate = new Date(d.getFullYear(), d.getMonth(), d.getDate(), t.getHours(), t.getMinutes(), t.getSeconds());
-    } else if (dataCell.date && !horaCell.date){
-      finalDate = dataCell.date;
-    } else if (!dataCell.date && horaCell.date){
-      // if only time provided, use today's date with that time (useable for ordering)
-      const t = horaCell.date;
+    const motorista = String(motoristaRaw).trim();
+
+    const parsedData = parseGoogleCell(dataRaw);
+    const parsedHora = parseGoogleCell(horaRaw);
+
+    // determine a dateObj for sorting
+    let dateObj = null;
+    if (parsedData.date && parsedHora.date){
+      // combine date and time
+      const d = parsedData.date, t = parsedHora.date;
+      dateObj = new Date(d.getFullYear(), d.getMonth(), d.getDate(), t.getHours(), t.getMinutes(), t.getSeconds());
+    } else if (parsedData.date && !parsedHora.date){
+      dateObj = parsedData.date;
+    } else if (!parsedData.date && parsedHora.date){
+      // only time provided -> use today's date with that time
       const now = new Date();
-      finalDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), t.getHours(), t.getMinutes(), t.getSeconds());
+      const t = parsedHora.date;
+      dateObj = new Date(now.getFullYear(), now.getMonth(), now.getDate(), t.getHours(), t.getMinutes(), t.getSeconds());
     } else {
-      // try to parse concatenated string "data horario" if possible
-      const attempt = Date.parse((dataRaw + ' ' + horaRaw).trim());
-      if (!isNaN(attempt)) finalDate = new Date(attempt);
+      // try parse both combined
+      const combined = (String(dataRaw) + ' ' + String(horaRaw)).trim();
+      const p = Date.parse(combined);
+      if (!isNaN(p)) dateObj = new Date(p);
     }
 
-    // texts to display:
-    const displayDate = dataCell.date ? formatDateForDisplay(dataCell.date) : (typeof dataRaw === 'string' ? dataRaw : '');
-    const displayTime = horaCell.date ? formatTimeForDisplay(horaCell.date) : (typeof horaRaw === 'string' ? horaRaw : '');
+    // display strings
+    const displayDate = parsedData.date ? formatDate(parsedData.date) : (parsedData.text || String(dataRaw));
+    const displayTime = parsedHora.date ? formatTime(parsedHora.date) : (parsedHora.text || String(horaRaw));
 
-    return {
-      motorista,
-      dataRaw: displayDate,
-      horaRaw: displayTime,
-      missao: (typeof missaoRaw === 'string' ? missaoRaw : (missaoRaw||'')).toString(),
-      dateObj: finalDate
-    };
+    const missao = String(missaoRaw || "");
+
+    return { motorista, displayDate, displayTime, missao, dateObj };
   });
 }
 
-/* order by dateObj (ascending) — if dateObj null, keep at end */
-function orderNormalized(arr){
-  return arr.slice().sort((a,b)=>{
+/* =================== ORDER & RENDER =================== */
+function orderByDateDesc(items){
+  // most recent first, nulls last
+  return items.slice().sort((a,b)=>{
     if (!a.dateObj && !b.dateObj) return 0;
     if (!a.dateObj) return 1;
     if (!b.dateObj) return -1;
-    return a.dateObj - b.dateObj;
+    return b.dateObj - a.dateObj;
   });
 }
 
-/* ---------- RENDER ---------- */
-
-function fillTable(tableId, items){
+function renderTable(tableId, items){
   const tbody = document.querySelector(`#${tableId} tbody`);
   tbody.innerHTML = '';
   items.forEach(it => {
     const tr = document.createElement('tr');
-    tr.innerHTML = `<td>${escapeHtml(it.motorista)}</td>
-                    <td>${escapeHtml(it.dataRaw)}</td>
-                    <td>${escapeHtml(it.horaRaw)}</td>
-                    <td>${escapeHtml(it.missao)}</td>`;
+    tr.innerHTML = `
+      <td>${escapeHtml(it.motorista)}</td>
+      <td>${escapeHtml(it.displayDate)}</td>
+      <td>${escapeHtml(it.displayTime)}</td>
+      <td>${escapeHtml(it.missao)}</td>
+    `;
     tbody.appendChild(tr);
   });
 }
 
-function renderRanking(containerId, items){
-  // count by motorista
+function renderRanking(containerId, items, highlightFirst=true){
+  // count occurrences by motorista
   const counts = {};
   items.forEach(it => {
     const k = it.motorista || 'Sem nome';
-    counts[k] = (counts[k]||0) + 1;
+    counts[k] = (counts[k] || 0) + 1;
   });
   const ranked = Object.entries(counts).sort((a,b)=>b[1]-a[1]).slice(0,7);
-  const cont = ranked.length ? ranked.map((r,i)=>`${i+1}. ${escapeHtml(r[0])} — ${r[1]} registros`).join('<br>') : '<span class="muted">Sem registros</span>';
-  document.getElementById(containerId).innerHTML = cont;
+
+  if (ranked.length === 0){
+    document.getElementById(containerId).innerHTML = '<span class="muted">Sem registros</span>';
+    return;
+  }
+
+  const frag = document.createDocumentFragment();
+  ranked.forEach((entry, idx) => {
+    const [name, qty] = entry;
+    const div = document.createElement('div');
+    if (idx === 0 && highlightFirst){
+      div.className = 'top1';
+      div.style.padding = '8px';
+      div.style.borderRadius = '8px';
+      div.style.background = 'rgba(255,255,255,0.06)';
+      div.style.marginBottom = '8px';
+    } else {
+      div.style.marginBottom = '6px';
+    }
+    div.innerHTML = `<span style="font-weight:700">${idx+1}. ${escapeHtml(name)}</span> — <span style="opacity:0.95">${qty} registro(s)</span>`;
+    frag.appendChild(div);
+  });
+
+  const container = document.getElementById(containerId);
+  container.innerHTML = '';
+  container.appendChild(frag);
 }
 
+/* =================== ESCAPE =================== */
 function escapeHtml(s){
   if (s === null || s === undefined) return '';
   return String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 }
 
-/* ---------- MAIN FLOW ---------- */
-
-async function run(){
+/* =================== MAIN FLOW =================== */
+async function loadAll(){
   try {
-    document.getElementById('status').textContent = 'Carregando dados da planilha...';
+    document.getElementById('status').textContent = 'Carregando dados...';
 
-    const [rawAntes, rawDepois] = await Promise.all([
+    const [rowsAntes, rowsDepois] = await Promise.all([
       fetchSheet(ABA_ANTES),
       fetchSheet(ABA_DEPOIS)
     ]);
 
-    const normAntes = normalizeRows(rawAntes);
-    const normDepois = normalizeRows(rawDepois);
+    // normalize and ignore empty rows
+    const normAntes = normalize(rowsAntes).filter(r => r.motorista || r.displayDate || r.displayTime);
+    const normDepois = normalize(rowsDepois).filter(r => r.motorista || r.displayDate || r.displayTime);
 
-    const orderedAntes = orderNormalized(normAntes);
-    const orderedDepois = orderNormalized(normDepois);
+    const orderedAntes = orderByDateDesc(normAntes);
+    const orderedDepois = orderByDateDesc(normDepois);
 
-    // fill tables (show most recent first -> reverse)
-    fillTable('tabelaAntes', orderedAntes.slice().reverse());
-    fillTable('tabelaDepois', orderedDepois.slice().reverse());
+    // render tables (most recent first)
+    renderTable('tableAntes', orderedAntes);
+    renderTable('tableDepois', orderedDepois);
 
-    // ranking (use original order)
-    renderRanking('rankingAntes', normAntes);
-    renderRanking('rankingDepois', normDepois);
+    // render rankings (use raw counts - here we count on normalized arrays)
+    renderRanking('rankListAntes', normAntes);
+    renderRanking('rankListDepois', normDepois);
 
     document.getElementById('status').textContent = 'Dados carregados com sucesso.';
   } catch (err) {
     console.error(err);
-    document.getElementById('status').textContent = 'Erro ao carregar dados: ' + (err.message || err);
+    document.getElementById('status').textContent = 'Erro ao carregar os dados: ' + (err.message || err);
   }
 }
 
-/* ---------- fetch wrapper with parse for Google GViz JSON ---------- */
-async function fetchSheet(aba){
-  const url = BASE_URL + encodeURIComponent(aba);
-  const res = await fetch(url, {cache:'no-store'});
-  if (!res.ok) throw new Error(`Falha HTTP: ${res.status}`);
-  const txt = await res.text();
-  // remove prefix until first '{' and trailing ');' if present
-  const start = txt.indexOf('{');
-  const end = txt.lastIndexOf('}');
-  if (start === -1 || end === -1) throw new Error('Resposta inesperada do Google Sheets');
-  const jsonStr = txt.slice(start, end+1);
-  const obj = JSON.parse(jsonStr);
-  const rows = (obj.table && obj.table.rows) ? obj.table.rows : [];
-  // convert each row to array of cell values (prefer .f formatted if available)
-  return rows.map(r => {
-    const cells = (r.c || []).map(c => {
-      if (!c) return null;
-      // choose formatted string if exists and is a Date(...) or formatted
-      if (c.f && typeof c.f === 'string' && c.f.trim().length>0) return c.f;
-      // otherwise, c.v may be a primitive or already string "Date(...)"
-      return (c.v !== undefined && c.v !== null) ? String(c.v) : null;
-    });
-    return cells;
-  });
-}
+/* =================== START =================== */
+loadAll();
 
-/* start */
-run();
-
-/* ---------- PWA: manifest + simple service worker (single file) ---------- */
-(function setupPWA(){
+/* =================== PWA: Manifest + Service Worker (dynamic single-file) =================== */
+(function initPWA(){
   try{
     const manifest = {
       name: "Contagem de Motoristas",
       short_name: "Motoristas",
       start_url: ".",
       display: "standalone",
-      background_color: "#dff4ff",
+      background_color: "#e8f7ff",
       theme_color: "#1e90ff",
       icons: []
     };
@@ -329,19 +429,18 @@ run();
       self.addEventListener('install', e => { self.skipWaiting(); });
       self.addEventListener('activate', e => { clients.claim(); });
       self.addEventListener('fetch', e => {
-        // default: go to network (no caching) - simplifies development
+        // pass-through network fetch (no caching) - simple, safe for dynamic spreadsheet
         e.respondWith(fetch(e.request));
       });
     `;
     const swBlob = new Blob([swCode], {type:'text/javascript'});
     const swUrl = URL.createObjectURL(swBlob);
     if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register(swUrl).catch(()=>{/* ignore */});
+      navigator.serviceWorker.register(swUrl).catch(()=>{ /* ignore SW errors quietly */ });
     }
-  }catch(e){
-    console.warn('PWA init failed', e);
-  }
+  }catch(e){ console.warn('PWA init failed', e); }
 })();
+
 </script>
 </body>
 </html>
