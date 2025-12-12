@@ -188,7 +188,7 @@ const BASE_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx
 
 /* =================== PARSE DE DATAS (CORRIGIDO) =================== */
 function parseGoogleCell(value){
-  if (value === null || value === undefined) return {date:null, text:""};
+  if (value === null || value === undefined) return {date:null, text:""}; 
 
   const s = String(value).trim();
 
