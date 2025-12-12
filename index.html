@@ -1,230 +1,178 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Controle de Motoristas</title>
-
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Contagem de Motoristas — Painel</title>
+<link id="manifestPlaceholder" rel="manifest"/>
 <style>
-    body {
-        font-family: Arial, sans-serif;
-        background: #eef2f7;
-        margin: 0;
-        padding: 0;
-    }
-    h1 {
-        text-align: center;
-        margin-top: 20px;
-        color: #333;
-    }
-    .section {
-        background: #fff;
-        width: 92%;
-        margin: 20px auto;
-        padding: 20px;
-        border-radius: 18px;
-        box-shadow: 0 3px 10px rgba(0,0,0,0.15);
-    }
-    h2 {
-        color: #222;
-        margin-bottom: 10px;
-    }
-    table {
-        width: 100%;
-        border-collapse: collapse;
-        margin-top: 12px;
-    }
-    thead {
-        background: #1976d2;
-        color: #fff;
-    }
-    th, td {
-        padding: 10px;
-        font-size: 15px;
-        border-bottom: 1px solid #ddd;
-        text-align: left;
-    }
-    tr:nth-child(even) { background: #f4f7fb; }
-    .loading { text-align: center; padding: 10px; font-size: 16px; }
-    .rank-card {
-        padding: 12px;
-        border-radius: 14px;
-        margin: 8px 0;
-        background: linear-gradient(135deg, #4facfe, #00f2fe);
-        color: #fff;
-        font-weight: bold;
-        font-size: 18px;
-    }
+  /* ===== Base & Background (glass / neomorphism) ===== */
+  :root{
+    --bg-1:#e8f7ff;
+    --bg-2:#d8efff;
+    --card-bg: rgba(255,255,255,0.72);
+    --glass-border: rgba(255,255,255,0.5);
+    --accent:#1e90ff;
+    --muted:#234b60;
+    --card-radius:16px;
+    --shadow: 0 10px 30px rgba(11,36,64,0.10);
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;
+    font-family: "Inter", "Segoe UI", Roboto, Arial, sans-serif;
+    background: linear-gradient(180deg,var(--bg-1),var(--bg-2));
+    -webkit-font-smoothing:antialiased;
+    color:var(--muted);
+  }
+  header{
+    padding:26px 16px;
+    text-align:center;
+  }
+  h1{
+    margin:0;
+    font-size:26px;
+    color:var(--accent);
+    letter-spacing:0.2px;
+  }
+  .container{
+    max-width:1100px;
+    margin:18px auto 60px;
+    padding:0 16px;
+  }
+
+  /* ===== Cards ===== */
+  .panel{
+    background:var(--card-bg);
+    border-radius:var(--card-radius);
+    padding:18px;
+    margin:18px 0;
+    box-shadow:var(--shadow);
+    border:1px solid rgba(255,255,255,0.4);
+    backdrop-filter: blur(6px) saturate(120%);
+  }
+  .row{display:flex;gap:18px;align-items:stretch}
+  @media(max-width:880px){ .row{flex-direction:column} }
+
+  .ranking-card{
+    flex:1;
+    border-radius:12px;
+    padding:14px;
+    color:#fff;
+    position:relative;
+    overflow:hidden;
+    min-height:86px;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+  }
+  .rank-antes{ background: linear-gradient(135deg,#50a8ff,#2b9ed8); box-shadow: 0 8px 30px rgba(43,158,216,0.26); }
+  .rank-depois{ background: linear-gradient(135deg,#00b894,#01936b); box-shadow: 0 8px 30px rgba(1,147,107,0.26); }
+
+  .rank-title{ font-weight:700; font-size:15px; opacity:0.95; margin-bottom:8px; }
+  .rank-list{ font-size:15px; line-height:1.5; }
+  .leader{
+    display:inline-block;
+    padding:6px 10px;
+    border-radius:999px;
+    background:rgba(255,255,255,0.14);
+    font-weight:700;
+    margin-right:10px;
+  }
+
+  /* ===== Table modern ===== */
+  .table-wrap{ overflow:auto; border-radius:12px; margin-top:12px; }
+  table{
+    width:100%;
+    border-collapse:collapse;
+    background:rgba(255,255,255,0.95);
+    min-width:720px;
+  }
+  thead th{
+    text-align:left;
+    padding:12px;
+    background: linear-gradient(90deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02));
+    border-bottom:2px solid rgba(14,74,110,0.06);
+    color: #0d3b52;
+    font-size:13px;
+    position:sticky;
+    top:0;
+    z-index:2;
+  }
+  tbody td{
+    padding:12px;
+    border-bottom:1px solid rgba(14,74,110,0.04);
+    font-size:14px;
+    color: #0b3d51;
+  }
+  tbody tr:nth-child(odd){ background: linear-gradient(180deg, rgba(255,255,255,0.0), rgba(255,255,255,0.01)); }
+  tbody tr:hover{ background: linear-gradient(90deg, rgba(255,255,255,0.15), rgba(255,255,255,0.05)); }
+
+  .muted{ color: rgba(11,36,64,0.5); font-size:13px; }
+  .small{ font-size:13px; color: rgba(11,36,64,0.55) }
+
+  .top1 { box-shadow: 0 6px 18px rgba(0,0,0,0.12); transform: translateY(-4px); }
+
+  @media(max-width:720px){
+    .ranking-card{min-height:72px;padding:12px}
+    thead th, tbody td{padding:10px;font-size:13px}
+  }
 </style>
 </head>
-
 <body>
+<header><h1>Contagem de Motoristas</h1></header>
 
-<h1>Controle de Motoristas</h1>
+<main class="container">
+  <div id="status" class="panel muted">Carregando dados da planilha...</div>
 
-<div class="section">
-    <h2>Top 7 — Chegadas cedo</h2>
-    <div id="rankingBefore"></div>
-</div>
+  <section class="panel">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">
+      <div>
+        <div class="small" style="font-weight:700;color:var(--muted)">Top 7 — Chegadas Cedo</div>
+        <div class="muted">Aba: <strong>ANTES DO EXPEDIENTE</strong></div>
+      </div>
+    </div>
 
-<div class="section">
-    <h2>Top 7 — Saídas tarde</h2>
-    <div id="rankingAfter"></div>
-</div>
+    <div class="row" style="margin-top:12px;">
+      <div id="cardAntes" class="ranking-card rank-antes">
+        <div class="rank-title">Chegadas cedo — Top 7</div>
+        <div id="rankListAntes" class="rank-list">Carregando...</div>
+      </div>
 
-<div class="section">
-    <h2>Antes do expediente</h2>
-    <div id="loadBefore" class="loading">Carregando...</div>
-    <table>
+      <div id="cardDepois" class="ranking-card rank-depois">
+        <div class="rank-title">Saídas tarde — Top 7</div>
+        <div id="rankListDepois" class="rank-list">Carregando...</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel">
+    <div class="section-head" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap">
+      <div>
+        <div class="section-title" style="margin:0 0 6px 0">Registros — Antes do expediente</div>
+        <div class="muted">Exibindo registros mais recentes primeiro</div>
+      </div>
+    </div>
+
+    <div class="table-wrap" style="margin-top:12px">
+      <table id="tableAntes">
         <thead>
-            <tr>
-                <th>Motorista</th>
-                <th>Data</th>
-                <th>Horário</th>
-                <th>Missão</th>
-            </tr>
+          <tr><th>Motorista</th><th>Data</th><th>Horário</th><th>Missão</th></tr>
         </thead>
-        <tbody id="tableBefore"></tbody>
-    </table>
-</div>
+        <tbody></tbody>
+      </table>
+    </div>
+  </section>
 
-<div class="section">
-    <h2>Depois do expediente</h2>
-    <div id="loadAfter" class="loading">Carregando...</div>
-    <table>
+  <section class="panel">
+    <div class="section-head" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap">
+      <div>
+        <div class="section-title" style="margin:0 0 6px 0">Registros — Depois do expediente</div>
+        <div class="muted">Exibindo registros mais recentes primeiro</div>
+      </div>
+    </div>
+
+    <div class="table-wrap" style="margin-top:12px">
+      <table id="tableDepois">
         <thead>
-            <tr>
-                <th>Motorista</th>
-                <th>Data</th>
-                <th>Horário</th>
-                <th>Missão</th>
-            </tr>
-        </thead>
-        <tbody id="tableAfter"></tbody>
-    </table>
-</div>
-
-<script>
-const sheetId = "1eaFPPSEpMxsdUY9m3vT_fOhoYUKYBzATv55nRHQwyTY";
-
-const urlBefore = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json&sheet=ANTES%20DO%20EXPEDIENTE`;
-const urlAfter  = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json&sheet=DEPOIS%20DO%20EXPEDIENTE`;
-
-/* ------------------------------  CORREÇÃO ABSOLUTA DE DATA  ------------------------------ */
-function fixDate(value) {
-    if (!value) return "";
-
-    // Caso seja number (serial date)
-    if (typeof value === "number") {
-        const base = new Date(1899, 11, 30);
-        const corrected = new Date(base.getTime() + value * 86400000);
-        return formatDate(corrected);
-    }
-
-    // Caso seja date object vindo do Google
-    if (typeof value === "object" && value.v !== undefined && value.f === undefined) {
-        const corrected = new Date(value.v);
-        return formatDate(corrected);
-    }
-
-    // Caso seja texto dd/mm/yyyy → retorna direto
-    if (typeof value === "string" && value.includes("/")) return value;
-
-    return value;
-}
-
-function formatDate(d) {
-    const dia = String(d.getDate()).padStart(2, "0");
-    const mes = String(d.getMonth() + 1).padStart(2, "0");
-    const ano = d.getFullYear();
-    return `${dia}/${mes}/${ano}`;
-}
-/* ----------------------------------------------------------------------------------------- */
-
-
-async function loadSheet(url) {
-    try {
-        const res = await fetch(url);
-        const text = await res.text();
-        const json = JSON.parse(text.substring(text.indexOf('{'), text.lastIndexOf('}') + 1));
-
-        return json.table.rows.map(r => r.c.map(c => c ? c.v : ""));
-    } catch (e) {
-        console.error("Erro ao ler:", url, e);
-        return [];
-    }
-}
-
-function renderTable(data, elementId) {
-    const tbody = document.getElementById(elementId);
-    tbody.innerHTML = "";
-
-    data.forEach(r => {
-        tbody.innerHTML += `
-            <tr>
-                <td>${r.motorista}</td>
-                <td>${r.data}</td>
-                <td>${r.horario}</td>
-                <td>${r.missao}</td>
-            </tr>
-        `;
-    });
-}
-
-function generateRanking(data, containerId) {
-    const counts = {};
-
-    data.forEach(r => {
-        if (!counts[r.motorista]) counts[r.motorista] = 0;
-        counts[r.motorista]++;
-    });
-
-    const sorted = Object.entries(counts)
-        .sort((a,b) => b[1] - a[1])
-        .slice(0,7);
-
-    const container = document.getElementById(containerId);
-    container.innerHTML = "";
-
-    sorted.forEach(([name, total]) => {
-        container.innerHTML += `
-            <div class="rank-card">
-                ${name} — ${total}
-            </div>
-        `;
-    });
-}
-
-async function loadApp() {
-    const beforeRaw = await loadSheet(urlBefore);
-    const afterRaw  = await loadSheet(urlAfter);
-
-    document.getElementById("loadBefore").style.display = "none";
-    document.getElementById("loadAfter").style.display = "none";
-
-    const before = beforeRaw.map(r => ({
-        motorista: r[0],
-        data: fixDate(r[1]),
-        horario: r[2],
-        missao: r[3]
-    }));
-
-    const after = afterRaw.map(r => ({
-        motorista: r[0],
-        data: fixDate(r[1]),
-        horario: r[2],
-        missao: r[3]
-    }));
-
-    renderTable(before, "tableBefore");
-    renderTable(after, "tableAfter");
-
-    generateRanking(before, "rankingBefore");
-    generateRanking(after, "rankingAfter");
-}
-
-loadApp();
-</script>
-
-</body>
-</html>
+          <tr><th>Motorista
