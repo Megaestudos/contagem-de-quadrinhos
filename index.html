@@ -3,26 +3,49 @@
 <head>
 <meta charset="UTF-8">
 <title>Escala Motoristas</title>
+
 <style>
     body {
         font-family: Arial, sans-serif;
-        background:#f5f5f5;
-        margin:0;
-        padding:20px;
+        background-color: #f2f2f2;
+        margin: 0;
+        padding: 20px;
     }
-    h2 { margin-top:40px; }
+
+    h2 {
+        background: #003366;
+        color: #fff;
+        padding: 12px;
+        border-radius: 6px;
+        margin-top: 40px;
+        font-size: 20px;
+    }
+
     table {
-        width:100%;
+        width: 100%;
         border-collapse: collapse;
-        background:white;
+        background: white;
+        margin-top: 10px;
+        border-radius: 6px;
+        overflow: hidden;
     }
-    th, td {
-        border:1px solid #ccc;
-        padding:10px;
-        text-align:left;
-    }
+
     th {
-        background:#e9e9e9;
+        background: #00509e;
+        color: #fff;
+        padding: 10px;
+        font-size: 15px;
+        text-align: left;
+    }
+
+    td {
+        padding: 10px;
+        border-bottom: 1px solid #ccc;
+        font-size: 14px;
+    }
+
+    tr:nth-child(even) td {
+        background: #f7f7f7;
     }
 </style>
 </head>
@@ -55,7 +78,9 @@
 </table>
 
 <script>
-// FUNÇÃO DEFINITIVA – AGORA FUNCIONA 100%
+// ----------------------
+// PARSER DE DATA FINAL
+// ----------------------
 function formatarDataBruta(valor) {
     if (!valor) return "";
 
@@ -63,54 +88,56 @@ function formatarDataBruta(valor) {
 
     let dia, mes, ano;
 
-    // 1) dd/mm/yyyy ou dd-mm-yyyy
+    // Formatos dd/mm/yyyy ou dd-mm-yyyy
     if (/^\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2,4}$/.test(valor)) {
-        let partes = valor.includes("/") ? valor.split("/") : valor.split("-");
-        dia = partes[0];
-        mes = partes[1];
-        ano = partes[2].length === 2 ? "20" + partes[2] : partes[2]; 
+        let p = valor.includes("/") ? valor.split("/") : valor.split("-");
+        dia = p[0];
+        mes = p[1];
+        ano = p[2].length === 2 ? "20" + p[2] : p[2];
         return `${dia.padStart(2,'0')}/${mes.padStart(2,'0')}/${ano}`;
     }
 
-    // 2) dd/mm ou dd-mm  (SEM ANO → FORÇAR 2025)
+    // Formatos dd/mm ou dd-mm -> FORÇAR 2025
     if (/^\d{1,2}[\/\-]\d{1,2}$/.test(valor)) {
-        let partes = valor.includes("/") ? valor.split("/") : valor.split("-");
-        dia = partes[0];
-        mes = partes[1];
+        let p = valor.includes("/") ? valor.split("/") : valor.split("-");
+        dia = p[0];
+        mes = p[1];
         return `${dia.padStart(2,'0')}/${mes.padStart(2,'0')}/2025`;
     }
 
-    // SE NÃO RECONHECER, NÃO CRIA ANO 2001 — SOMENTE RETORNA O TEXTO ORIGINAL
     return valor;
 }
 
-// CARREGAR DADOS DAS DUAS ABAS
-const url = "https://docs.google.com/spreadsheets/d/1eaFPPSEpMxsdUY9m3vT_fOhoYUKYBzATv55nRHQwyTY/gviz/tq?tqx=out:json";
+// -------------------------
+// BUSCA DA PLANILHA GOOGLE
+// -------------------------
+const url =
+ "https://docs.google.com/spreadsheets/d/1eaFPPSEpMxsdUY9m3vT_fOhoYUKYBzATv55nRHQwyTY/gviz/tq?tqx=out:json";
 
 fetch(url)
     .then(res => res.text())
-    .then(text => {
-        const json = JSON.parse(text.substring(47, text.length - 2));
+    .then(data => {
+        const json = JSON.parse(data.substring(47, data.length - 2));
         const linhas = json.table.rows;
 
-        let antesBody = document.querySelector("#antes tbody");
-        let depoisBody = document.querySelector("#depois tbody");
+        const antesBody = document.querySelector("#antes tbody");
+        const depoisBody = document.querySelector("#depois tbody");
 
-        linhas.forEach(linha => {
-            if (!linha.c) return;
+        linhas.forEach(l => {
+            if (!l.c) return;
 
-            let motorista  = linha.c[0]?.v || "";
-            let data       = linha.c[1]?.v || "";
-            let horario    = linha.c[2]?.v || "";
-            let missao     = linha.c[3]?.v || "";
-            let periodo    = linha.c[4]?.v || ""; // "ANTES" ou "DEPOIS"
+            let motorista = l.c[0]?.v || "";
+            let data = l.c[1]?.v || "";
+            let horario = l.c[2]?.v || "";
+            let missao = l.c[3]?.v || "";
+            let periodo = l.c[4]?.v || "";
 
-            let dataFormatada = formatarDataBruta(data);
+            let dataFinal = formatarDataBruta(data);
 
             let tr = document.createElement("tr");
             tr.innerHTML = `
                 <td>${motorista}</td>
-                <td>${dataFormatada}</td>
+                <td>${dataFinal}</td>
                 <td>${horario}</td>
                 <td>${missao}</td>
             `;
