@@ -5,27 +5,22 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Contagem de Motoristas</title>
 
-    <!-- Manifest dinâmico (criado via JS) -->
     <link id="manifestPlaceholder" rel="manifest" />
 
     <style>
         body {
             margin: 0;
             font-family: Arial, sans-serif;
-            background: linear-gradient(to bottom right, #87CEFA, #1E90FF);
-            color: #000;
+            background: linear-gradient(to bottom right, #8ED6FF, #4A90E2);
         }
 
         h1 {
             text-align: center;
             padding: 20px 0;
-            font-size: 26px;
+            font-size: 28px;
         }
 
-        .container {
-            width: 95%;
-            margin: auto;
-        }
+        .container { width: 95%; margin: auto; }
 
         .section-title {
             font-size: 22px;
@@ -37,30 +32,25 @@
             width: 100%;
             border-collapse: collapse;
             margin-top: 10px;
-            background: rgba(255, 255, 255, 0.9);
+            background: white;
             border-radius: 10px;
             overflow: hidden;
         }
 
-        th, td {
-            padding: 10px;
-            border-bottom: 1px solid #ccc;
-            text-align: left;
-            font-size: 15px;
-        }
-
-        th {
-            background: #4682B4;
-            color: white;
-        }
+        th, td { padding: 10px; border-bottom: 1px solid #ddd; }
+        th { background: #2C3E50; color: white; }
 
         .ranking-box {
             padding: 15px;
             margin-top: 15px;
             border-radius: 12px;
-            background: linear-gradient(to right, #6EC6FF, #2980FF);
-            color: #fff;
+            background: linear-gradient(to right, #005BEA, #00C6FB);
+            color: white;
             font-size: 18px;
+        }
+
+        .ranking-box.secondary {
+            background: linear-gradient(to right, #FF512F, #DD2476);
         }
     </style>
 </head>
@@ -72,69 +62,60 @@
     <div class="ranking-box" id="rankingAntes">Carregando ranking...</div>
     <table id="tabelaAntes">
         <thead>
-            <tr>
-                <th>Motorista</th>
-                <th>Data</th>
-                <th>Horário</th>
-                <th>Missão</th>
-            </tr>
+            <tr><th>Motorista</th><th>Data</th><th>Horário</th><th>Missão</th></tr>
         </thead>
         <tbody></tbody>
     </table>
 
     <div class="section-title">Depois do Expediente</div>
-    <div class="ranking-box" id="rankingDepois">Carregando ranking...</div>
+    <div class="ranking-box secondary" id="rankingDepois">Carregando ranking...</div>
     <table id="tabelaDepois">
         <thead>
-            <tr>
-                <th>Motorista</th>
-                <th>Data</th>
-                <th>Horário</th>
-                <th>Missão</th>
-            </tr>
+            <tr><th>Motorista</th><th>Data</th><th>Horário</th><th>Missão</th></tr>
         </thead>
         <tbody></tbody>
     </table>
 </div>
 
 <script>
-/*********************************************************
- CONFIGURAÇÕES
-*********************************************************/
 const SHEET_ID = "1eaFPPSEpMxsdUY9m3vT_fOhoYUKYBzATv55nRHQwyTY";
 const API_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=`;
 
-/*********************************************************
- FUNÇÃO PARA BUSCAR DADOS DE UMA ABA
-*********************************************************/
+function formatarData(valor) {
+    if (typeof valor === "string") return valor;
+    if (!valor) return "";
+    const d = new Date(valor);
+    return d.toLocaleDateString("pt-BR");
+}
+
+function formatarHora(valor) {
+    if (typeof valor === "string") return valor;
+    if (!valor) return "";
+    const d = new Date(valor);
+    return d.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
+}
+
 async function carregarAba(aba) {
     try {
-        const res = await fetch(API_URL + aba);
+        const res = await fetch(API_URL + encodeURIComponent(aba));
         const text = await res.text();
         const json = JSON.parse(text.substring(47, text.length - 2));
 
-        const dados = json.table.rows.map(r => r.c.map(c => (c ? c.v : "")));
-        return dados;
+        return json.table.rows.map(r => r.c.map(c => (c ? c.v : "")));
     } catch (e) {
         console.error("Erro ao carregar aba", aba, e);
         return [];
     }
 }
 
-/*********************************************************
- FUNÇÃO PARA ORDENAR POR DATA E HORÁRIO
-*********************************************************/
 function ordenar(dados) {
     return dados.sort((a, b) => {
-        const dataA = new Date(a[1] + " " + a[2]);
-        const dataB = new Date(b[1] + " " + b[2]);
-        return dataA - dataB;
+        const dA = new Date(a[1] + " " + a[2]);
+        const dB = new Date(b[1] + " " + b[2]);
+        return dA - dB;
     });
 }
 
-/*********************************************************
- PREENCHER TABELA
-*********************************************************/
 function preencherTabela(idTabela, dados) {
     const tbody = document.querySelector(`#${idTabela} tbody`);
     tbody.innerHTML = "";
@@ -143,27 +124,19 @@ function preencherTabela(idTabela, dados) {
         const tr = document.createElement("tr");
         tr.innerHTML = `
             <td>${linha[0]}</td>
-            <td>${linha[1]}</td>
-            <td>${linha[2]}</td>
-            <td>${linha[3]}</td>
-        `;
+            <td>${formatarData(linha[1])}</td>
+            <td>${formatarHora(linha[2])}</td>
+            <td>${linha[3]}</td>`;
         tbody.appendChild(tr);
     });
 }
 
-/*********************************************************
- GERAR RANKING (TOP 7 MOTORISTAS)
-*********************************************************/
 function gerarRanking(idDiv, dados) {
-    const contagem = {};
+    const cont = {};
 
-    dados.forEach(l => {
-        const m = l[0];
-        if (!contagem[m]) contagem[m] = 0;
-        contagem[m]++;
-    });
+    dados.forEach(l => { cont[l[0]] = (cont[l[0]] || 0) + 1 });
 
-    const ranking = Object.entries(contagem)
+    const ranking = Object.entries(cont)
         .sort((a, b) => b[1] - a[1])
         .slice(0, 7)
         .map(e => `${e[0]} — ${e[1]} registros`)
@@ -172,9 +145,6 @@ function gerarRanking(idDiv, dados) {
     document.getElementById(idDiv).innerHTML = ranking;
 }
 
-/*********************************************************
- CARREGAR TUDO
-*********************************************************/
 async function carregarTudo() {
     const antes = ordenar(await carregarAba("ANTES DO EXPEDIENTE"));
     const depois = ordenar(await carregarAba("DEPOIS DO EXPEDIENTE"));
@@ -188,35 +158,18 @@ async function carregarTudo() {
 
 carregarTudo();
 
-/*********************************************************
- MANIFEST + SERVICE WORKER DINÂMICOS (PWA)
-*********************************************************/
-// Criar MANIFEST dinamicamente
-const manifest = {
-    name: "Contagem de Motoristas",
-    short_name: "Motoristas",
-    start_url: ".",
-    display: "standalone",
-    background_color: "#87CEFA",
-    theme_color: "#1E90FF",
-    icons: []
-};
+// Manifest + service worker simples
+const manifest = { name: "Contagem Motoristas", short_name: "Motoristas", start_url: ".", display: "standalone", background_color: "#8ED6FF", theme_color: "#4A90E2" };
+const blob = new Blob([JSON.stringify(manifest)], { type: "application/json" });
+document.getElementById("manifestPlaceholder").href = URL.createObjectURL(blob);
 
-const blobManifest = new Blob([JSON.stringify(manifest)], { type: "application/json" });
-const manifestURL = URL.createObjectURL(blobManifest);
-document.getElementById("manifestPlaceholder").setAttribute("href", manifestURL);
+const sw = new Blob([
+`self.addEventListener('install',()=>self.skipWaiting());
+ self.addEventListener('activate',()=>clients.claim());
+ self.addEventListener('fetch',e=>e.respondWith(fetch(e.request)));`
+], { type: "text/javascript" });
 
-// Criar SERVICE WORKER dinâmico
-tif = `self.addEventListener('install', e => { self.skipWaiting(); });
-self.addEventListener('activate', e => { clients.claim(); });
-self.addEventListener('fetch', e => { e.respondWith(fetch(e.request)); });`;
-
-const swBlob = new Blob([tif], { type: "text/javascript" });
-const swURL = URL.createObjectURL(swBlob);
-
-if ("serviceWorker" in navigator) {
-    navigator.serviceWorker.register(swURL);
-}
+if ("serviceWorker" in navigator) navigator.serviceWorker.register(URL.createObjectURL(sw));
 </script>
 
 </body>
