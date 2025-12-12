@@ -1,155 +1,239 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8">
-<title>Escala Motoristas</title>
-
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Contagem de Motoristas — Painel</title>
+<link id="manifestPlaceholder" rel="manifest"/>
 <style>
-    body {
-        font-family: Arial, sans-serif;
-        background-color: #f2f2f2;
-        margin: 0;
-        padding: 20px;
-    }
+  :root{
+    --bg-1:#e8f7ff;
+    --bg-2:#d8efff;
+    --card-bg: rgba(255,255,255,0.72);
+    --glass-border: rgba(255,255,255,0.5);
+    --accent:#1e90ff;
+    --muted:#234b60;
+    --card-radius:16px;
+    --shadow: 0 10px 30px rgba(11,36,64,0.10);
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;
+    font-family: "Inter", "Segoe UI", Roboto, Arial, sans-serif;
+    background: linear-gradient(180deg,var(--bg-1),var(--bg-2));
+    -webkit-font-smoothing:antialiased;
+    color:var(--muted);
+  }
+  header{
+    padding:26px 16px;
+    text-align:center;
+  }
+  h1{
+    margin:0;
+    font-size:26px;
+    color:var(--accent);
+    letter-spacing:0.2px;
+  }
+  .container{
+    max-width:1100px;
+    margin:18px auto 60px;
+    padding:0 16px;
+  }
 
-    h2 {
-        background: #003366;
-        color: #fff;
-        padding: 12px;
-        border-radius: 6px;
-        margin-top: 40px;
-        font-size: 20px;
-    }
+  .panel{
+    background:var(--card-bg);
+    border-radius:var(--card-radius);
+    padding:18px;
+    margin:18px 0;
+    box-shadow:var(--shadow);
+    border:1px solid rgba(255,255,255,0.4);
+    backdrop-filter: blur(6px) saturate(120%);
+  }
+  .row{display:flex;gap:18px;align-items:stretch}
+  @media(max-width:880px){ .row{flex-direction:column} }
 
-    table {
-        width: 100%;
-        border-collapse: collapse;
-        background: white;
-        margin-top: 10px;
-        border-radius: 6px;
-        overflow: hidden;
-    }
+  .ranking-card{
+    flex:1;
+    border-radius:12px;
+    padding:14px;
+    color:#fff;
+    position:relative;
+    overflow:hidden;
+    min-height:86px;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+  }
+  .rank-antes{ background: linear-gradient(135deg,#50a8ff,#2b9ed8); box-shadow: 0 8px 30px rgba(43,158,216,0.26); }
+  .rank-depois{ background: linear-gradient(135deg,#00b894,#01936b); box-shadow: 0 8px 30px rgba(1,147,107,0.26); }
 
-    th {
-        background: #00509e;
-        color: #fff;
-        padding: 10px;
-        font-size: 15px;
-        text-align: left;
-    }
+  .rank-title{ font-weight:700; font-size:15px; opacity:0.95; margin-bottom:8px; }
+  .rank-list{ font-size:15px; line-height:1.5; }
+  .leader{
+    display:inline-block;
+    padding:6px 10px;
+    border-radius:999px;
+    background:rgba(255,255,255,0.14);
+    font-weight:700;
+    margin-right:10px;
+  }
 
-    td {
-        padding: 10px;
-        border-bottom: 1px solid #ccc;
-        font-size: 14px;
-    }
-
-    tr:nth-child(even) td {
-        background: #f7f7f7;
-    }
+  .table-wrap{ overflow:auto; border-radius:12px; margin-top:12px; }
+  table{
+    width:100%;
+    border-collapse:collapse;
+    background:rgba(255,255,255,0.95);
+    min-width:720px;
+  }
+  thead th{
+    text-align:left;
+    padding:12px;
+    background: linear-gradient(90deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02));
+    border-bottom:2px solid rgba(14,74,110,0.06);
+    color: #0d3b52;
+    font-size:13px;
+    position:sticky;
+    top:0;
+    z-index:2;
+  }
+  tbody td{
+    padding:12px;
+    border-bottom:1px solid rgba(14,74,110,0.04);
+    font-size:14px;
+    color: #0b3d51;
+  }
+  tbody tr:nth-child(odd){ background: linear-gradient(180deg, rgba(255,255,255,0.0), rgba(255,255,255,0.01)); }
+  tbody tr:hover{ background: linear-gradient(90deg, rgba(255,255,255,0.15), rgba(255,255,255,0.05)); }
 </style>
 </head>
 <body>
+<header><h1>Contagem de Motoristas</h1></header>
 
-<h2>ANTES DO EXPEDIENTE</h2>
-<table id="antes">
-    <thead>
-        <tr>
-            <th>Motorista</th>
-            <th>Data</th>
-            <th>Horário</th>
-            <th>Missão</th>
-        </tr>
-    </thead>
-    <tbody></tbody>
-</table>
+<main class="container">
+  <div id="status" class="panel muted">Carregando dados da planilha...</div>
 
-<h2>DEPOIS DO EXPEDIENTE</h2>
-<table id="depois">
-    <thead>
-        <tr>
-            <th>Motorista</th>
-            <th>Data</th>
-            <th>Horário</th>
-            <th>Missão</th>
-        </tr>
-    </thead>
-    <tbody></tbody>
-</table>
+  <section class="panel">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">
+      <div>
+        <div class="small" style="font-weight:700;color:var(--muted)">Top 7 — Chegadas Cedo</div>
+        <div class="muted">Aba: <strong>ANTES DO EXPEDIENTE</strong></div>
+      </div>
+    </div>
+
+    <div class="row" style="margin-top:12px;">
+      <div id="cardAntes" class="ranking-card rank-antes">
+        <div class="rank-title">Chegadas cedo — Top 7</div>
+        <div id="rankListAntes" class="rank-list">Carregando...</div>
+      </div>
+
+      <div id="cardDepois" class="ranking-card rank-depois">
+        <div class="rank-title">Saídas tarde — Top 7</div>
+        <div id="rankListDepois" class="rank-list">Carregando...</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel">
+    <div class="section-head">
+      <div>
+        <div class="section-title">Registros — Antes do expediente</div>
+      </div>
+    </div>
+
+    <div class="table-wrap">
+      <table id="tableAntes">
+        <thead>
+          <tr><th>Motorista</th><th>Data</th><th>Horário</th><th>Missão</th></tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="panel">
+    <div class="section-head">
+      <div>
+        <div class="section-title">Registros — Depois do expediente</div>
+      </div>
+    </div>
+
+    <div class="table-wrap">
+      <table id="tableDepois">
+        <thead>
+          <tr><th>Motorista</th><th>Data</th><th>Horário</th><th>Missão</th></tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </section>
+</main>
 
 <script>
-// ----------------------
-// PARSER DE DATA FINAL
-// ----------------------
-function formatarDataBruta(valor) {
-    if (!valor) return "";
+const SHEET_ID = "1eaFPPSEpMxsdUY9m3vT_fOhoYUKYBzATv55nRHQwyTY";
+const ABA_ANTES = "ANTES DO EXPEDIENTE";
+const ABA_DEPOIS = "DEPOIS DO EXPEDIENTE";
+const BASE_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=`;
 
-    valor = valor.toString().trim();
-
-    let dia, mes, ano;
-
-    // Formatos dd/mm/yyyy ou dd-mm-yyyy
-    if (/^\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2,4}$/.test(valor)) {
-        let p = valor.includes("/") ? valor.split("/") : valor.split("-");
-        dia = p[0];
-        mes = p[1];
-        ano = p[2].length === 2 ? "20" + p[2] : p[2];
-        return `${dia.padStart(2,'0')}/${mes.padStart(2,'0')}/${ano}`;
-    }
-
-    // Formatos dd/mm ou dd-mm -> FORÇAR 2025
-    if (/^\d{1,2}[\/\-]\d{1,2}$/.test(valor)) {
-        let p = valor.includes("/") ? valor.split("/") : valor.split("-");
-        dia = p[0];
-        mes = p[1];
-        return `${dia.padStart(2,'0')}/${mes.padStart(2,'0')}/2025`;
-    }
-
-    return valor;
+/* ======= NOVO: Data como TEXTO puro ======= */
+async function fetchSheet(aba){
+  const res = await fetch(BASE_URL + encodeURIComponent(aba), {cache:'no-store'});
+  const txt = await res.text();
+  const start = txt.indexOf('{');
+  const end = txt.lastIndexOf('}');
+  const json = JSON.parse(txt.slice(start,end+1));
+  const rows = json.table.rows || [];
+  return rows.map(r => (r.c||[]).map(c => c ? (c.f ?? c.v ?? "") : ""));
 }
 
-// -------------------------
-// BUSCA DA PLANILHA GOOGLE
-// -------------------------
-const url =
- "https://docs.google.com/spreadsheets/d/1eaFPPSEpMxsdUY9m3vT_fOhoYUKYBzATv55nRHQwyTY/gviz/tq?tqx=out:json";
+function normalize(rows){
+  return rows.map(r => ({
+    motorista: r[0] || "",
+    displayDate: r[1] || "",   // <-- TEXTO PURO
+    displayTime: r[2] || "",   // <-- TEXTO PURO
+    missao: r[3] || ""
+  }));
+}
 
-fetch(url)
-    .then(res => res.text())
-    .then(data => {
-        const json = JSON.parse(data.substring(47, data.length - 2));
-        const linhas = json.table.rows;
+function renderTable(id, items){
+  const tbody = document.querySelector(`#${id} tbody`);
+  tbody.innerHTML = "";
+  items.forEach(it => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${it.motorista}</td>
+      <td>${it.displayDate}</td>
+      <td>${it.displayTime}</td>
+      <td>${it.missao}</td>`;
+    tbody.appendChild(tr);
+  });
+}
 
-        const antesBody = document.querySelector("#antes tbody");
-        const depoisBody = document.querySelector("#depois tbody");
+function renderRanking(id, items){
+  const counts = {};
+  items.forEach(i => counts[i.motorista] = (counts[i.motorista] || 0) + 1);
+  const rank = Object.entries(counts).sort((a,b)=>b[1]-a[1]).slice(0,7);
+  document.getElementById(id).innerHTML =
+    rank.map((r,i)=>`${i+1}. <strong>${r[0]}</strong> — ${r[1]} registro(s)` ).join("<br>");
+}
 
-        linhas.forEach(l => {
-            if (!l.c) return;
+async function loadAll(){
+  try{
+    document.getElementById("status").textContent = "Carregando...";
+    const [a, b] = await Promise.all([fetchSheet(ABA_ANTES), fetchSheet(ABA_DEPOIS)]);
+    const na = normalize(a);
+    const nd = normalize(b);
+    renderTable("tableAntes", na);
+    renderTable("tableDepois", nd);
+    renderRanking("rankListAntes", na);
+    renderRanking("rankListDepois", nd);
+    document.getElementById("status").textContent = "Dados carregados.";
+  } catch(e){
+    console.error(e);
+    document.getElementById("status").textContent = "Erro ao carregar: " + e.message;
+  }
+}
 
-            let motorista = l.c[0]?.v || "";
-            let data = l.c[1]?.v || "";
-            let horario = l.c[2]?.v || "";
-            let missao = l.c[3]?.v || "";
-            let periodo = l.c[4]?.v || "";
-
-            let dataFinal = formatarDataBruta(data);
-
-            let tr = document.createElement("tr");
-            tr.innerHTML = `
-                <td>${motorista}</td>
-                <td>${dataFinal}</td>
-                <td>${horario}</td>
-                <td>${missao}</td>
-            `;
-
-            if (periodo.toUpperCase().includes("ANTES")) {
-                antesBody.appendChild(tr);
-            } else if (periodo.toUpperCase().includes("DEPOIS")) {
-                depoisBody.appendChild(tr);
-            }
-        });
-    });
+loadAll();
 </script>
-
 </body>
 </html>
