@@ -184,11 +184,11 @@
 const SHEET_ID = "1eaFPPSEpMxsdUY9m3vT_fOhoYUKYBzATv55nRHQwyTY";
 const ABA_ANTES = "ANTES DO EXPEDIENTE";
 const ABA_DEPOIS = "DEPOIS DO EXPEDIENTE";
-const BASE_URL = https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=;
+const BASE_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=`;
 
 /* =================== PARSE DE DATAS (CORRIGIDO) =================== */
 function parseGoogleCell(value){
-  if (value === null || value === undefined) return {date:null, text:""};
+  if (value === null || value === undefined) return {date:null, text:""}; 
 
   const s = String(value).trim();
 
@@ -222,14 +222,14 @@ function formatDate(d){
   const dd = String(d.getDate()).padStart(2,"0");
   const mm = String(d.getMonth()+1).padStart(2,"0");
   const yy = d.getFullYear();
-  return ${dd}/${mm}/${yy};
+  return `${dd}/${mm}/${yy}`;
 }
 
 function formatTime(d){
   if (!d) return "";
   const hh = String(d.getHours()).padStart(2,"0");
   const mm = String(d.getMinutes()).padStart(2,"0");
-  return ${hh}:${mm};
+  return `${hh}:${mm}`;
 }
 
 /* =================== FETCH SHEET =================== */
@@ -298,15 +298,15 @@ function escapeHtml(s){
 }
 
 function renderTable(id, items){
-  const tbody = document.querySelector(#${id} tbody);
+  const tbody = document.querySelector(`#${id} tbody`);
   tbody.innerHTML = "";
   items.forEach(it => {
     const tr = document.createElement("tr");
-    tr.innerHTML = 
+    tr.innerHTML = `
       <td>${escapeHtml(it.motorista)}</td>
       <td>${escapeHtml(it.displayDate)}</td>
       <td>${escapeHtml(it.displayTime)}</td>
-      <td>${escapeHtml(it.missao)}</td>;
+      <td>${escapeHtml(it.missao)}</td>`;
     tbody.appendChild(tr);
   });
 }
@@ -331,7 +331,7 @@ function renderRanking(id, items){
     } else {
       div.style.marginBottom = "6px";
     }
-    div.innerHTML = ${i + 1}. <strong>${escapeHtml(name)}</strong> — ${qty} registro(s);
+    div.innerHTML = `${i + 1}. <strong>${escapeHtml(name)}</strong> — ${qty} registro(s)`;
     el.appendChild(div);
   });
 }
