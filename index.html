@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<title>Ranking Motoristas - Chegadas e Saídas</title>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        background: linear-gradient(to bottom, #b7e3ff, #e6f7ff);
+        color: #003d66;
+    }
+
+    h1, h2 {
+        text-align: center;
+    }
+
+    .container {
+        width: 95%;
+        max-width: 1200px;
+        margin: 20px auto;
+        padding: 20px;
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 0 12px rgba(0,0,0,0.12);
+    }
+
+    .ranking-box {
+        padding: 20px;
+        margin: 20px 0;
+        background: linear-gradient(135deg, #7cc9ff, #4aa8ff);
+        color: white;
+        border-radius: 12px;
+        box-shadow: 0 0 10px rgba(0,0,0,0.25);
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 15px;
+    }
+
+    th, td {
+        padding: 10px;
+        border: 1px solid #cce6ff;
+        text-align: left;
+    }
+
+    th {
+        background: #e0f2ff;
+        font-weight: bold;
+    }
+</style>
+</head>
+<body>
+
+<h1>Relatório de Chegadas Cedo e Saídas Tarde</h1>
+
+<div class="container">
+
+    <h2>Top 7 — Chegadas Cedo (antes do expediente)</h2>
+    <div id="rankingChegadas" class="ranking-box"></div>
+
+    <h2>Top 7 — Saídas Tarde (depois do expediente)</h2>
+    <div id="rankingSaidas" class="ranking-box"></div>
+
+    <h2>Registros — Antes do expediente</h2>
+    <div id="tabelaAntes"></div>
+
+    <h2>Registros — Depois do expediente</h2>
+    <div id="tabelaDepois"></div>
+
+</div>
+
+<script>
+const SHEET_ID = "1eaFPPSEpMxsdUY9m3vT_fOhoYUKYBzATv55nRHQwyTY";
+const ABA_ANTES = "antes do expediente";
+const ABA_DEPOIS = "depois do expediente";
+
+async function carregarCSV(nomeAba) {
+    const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(nomeAba)}`;
+    const resposta = await fetch(url);
+    const texto = await resposta.text();
+    return parseCSV(texto);
+}
+
+function parseCSV(csv) {
+    const linhas = csv.split("\n").map(l => l.trim()).filter(l => l.length > 0);
+    const cabecalho = linhas[0].split(",");
+    const dados = linhas.slice(1).map(l => {
+        const valores = l.split(",");
+        let obj = {};
+        cabecalho.forEach((col, i) => obj[col.trim().toLowerCase()] = valores[i] ? valores[i].trim() : "");
+        return obj;
+    });
+    return dados;
+}
+
+function gerarTabela(dados) {
+    if (dados.length === 0) return "<p>Nenhum registro encontrado.</p>";
+
+    let colunas = Object.keys(dados[0]);
+
+    let html = "<table><tr>";
+    colunas.forEach(c => html += `<th>${c.toUpperCase()}</th>`);
+    html += "</tr>";
+
+    dados.forEach(l => {
+        html += "<tr>";
+        colunas.forEach(c => html += `<td>${l[c]}</td>`);
+        html += "</tr>";
+    });
+
+    html += "</table>";
+    return html;
+}
+
+function gerarRanking(dados) {
+    let contagem = {};
+
+    dados.forEach(l => {
+        let motorista = l.motorista || "Sem nome";
+        contagem[motorista] = (contagem[motorista] || 0) + 1;
+    });
+
+    let lista = Object.entries(contagem)
+        .sort((a,b) => b[1] - a[1])
+        .slice(0,7);
+
+    let html = "<ol>";
+    lista.forEach(([motorista, total]) => {
+        html += `<li><strong>${motorista}</strong>: ${total} ocorrências</li>`;
+    });
+    html += "</ol>";
+
+    return html;
+}
+
+// CARREGAMENTO AUTOMÁTICO
+async function iniciar() {
+    const dadosAntes = await carregarCSV(ABA_ANTES);
+    const dadosDepois = await carregarCSV(ABA_DEPOIS);
+
+    document.getElementById("rankingChegadas").innerHTML = gerarRanking(dadosAntes);
+    document.getElementById("rankingSaidas").innerHTML = gerarRanking(dadosDepois);
+
+    document.getElementById("tabelaAntes").innerHTML = gerarTabela(dadosAntes);
+    document.getElementById("tabelaDepois").innerHTML = gerarTabela(dadosDepois);
+}
+
+iniciar();
+</script>
+
+</body>
+</html>
