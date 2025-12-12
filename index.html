@@ -1,176 +1,347 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Contagem de Motoristas</title>
-
-    <link id="manifestPlaceholder" rel="manifest" />
-
-    <style>
-        body {
-            margin: 0;
-            font-family: Arial, sans-serif;
-            background: linear-gradient(to bottom right, #8ED6FF, #4A90E2);
-        }
-
-        h1 {
-            text-align: center;
-            padding: 20px 0;
-            font-size: 28px;
-        }
-
-        .container { width: 95%; margin: auto; }
-
-        .section-title {
-            font-size: 22px;
-            margin-top: 25px;
-            font-weight: bold;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 10px;
-            background: white;
-            border-radius: 10px;
-            overflow: hidden;
-        }
-
-        th, td { padding: 10px; border-bottom: 1px solid #ddd; }
-        th { background: #2C3E50; color: white; }
-
-        .ranking-box {
-            padding: 15px;
-            margin-top: 15px;
-            border-radius: 12px;
-            background: linear-gradient(to right, #005BEA, #00C6FB);
-            color: white;
-            font-size: 18px;
-        }
-
-        .ranking-box.secondary {
-            background: linear-gradient(to right, #FF512F, #DD2476);
-        }
-    </style>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Contagem de Motoristas — Chegadas / Saídas</title>
+<link id="manifestPlaceholder" rel="manifest" />
+<style>
+  :root{
+    --bg1:#dff4ff;
+    --bg2:#bfe7ff;
+    --card:#ffffff;
+    --text:#05314a;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;
+    font-family: Inter, Roboto, Arial, sans-serif;
+    background: linear-gradient(180deg,var(--bg1),var(--bg2));
+    color:var(--text);
+  }
+  header{padding:18px;text-align:center}
+  h1{margin:0;font-size:22px;color:#0b67a3}
+  .container{max-width:1100px;margin:18px auto;padding:12px}
+  .card{background:var(--card);border-radius:12px;padding:14px;margin:14px 0;box-shadow:0 8px 26px rgba(11,36,64,0.06)}
+  .section-title{font-weight:700;margin-bottom:10px;color:#0b4670}
+  .ranking{
+    padding:14px;border-radius:10px;color:white;font-weight:600;line-height:1.5;
+    box-shadow:0 8px 18px rgba(11,36,64,0.09);
+    margin-bottom:10px;
+  }
+  .ranking.antes{background:linear-gradient(90deg,#2b9ed8,#66b7ff)}
+  .ranking.depois{background:linear-gradient(90deg,#2fbf7f,#1aa85f)}
+  table{width:100%;border-collapse:collapse;margin-top:8px;font-size:14px}
+  th,td{padding:10px 12px;border-bottom:1px solid #eef7fc;text-align:left}
+  th{background:#f1fbff;color:#123d59;font-weight:700}
+  .muted{color:#577a8b;font-size:13px}
+  @media(max-width:720px){ th,td{padding:8px;font-size:13px} h1{font-size:18px} }
+</style>
 </head>
 <body>
+<header><h1>Contagem de Motoristas — Chegadas Cedo & Saídas Tarde</h1></header>
 
-<h1>Contagem de Motoristas</h1>
 <div class="container">
-    <div class="section-title">Antes do Expediente</div>
-    <div class="ranking-box" id="rankingAntes">Carregando ranking...</div>
-    <table id="tabelaAntes">
-        <thead>
-            <tr><th>Motorista</th><th>Data</th><th>Horário</th><th>Missão</th></tr>
-        </thead>
-        <tbody></tbody>
-    </table>
+  <div id="status" class="card muted">Carregando dados da planilha...</div>
 
-    <div class="section-title">Depois do Expediente</div>
-    <div class="ranking-box secondary" id="rankingDepois">Carregando ranking...</div>
-    <table id="tabelaDepois">
-        <thead>
-            <tr><th>Motorista</th><th>Data</th><th>Horário</th><th>Missão</th></tr>
-        </thead>
-        <tbody></tbody>
-    </table>
+  <div class="card">
+    <div class="section-title">Top 7 — Chegadas Cedo (ANTES DO EXPEDIENTE)</div>
+    <div id="rankingAntes" class="ranking antes">Carregando...</div>
+  </div>
+
+  <div class="card">
+    <div class="section-title">Top 7 — Saídas Tarde (DEPOIS DO EXPEDIENTE)</div>
+    <div id="rankingDepois" class="ranking depois">Carregando...</div>
+  </div>
+
+  <div class="card">
+    <div class="section-title">Registros — Antes do expediente</div>
+    <table id="tabelaAntes"><thead><tr><th>Motorista</th><th>Data</th><th>Horário</th><th>Missão</th></tr></thead><tbody></tbody></table>
+  </div>
+
+  <div class="card">
+    <div class="section-title">Registros — Depois do expediente</div>
+    <table id="tabelaDepois"><thead><tr><th>Motorista</th><th>Data</th><th>Horário</th><th>Missão</th></tr></thead><tbody></tbody></table>
+  </div>
 </div>
 
 <script>
+/* ---------- CONFIGURAÇÃO ---------- */
 const SHEET_ID = "1eaFPPSEpMxsdUY9m3vT_fOhoYUKYBzATv55nRHQwyTY";
-const API_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=`;
+const ABA_ANTES = "ANTES DO EXPEDIENTE";
+const ABA_DEPOIS = "DEPOIS DO EXPEDIENTE";
+const BASE_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=`;
 
-function formatarData(valor) {
-    if (typeof valor === "string") return valor;
-    if (!valor) return "";
-    const d = new Date(valor);
-    return d.toLocaleDateString("pt-BR");
-}
+/* ---------- UTILIDADES ---------- */
 
-function formatarHora(valor) {
-    if (typeof valor === "string") return valor;
-    if (!valor) return "";
-    const d = new Date(valor);
-    return d.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
-}
+/**
+ * Tenta interpretar um valor vindo do Google Visualization JSON.
+ * Pode vir como:
+ *  - string normal ("CB SOARES")
+ *  - "Date(2025,10,12)" (data)
+ *  - "Date(1899,11,30,7,20,0)" (hora)
+ * Retorna objeto { text, date } onde date é Date ou null.
+ */
+function interpretCell(value){
+  if (value === null || value === undefined) return { text: "", date: null };
+  if (typeof value !== "string") return { text: String(value), date: null };
 
-async function carregarAba(aba) {
-    try {
-        const res = await fetch(API_URL + encodeURIComponent(aba));
-        const text = await res.text();
-        const json = JSON.parse(text.substring(47, text.length - 2));
-
-        return json.table.rows.map(r => r.c.map(c => (c ? c.v : "")));
-    } catch (e) {
-        console.error("Erro ao carregar aba", aba, e);
-        return [];
+  const dateMatch = value.match(/^Date\\(([-\\d,\\s]+)\\)$/i);
+  if (dateMatch){
+    const parts = dateMatch[1].split(',').map(s=>parseInt(s.trim(),10));
+    // Google uses months zero-based in this Date() representation.
+    // If parts length >=3 => year, month, day [, hour, min, sec]
+    let dt;
+    if (parts.length >= 3){
+      const year = parts[0], month = parts[1], day = parts[2];
+      const hour = parts[3]||0, minute = parts[4]||0, second = parts[5]||0;
+      dt = new Date(year, month, day, hour, minute, second);
+      // If the Date looks like year 1899 (time-only representation), handle as time-of-day
+      if (year === 1899 || year === 1890 || year < 1900){
+        // create a today date but with time from dt
+        const now = new Date();
+        dt = new Date(now.getFullYear(), now.getMonth(), now.getDate(), hour, minute, second);
+      }
+      return { text: null, date: dt };
     }
+  }
+
+  // fallback: if seems ISO or dd/mm or similar, try Date parse
+  // try parse ISO
+  const iso = Date.parse(value);
+  if (!isNaN(iso)){
+    return { text: null, date: new Date(iso) };
+  }
+
+  // otherwise plain text
+  return { text: value, date: null };
 }
 
-function ordenar(dados) {
-    return dados.sort((a, b) => {
-        const dA = new Date(a[1] + " " + a[2]);
-        const dB = new Date(b[1] + " " + b[2]);
-        return dA - dB;
+function formatDateForDisplay(date){
+  if (!date) return "";
+  try{
+    return date.toLocaleDateString('pt-BR');
+  }catch(e){ return date.toISOString().slice(0,10); }
+}
+function formatTimeForDisplay(date){
+  if (!date) return "";
+  try{
+    return date.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+  }catch(e){ return date.toTimeString().slice(0,5); }
+}
+
+/* ---------- GOOGLE SHEETS FETCH ---------- */
+
+async function fetchSheet(aba){
+  const url = BASE_URL + encodeURIComponent(aba);
+  const res = await fetch(url, {cache: 'no-store'});
+  if (!res.ok) throw new Error(`HTTP ${res.status} ${res.statusText}`);
+  const text = await res.text();
+  // google returns: /**/google.visualization.Query.setResponse({...});
+  // safe parse: cut wrapper
+  const jsonText = text.replace(/^[^\\{]*/, '').replace(/;?\\s*$/, '');
+  const obj = JSON.parse(jsonText);
+  // obj.table.rows => array of rows; each row.c is array of cells; each cell may have v (value) or f (formatted) or null
+  const rows = (obj.table.rows || []).map(r => {
+    const cells = (r.c || []).map(c => {
+      // prefer c.f (formatted) if it's a Date(...) string ; c.v can already be Date() string or primitive
+      if (!c) return null;
+      if (typeof c.v === 'string') return c.v;
+      if (c.f) return c.f;
+      return c.v;
     });
+    return cells;
+  });
+  return rows;
 }
 
-function preencherTabela(idTabela, dados) {
-    const tbody = document.querySelector(`#${idTabela} tbody`);
-    tbody.innerHTML = "";
+/* ---------- NORMALIZAÇÃO E ORDENAÇÃO ---------- */
 
-    dados.forEach(linha => {
-        const tr = document.createElement("tr");
-        tr.innerHTML = `
-            <td>${linha[0]}</td>
-            <td>${formatarData(linha[1])}</td>
-            <td>${formatarHora(linha[2])}</td>
-            <td>${linha[3]}</td>`;
-        tbody.appendChild(tr);
+/**
+ * Normalize rows to objects:
+ * Expect columns in order: motorista | data | horário | missão
+ * Keep only first 4 columns, ignore extras.
+ */
+function normalizeRows(rows){
+  return rows.map(r => {
+    const motoristaRaw = r[0] || "";
+    const dataRaw = r[1] || "";
+    const horaRaw = r[2] || "";
+    const missaoRaw = r[3] || "";
+    const motorista = typeof motoristaRaw === 'string' ? motoristaRaw.trim() : String(motoristaRaw);
+    const dataCell = interpretCell(typeof dataRaw === 'string' ? dataRaw.trim() : dataRaw);
+    const horaCell = interpretCell(typeof horaRaw === 'string' ? horaRaw.trim() : horaRaw);
+
+    // Determine final dateTime:
+    // if dataCell.date exists, use it; if horaCell.date exists, combine date + time
+    let finalDate = null;
+    if (dataCell.date && horaCell.date){
+      // combine date from dataCell with time from horaCell
+      const d = dataCell.date;
+      const t = horaCell.date;
+      finalDate = new Date(d.getFullYear(), d.getMonth(), d.getDate(), t.getHours(), t.getMinutes(), t.getSeconds());
+    } else if (dataCell.date && !horaCell.date){
+      finalDate = dataCell.date;
+    } else if (!dataCell.date && horaCell.date){
+      // if only time provided, use today's date with that time (useable for ordering)
+      const t = horaCell.date;
+      const now = new Date();
+      finalDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), t.getHours(), t.getMinutes(), t.getSeconds());
+    } else {
+      // try to parse concatenated string "data horario" if possible
+      const attempt = Date.parse((dataRaw + ' ' + horaRaw).trim());
+      if (!isNaN(attempt)) finalDate = new Date(attempt);
+    }
+
+    // texts to display:
+    const displayDate = dataCell.date ? formatDateForDisplay(dataCell.date) : (typeof dataRaw === 'string' ? dataRaw : '');
+    const displayTime = horaCell.date ? formatTimeForDisplay(horaCell.date) : (typeof horaRaw === 'string' ? horaRaw : '');
+
+    return {
+      motorista,
+      dataRaw: displayDate,
+      horaRaw: displayTime,
+      missao: (typeof missaoRaw === 'string' ? missaoRaw : (missaoRaw||'')).toString(),
+      dateObj: finalDate
+    };
+  });
+}
+
+/* order by dateObj (ascending) — if dateObj null, keep at end */
+function orderNormalized(arr){
+  return arr.slice().sort((a,b)=>{
+    if (!a.dateObj && !b.dateObj) return 0;
+    if (!a.dateObj) return 1;
+    if (!b.dateObj) return -1;
+    return a.dateObj - b.dateObj;
+  });
+}
+
+/* ---------- RENDER ---------- */
+
+function fillTable(tableId, items){
+  const tbody = document.querySelector(`#${tableId} tbody`);
+  tbody.innerHTML = '';
+  items.forEach(it => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${escapeHtml(it.motorista)}</td>
+                    <td>${escapeHtml(it.dataRaw)}</td>
+                    <td>${escapeHtml(it.horaRaw)}</td>
+                    <td>${escapeHtml(it.missao)}</td>`;
+    tbody.appendChild(tr);
+  });
+}
+
+function renderRanking(containerId, items){
+  // count by motorista
+  const counts = {};
+  items.forEach(it => {
+    const k = it.motorista || 'Sem nome';
+    counts[k] = (counts[k]||0) + 1;
+  });
+  const ranked = Object.entries(counts).sort((a,b)=>b[1]-a[1]).slice(0,7);
+  const cont = ranked.length ? ranked.map((r,i)=>`${i+1}. ${escapeHtml(r[0])} — ${r[1]} registros`).join('<br>') : '<span class="muted">Sem registros</span>';
+  document.getElementById(containerId).innerHTML = cont;
+}
+
+function escapeHtml(s){
+  if (s === null || s === undefined) return '';
+  return String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+}
+
+/* ---------- MAIN FLOW ---------- */
+
+async function run(){
+  try {
+    document.getElementById('status').textContent = 'Carregando dados da planilha...';
+
+    const [rawAntes, rawDepois] = await Promise.all([
+      fetchSheet(ABA_ANTES),
+      fetchSheet(ABA_DEPOIS)
+    ]);
+
+    const normAntes = normalizeRows(rawAntes);
+    const normDepois = normalizeRows(rawDepois);
+
+    const orderedAntes = orderNormalized(normAntes);
+    const orderedDepois = orderNormalized(normDepois);
+
+    // fill tables (show most recent first -> reverse)
+    fillTable('tabelaAntes', orderedAntes.slice().reverse());
+    fillTable('tabelaDepois', orderedDepois.slice().reverse());
+
+    // ranking (use original order)
+    renderRanking('rankingAntes', normAntes);
+    renderRanking('rankingDepois', normDepois);
+
+    document.getElementById('status').textContent = 'Dados carregados com sucesso.';
+  } catch (err) {
+    console.error(err);
+    document.getElementById('status').textContent = 'Erro ao carregar dados: ' + (err.message || err);
+  }
+}
+
+/* ---------- fetch wrapper with parse for Google GViz JSON ---------- */
+async function fetchSheet(aba){
+  const url = BASE_URL + encodeURIComponent(aba);
+  const res = await fetch(url, {cache:'no-store'});
+  if (!res.ok) throw new Error(`Falha HTTP: ${res.status}`);
+  const txt = await res.text();
+  // remove prefix until first '{' and trailing ');' if present
+  const start = txt.indexOf('{');
+  const end = txt.lastIndexOf('}');
+  if (start === -1 || end === -1) throw new Error('Resposta inesperada do Google Sheets');
+  const jsonStr = txt.slice(start, end+1);
+  const obj = JSON.parse(jsonStr);
+  const rows = (obj.table && obj.table.rows) ? obj.table.rows : [];
+  // convert each row to array of cell values (prefer .f formatted if available)
+  return rows.map(r => {
+    const cells = (r.c || []).map(c => {
+      if (!c) return null;
+      // choose formatted string if exists and is a Date(...) or formatted
+      if (c.f && typeof c.f === 'string' && c.f.trim().length>0) return c.f;
+      // otherwise, c.v may be a primitive or already string "Date(...)"
+      return (c.v !== undefined && c.v !== null) ? String(c.v) : null;
     });
+    return cells;
+  });
 }
 
-function gerarRanking(idDiv, dados) {
-    const cont = {};
+/* start */
+run();
 
-    dados.forEach(l => { cont[l[0]] = (cont[l[0]] || 0) + 1 });
+/* ---------- PWA: manifest + simple service worker (single file) ---------- */
+(function setupPWA(){
+  try{
+    const manifest = {
+      name: "Contagem de Motoristas",
+      short_name: "Motoristas",
+      start_url: ".",
+      display: "standalone",
+      background_color: "#dff4ff",
+      theme_color: "#1e90ff",
+      icons: []
+    };
+    const mBlob = new Blob([JSON.stringify(manifest)], {type:'application/json'});
+    document.getElementById('manifestPlaceholder').href = URL.createObjectURL(mBlob);
 
-    const ranking = Object.entries(cont)
-        .sort((a, b) => b[1] - a[1])
-        .slice(0, 7)
-        .map(e => `${e[0]} — ${e[1]} registros`)
-        .join("<br>");
-
-    document.getElementById(idDiv).innerHTML = ranking;
-}
-
-async function carregarTudo() {
-    const antes = ordenar(await carregarAba("ANTES DO EXPEDIENTE"));
-    const depois = ordenar(await carregarAba("DEPOIS DO EXPEDIENTE"));
-
-    preencherTabela("tabelaAntes", antes);
-    preencherTabela("tabelaDepois", depois);
-
-    gerarRanking("rankingAntes", antes);
-    gerarRanking("rankingDepois", depois);
-}
-
-carregarTudo();
-
-// Manifest + service worker simples
-const manifest = { name: "Contagem Motoristas", short_name: "Motoristas", start_url: ".", display: "standalone", background_color: "#8ED6FF", theme_color: "#4A90E2" };
-const blob = new Blob([JSON.stringify(manifest)], { type: "application/json" });
-document.getElementById("manifestPlaceholder").href = URL.createObjectURL(blob);
-
-const sw = new Blob([
-`self.addEventListener('install',()=>self.skipWaiting());
- self.addEventListener('activate',()=>clients.claim());
- self.addEventListener('fetch',e=>e.respondWith(fetch(e.request)));`
-], { type: "text/javascript" });
-
-if ("serviceWorker" in navigator) navigator.serviceWorker.register(URL.createObjectURL(sw));
+    const swCode = `
+      self.addEventListener('install', e => { self.skipWaiting(); });
+      self.addEventListener('activate', e => { clients.claim(); });
+      self.addEventListener('fetch', e => {
+        // default: go to network (no caching) - simplifies development
+        e.respondWith(fetch(e.request));
+      });
+    `;
+    const swBlob = new Blob([swCode], {type:'text/javascript'});
+    const swUrl = URL.createObjectURL(swBlob);
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register(swUrl).catch(()=>{/* ignore */});
+    }
+  }catch(e){
+    console.warn('PWA init failed', e);
+  }
+})();
 </script>
-
 </body>
 </html>
