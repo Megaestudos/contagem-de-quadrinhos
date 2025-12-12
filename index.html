@@ -2,264 +2,254 @@
 <html lang="pt-BR">
 <head>
 <meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
-<title>Painel — Motoristas (Super App Mobile)</title>
-<link id="manifestPlaceholder" rel="manifest">
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Dashboard — Motoristas (Material)</title>
+
 <style>
+  /* ---------- Material-like system tokens ---------- */
   :root{
-    --bg1: #0f172a;               /* dark base behind gradient */
-    --glass: rgba(255,255,255,0.06);
-    --card-bg: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02));
-    --accent-a: #7c3aed;          /* vibrant purple */
-    --accent-b: #06b6d4;          /* cyan */
-    --accent-c: #ff6b6b;          /* warm red */
-    --text: #e6eef6;
-    --muted: rgba(230,238,246,0.75);
-    --radius-lg: 26px;
-    --shadow-soft: 0 10px 30px rgba(2,6,23,0.6);
-    font-family: Inter, Roboto, "Segoe UI", system-ui, -apple-system, sans-serif;
-    -webkit-font-smoothing:antialiased;
-    -moz-osx-font-smoothing:grayscale;
+    --bg:#f4f6fb;
+    --surface:#ffffff;
+    --primary:#0b63d4;        /* Material-blue */
+    --primary-variant:#084fb0;
+    --secondary:#06b6d4;      /* cyan accent */
+    --danger:#e94545;
+    --text:#0f1724;
+    --muted:#546e7a;
+    --card-radius:12px;
+    --elevation-1: 0 1px 3px rgba(16,24,40,0.08);
+    --elevation-2: 0 6px 18px rgba(16,24,40,0.12);
+    --glass: rgba(255,255,255,0.8);
+    font-family: "Roboto", "Inter", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
   }
 
-  html,body{height:100%;margin:0;background:
-    radial-gradient(1200px 600px at 10% 10%, #071429 0%, transparent 10%),
-    linear-gradient(180deg,#07192a 0%, #071129 100%); color:var(--text);}
-  .app {
-    max-width:760px;
-    margin:0 auto;
-    padding:22px 16px 80px;
+  /* ---------- Base layout ---------- */
+  html,body{height:100%;margin:0;background:linear-gradient(180deg,var(--bg),#eef6ff);color:var(--text)}
+  .wrap{max-width:1200px;margin:20px auto;padding:20px}
+  header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:18px}
+  .brand{display:flex;align-items:center;gap:12px}
+  .logo{
+    width:54px;height:54px;border-radius:12px;
+    background:linear-gradient(135deg,var(--primary),var(--secondary));
+    display:flex;align-items:center;justify-content:center;color:white;font-weight:700;box-shadow:var(--elevation-2);
   }
+  h1{font-size:20px;margin:0}
+  .subtitle{color:var(--muted);font-size:13px}
 
-  header{
-    display:flex;align-items:center;gap:12px;
-    margin-bottom:10px;
+  /* ---------- controls ---------- */
+  .controls{display:flex;gap:12px;align-items:center}
+  .btn{
+    background:var(--primary);color:white;padding:10px 14px;border-radius:10px;border:none;font-weight:600;cursor:pointer;
+    box-shadow:var(--elevation-1);
   }
-  .brand{
-    width:54px;height:54px;border-radius:14px;
-    background:linear-gradient(135deg,var(--accent-a),var(--accent-b));
-    display:flex;align-items:center;justify-content:center;box-shadow:0 8px 30px rgba(12,16,26,0.6);
-    flex-shrink:0;
-  }
-  .brand svg{filter:drop-shadow(0 6px 18px rgba(0,0,0,0.35));}
-  h1{margin:0;font-size:20px;letter-spacing:0.2px}
-  .subtitle{font-size:13px;color:var(--muted);margin-top:6px}
+  .chip{background:var(--surface);border-radius:999px;padding:8px 12px;border:1px solid rgba(16,24,40,0.04);font-weight:600;color:var(--muted)}
 
-  /* quick stat row */
-  .stats{display:flex;gap:12px;margin-top:14px}
-  .stat{
-    flex:1;background:var(--card-bg);border-radius:18px;padding:12px;
-    box-shadow:var(--shadow-soft);border:1px solid rgba(255,255,255,0.03);
-    min-width:0;transition:transform .18s ease;
-  }
-  .stat:hover{transform:translateY(-6px)}
-  .stat .num{font-weight:700;font-size:18px;color:var(--text)}
-  .stat .label{font-size:12px;color:var(--muted);margin-top:6px}
+  /* ---------- grid ---------- */
+  .grid{display:grid;grid-template-columns:1fr 380px;gap:18px}
+  @media(max-width:980px){.grid{grid-template-columns:1fr}}
 
-  /* rankings row */
-  .rank-row{display:flex;gap:12px;margin-top:18px}
-  .rank{flex:1;border-radius:20px;padding:14px;background:linear-gradient(135deg,var(--accent-a),var(--accent-b));color:white;
-    box-shadow:0 14px 30px rgba(0,0,0,0.45);min-height:120px;position:relative;overflow:hidden}
-  .rank.secondary{background:linear-gradient(135deg,#00c9a7,#01937c)}
-  .rank h3{margin:0;font-size:14px;opacity:0.95}
-  .leader-badge{position:absolute;top:14px;right:14px;background:rgba(255,255,255,0.12);padding:6px 10px;border-radius:999px;font-weight:800}
+  /* ---------- left column content ---------- */
+  .card{background:var(--surface);border-radius:var(--card-radius);padding:16px;box-shadow:var(--elevation-1)}
+  .stats{display:flex;gap:12px;flex-wrap:wrap}
+  .stat-card{flex:1;min-width:140px;background:linear-gradient(180deg,#ffffff,#f7fbff);padding:12px;border-radius:10px;border:1px solid rgba(16,24,40,0.03)}
+  .stat-num{font-size:20px;font-weight:800;color:var(--primary)}
+  .stat-label{font-size:13px;color:var(--muted);margin-top:6px}
 
-  .rank-list{margin-top:12px;font-size:15px;line-height:1.4}
-  .rank-item{display:flex;align-items:center;gap:10px;padding:8px;border-radius:12px;transition:transform .15s cubic-bezier(.2,.9,.3,1)}
-  .rank-item:hover{transform:translateY(-6px)}
-  .rank-pos{width:36px;height:36px;border-radius:10px;background:rgba(255,255,255,0.08);display:flex;align-items:center;justify-content:center;font-weight:800}
-  .rank-name{flex:1;min-width:0}
-  .rank-count{font-weight:700;padding:6px 10px;border-radius:10px;background:rgba(255,255,255,0.06)}
+  /* ---------- ranking cards ---------- */
+  .ranking{display:flex;flex-direction:column;gap:10px}
+  .rank-card{padding:12px;border-radius:10px;color:white;box-shadow:var(--elevation-2)}
+  .rank-card .title{font-weight:700;font-size:14px}
+  .rank-item{display:flex;align-items:center;justify-content:space-between;padding:8px;border-radius:8px;background:rgba(255,255,255,0.06)}
+  .rank-item .left{display:flex;gap:12px;align-items:center}
+  .avatar{width:40px;height:40px;border-radius:8px;background:rgba(255,255,255,0.12);display:flex;align-items:center;justify-content:center;font-weight:700}
+  .bar{height:8px;border-radius:999px;background:rgba(255,255,255,0.12);overflow:hidden;margin-left:8px;min-width:120px}
+  .bar-fill{height:100%;background:rgba(255,255,255,0.95);border-radius:999px}
 
-  /* list cards (records) mobile-first: stacked cards */
-  .list-section{margin-top:18px}
-  .list-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
-  .list-card{background:linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.02));border-radius:20px;padding:14px;margin-bottom:10px;box-shadow:0 6px 18px rgba(0,0,0,0.45);border:1px solid rgba(255,255,255,0.03);
-    transition:transform .15s ease, box-shadow .15s ease;overflow:hidden}
-  .list-card:active,.list-card:hover{transform:translateY(-6px);box-shadow:0 18px 36px rgba(0,0,0,0.5)}
-  .card-top{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:8px}
-  .card-driver{font-weight:800;font-size:16px}
-  .card-mission{font-size:13px;color:var(--muted)}
-  .chip{padding:8px 12px;border-radius:999px;background:rgba(255,255,255,0.06);font-weight:700;font-size:13px}
+  /* gradient variants */
+  .rank-early{background:linear-gradient(135deg,#1e88e5,#42a5f5)}
+  .rank-late{background:linear-gradient(135deg,#16a085,#1abc9c)}
 
-  .small-muted{font-size:12px;color:var(--muted)}
+  /* ---------- tables (fixed header) ---------- */
+  .table-wrap{margin-top:12px;border-radius:10px;overflow:hidden;border:1px solid rgba(16,24,40,0.04)}
+  table{width:100%;border-collapse:collapse;background:var(--surface);min-width:720px}
+  thead th{position:sticky;top:0;background:#f6fbff;padding:12px;text-align:left;font-weight:700;border-bottom:1px solid rgba(16,24,40,0.06)}
+  tbody td{padding:12px;border-bottom:1px solid rgba(16,24,40,0.03);font-size:14px;color:var(--text)}
+  tbody tr:nth-child(odd){background:#ffffff}
+  tbody tr:nth-child(even){background:#fbfdff}
+  .muted{color:var(--muted);font-size:13px}
+
+  /* ---------- right column ---------- */
+  .right-panel{display:flex;flex-direction:column;gap:12px}
+  .mini-card{padding:12px;border-radius:10px;background:linear-gradient(180deg,#fff,#f7fbff);border:1px solid rgba(16,24,40,0.03)}
+  .mini-list{display:flex;flex-direction:column;gap:8px;margin-top:6px}
+  .badge{display:inline-block;padding:6px 10px;border-radius:8px;background:var(--primary-variant);color:white;font-weight:700;font-size:13px}
 
   /* responsiveness */
-  @media(min-width:900px){
-    .rank-row{flex-direction:row}
-    .stats{display:flex}
+  @media(max-width:720px){
+    .grid{grid-template-columns:1fr}
+    .right-panel{order:2}
   }
-  @media(max-width:520px){
-    .brand{width:48px;height:48px}
-    .stat .num{font-size:16px}
-  }
-
 </style>
 </head>
 <body>
-  <div class="app">
-    <header>
-      <div class="brand" aria-hidden="true">
-        <!-- simple logo -->
-        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M3 12c0-4.9706 4.0294-9 9-9s9 4.0294 9 9c0 4.9706-4.0294 9-9 9s-9-4.0294-9-9z" fill="white" fill-opacity="0.12"/>
-          <path d="M7 12h10M12 7v10" stroke="white" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-      </div>
+<div class="wrap">
+  <header>
+    <div class="brand">
+      <div class="logo">MG</div>
       <div>
-        <h1>Painel Motoristas</h1>
-        <div class="subtitle small-muted">Chegadas cedo · Saídas após expediente</div>
-      </div>
-    </header>
-
-    <div class="stats">
-      <div class="stat" id="statTotal">
-        <div class="num">—</div>
-        <div class="label">Registros totais</div>
-      </div>
-      <div class="stat" id="statEarly">
-        <div class="num">—</div>
-        <div class="label">Chegadas cedo</div>
-      </div>
-      <div class="stat" id="statLate">
-        <div class="num">—</div>
-        <div class="label">Saídas tarde</div>
+        <h1>Dashboard Motoristas</h1>
+        <div class="subtitle">Chegadas cedo · Saídas após expediente</div>
       </div>
     </div>
 
-    <section class="rank-row">
-      <div class="rank" role="region" aria-label="Ranking chegadas cedo">
-        <div style="display:flex;align-items:center;justify-content:space-between">
-          <div>
-            <h3 style="margin:0">Chegadas cedo</h3>
-            <div class="small-muted" style="margin-top:6px">Top 7 — Antes do expediente</div>
+    <div class="controls">
+      <div class="chip">Planilha: pública</div>
+      <button class="btn" id="refreshBtn">Atualizar</button>
+    </div>
+  </header>
+
+  <main class="grid">
+    <!-- left column -->
+    <section>
+      <div class="card">
+        <div class="stats">
+          <div class="stat-card">
+            <div class="stat-num" id="statTotal">—</div>
+            <div class="stat-label">Registros (total)</div>
           </div>
-          <div class="leader-badge" id="badgeAntes">TOP</div>
-        </div>
-        <div class="rank-list" id="rankListAntes" style="margin-top:12px">Carregando...</div>
-      </div>
-
-      <div class="rank secondary" role="region" aria-label="Ranking saídas tarde">
-        <div style="display:flex;align-items:center;justify-content:space-between">
-          <div>
-            <h3 style="margin:0">Saídas tarde</h3>
-            <div class="small-muted" style="margin-top:6px">Top 7 — Depois do expediente</div>
+          <div class="stat-card">
+            <div class="stat-num" id="statEarly">—</div>
+            <div class="stat-label">Chegadas cedo</div>
           </div>
-          <div class="leader-badge" id="badgeDepois">TOP</div>
+          <div class="stat-card">
+            <div class="stat-num" id="statLate">—</div>
+            <div class="stat-label">Saídas tarde</div>
+          </div>
         </div>
-        <div class="rank-list" id="rankListDepois" style="margin-top:12px">Carregando...</div>
+      </div>
+
+      <div class="card" style="margin-top:14px;">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div style="font-weight:800">Top 7 — Chegadas cedo</div>
+          <div class="muted">ANTES DO EXPEDIENTE</div>
+        </div>
+        <div class="ranking" id="rankingEarly" style="margin-top:10px"></div>
+      </div>
+
+      <div class="card" style="margin-top:14px;">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div style="font-weight:800">Top 7 — Saídas tarde</div>
+          <div class="muted">DEPOIS DO EXPEDIENTE</div>
+        </div>
+        <div class="ranking" id="rankingLate" style="margin-top:10px"></div>
+      </div>
+
+      <div class="card" style="margin-top:14px">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div style="font-weight:800">Registros — Antes do expediente</div>
+          <div class="muted">Mais recentes primeiro</div>
+        </div>
+        <div class="table-wrap" style="margin-top:10px">
+          <table id="tableEarly">
+            <thead>
+              <tr><th>Motorista</th><th>Data</th><th>Horário</th><th>Missão</th></tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:14px">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div style="font-weight:800">Registros — Depois do expediente</div>
+          <div class="muted">Mais recentes primeiro</div>
+        </div>
+        <div class="table-wrap" style="margin-top:10px">
+          <table id="tableLate">
+            <thead>
+              <tr><th>Motorista</th><th>Data</th><th>Horário</th><th>Missão</th></tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
       </div>
     </section>
 
-    <!-- Antes section (cards list) -->
-    <section class="list-section">
-      <div class="list-header">
-        <div>
-          <div class="section-title" style="color:var(--text)">Registros — Antes do expediente</div>
-          <div class="small-muted">Mais recentes primeiro</div>
+    <!-- right column -->
+    <aside class="right-panel">
+      <div class="mini-card">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div style="font-weight:800">Resumo Rápido</div>
+          <div class="badge" id="badgeStatus">OK</div>
         </div>
-        <div class="small-muted">Aba: <strong>ANTES DO EXPEDIENTE</strong></div>
-      </div>
-
-      <div id="listAntes">
-        <!-- cards inserted here -->
-        <div class="small-muted">Carregando...</div>
-      </div>
-    </section>
-
-    <!-- Depois section -->
-    <section class="list-section">
-      <div class="list-header">
-        <div>
-          <div class="section-title" style="color:var(--text)">Registros — Depois do expediente</div>
-          <div class="small-muted">Mais recentes primeiro</div>
+        <div class="mini-list" id="miniList" style="margin-top:8px">
+          <div class="muted">Carregando resumo...</div>
         </div>
-        <div class="small-muted">Aba: <strong>DEPOIS DO EXPEDIENTE</strong></div>
       </div>
 
-      <div id="listDepois">
-        <div class="small-muted">Carregando...</div>
+      <div class="mini-card">
+        <div style="font-weight:800">Últimas 5 ocorrências</div>
+        <div id="lastFive" style="margin-top:10px" class="muted">Carregando...</div>
       </div>
-    </section>
-  </div>
+
+      <div class="mini-card">
+        <div style="font-weight:800">Ajuda</div>
+        <div class="muted" style="margin-top:8px">Planilha pública (Arquivo → Publicar na web). Colunas: motorista | data | horário | missão</div>
+      </div>
+    </aside>
+  </main>
+</div>
 
 <script>
-/* ===================== CONFIGURAÇÃO ===================== */
+/* ---------------- CONFIGURAÇÃO ---------------- */
 const SHEET_ID = "1eaFPPSEpMxsdUY9m3vT_fOhoYUKYBzATv55nRHQwyTY";
-const ABA_ANTES = "ANTES DO EXPEDIENTE";
-const ABA_DEPOIS = "DEPOIS DO EXPEDIENTE";
-const BASE_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=`;
+const SHEET_EARLY = "ANTES DO EXPEDIENTE";
+const SHEET_LATE = "DEPOIS DO EXPEDIENTE";
+const BASE = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=`;
 
-/* ===================== HELPERS DE DATA ===================== */
-/**
- * Converte valores retornados pelo Google GViz e também timestamps brutos.
- * Aceita:
- *  - "Date(2025,11,03)" ou "Date(1899,11,30,7,20,0)"
- *  - números (segundos ou milissegundos)
- *  - strings ISO
- */
-function parseCellValue(v){
-  if (v === null || v === undefined) return { date: null, text: "" };
+/* ---------------- util: parse Google GViz values ---------------- */
+function parseCell(v){
+  if (v == null) return {date:null,text:""};
   const s = String(v).trim();
-
   // Date(...) pattern
   const m = s.match(/^Date\(([-\d,\s]+)\)$/i);
   if (m){
     const parts = m[1].split(',').map(x=>parseInt(x.trim(),10));
     if (parts.length >= 3){
-      const [year, monthZero, day, hour=0, minute=0, second=0] = parts;
-      if (year < 1900){
-        // time-only representation — use today's date with that time
+      let [yr, mon0, day, hr=0, min=0, sec=0] = parts;
+      if (yr < 1900){
         const now = new Date();
-        const dt = new Date(now.getFullYear(), now.getMonth(), now.getDate(), hour, minute, second);
-        return { date: dt, text: "" };
-      } else {
-        const dt = new Date(year, monthZero, day, hour, minute, second);
-        return { date: dt, text: "" };
+        return {date: new Date(now.getFullYear(), now.getMonth(), now.getDate(), hr, min, sec), text:""};
       }
+      return {date:new Date(yr, mon0, day, hr, min, sec), text:""};
     }
   }
-
   // numeric timestamp?
   if (/^-?\d+$/.test(s)){
     const num = Number(s);
-    // heuristic: if < 1e12 assume seconds -> convert to ms
-    const ms = Math.abs(num) < 1e12 ? num * 1000 : num;
-    const dt = new Date(ms);
-    if (!isNaN(dt)) return { date: dt, text: "" };
+    const ms = Math.abs(num) < 1e12 ? num*1000 : num;
+    const d = new Date(ms);
+    if (!isNaN(d)) return {date:d,text:""};
   }
-
-  // ISO or other date string
+  // ISO parse
   const iso = Date.parse(s);
-  if (!isNaN(iso)){
-    return { date: new Date(iso), text: "" };
-  }
-
+  if (!isNaN(iso)) return {date:new Date(iso), text:""};
   // fallback text
-  return { date: null, text: s };
+  return {date:null,text:s};
 }
 
-function formatDate(d){
-  if (!d) return "";
-  return d.toLocaleDateString('pt-BR', { day:'2-digit', month:'2-digit', year:'numeric' });
-}
-function formatTime(d){
-  if (!d) return "";
-  return d.toLocaleTimeString('pt-BR', { hour:'2-digit', minute:'2-digit' });
-}
-
-/* ===================== FETCH/ PARSING GVIZ ===================== */
-async function fetchSheet(aba){
-  const url = BASE_URL + encodeURIComponent(aba);
-  const res = await fetch(url, { cache: 'no-store' });
-  if (!res.ok) throw new Error(`Falha HTTP ${res.status}`);
+/* ---------------- fetch and parse sheet ---------------- */
+async function fetchSheet(sheetName){
+  const url = BASE + encodeURIComponent(sheetName);
+  const res = await fetch(url, {cache:'no-store'});
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
   const txt = await res.text();
   const start = txt.indexOf('{'), end = txt.lastIndexOf('}');
-  if (start === -1 || end === -1) throw new Error('Resposta inesperada do Google Sheets');
+  if (start===-1 || end===-1) throw new Error('Resposta inesperada');
   const obj = JSON.parse(txt.slice(start, end+1));
   const rows = (obj.table && obj.table.rows) ? obj.table.rows : [];
-  // return array of arrays of cell values (prefer c.f when present)
-  return rows.map(r => (r.c||[]).map(c => {
+  // return array of arrays (prefer c.f if present)
+  return rows.map(r => (r.c || []).map(c => {
     if (!c) return null;
     if (c.f && typeof c.f === 'string') return c.f;
     if (c.v !== undefined && c.v !== null) return String(c.v);
@@ -267,221 +257,162 @@ async function fetchSheet(aba){
   }));
 }
 
-/* ===================== NORMALIZAÇÃO ===================== */
-/* assume columns: motorista | data | horário | missão  (ignore extras) */
-function normalizeRows(rawRows){
-  return rawRows.map(r => {
+/* ---------------- normalize rows to objects ---------------- */
+function normalize(rows){
+  return rows.map(r => {
     const motoristaRaw = r[0] || "";
     const dataRaw = r[1] || "";
     const horaRaw = r[2] || "";
     const missaoRaw = r[3] || "";
 
     const motorista = String(motoristaRaw).trim();
+    const pd = parseCell(dataRaw);
+    const pt = parseCell(horaRaw);
 
-    const parsedDate = parseCellValue(dataRaw);
-    const parsedTime = parseCellValue(horaRaw);
-
-    // Compute combined dateObj for ordering (prefer explicit date+time)
     let dateObj = null;
-    if (parsedDate.date && parsedTime.date){
-      const d = parsedDate.date, t = parsedTime.date;
+    if (pd.date && pt.date){
+      const d = pd.date, t = pt.date;
       dateObj = new Date(d.getFullYear(), d.getMonth(), d.getDate(), t.getHours(), t.getMinutes(), t.getSeconds());
-    } else if (parsedDate.date && !parsedTime.date){
-      dateObj = parsedDate.date;
-    } else if (!parsedDate.date && parsedTime.date){
+    } else if (pd.date){
+      dateObj = pd.date;
+    } else if (pt.date){
       const now = new Date();
-      const t = parsedTime.date;
+      const t = pt.date;
       dateObj = new Date(now.getFullYear(), now.getMonth(), now.getDate(), t.getHours(), t.getMinutes(), t.getSeconds());
     } else {
-      const attempt = Date.parse(String(dataRaw) + ' ' + String(horaRaw));
+      const attempt = Date.parse(String(dataRaw)+' '+String(horaRaw));
       if (!isNaN(attempt)) dateObj = new Date(attempt);
     }
 
-    const displayDate = parsedDate.date ? formatDate(parsedDate.date) : (parsedDate.text || '');
-    const displayTime = parsedTime.date ? formatTime(parsedTime.date) : (parsedTime.text || '');
+    const displayDate = pd.date ? pd.date.toLocaleDateString('pt-BR') : (pd.text || "");
+    const displayTime = pt.date ? pt.date.toLocaleTimeString('pt-BR', {hour:'2-digit',minute:'2-digit'}) : (pt.text || "");
 
-    return {
-      motorista,
-      dataText: displayDate,
-      horaText: displayTime,
-      missao: String(missaoRaw || ""),
-      dateObj
-    };
+    return {motorista, displayDate, displayTime, missao: String(missaoRaw||""), dateObj};
   });
 }
 
-/* ===================== RENDER HELPERS ===================== */
-function clearEl(id){ const e = document.getElementById(id); if (e) e.innerHTML=''; }
-function setText(id, text){ const e = document.getElementById(id); if (e) e.textContent = text; }
+/* ---------------- render helpers ---------------- */
+function escapeHtml(s){ if (s==null) return ''; return String(s).replace(/[&<>"']/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
 
-function renderRank(containerId, items){
-  // count occurrences by motorista
-  const counts = {};
-  items.forEach(it => { const k = it.motorista || 'Sem nome'; counts[k] = (counts[k]||0) + 1; });
-  const ranked = Object.entries(counts).sort((a,b)=>b[1]-a[1]).slice(0,7);
-
-  const container = document.getElementById(containerId);
-  container.innerHTML = '';
-  if (ranked.length === 0) { container.innerHTML = '<div class="small-muted">Sem registros</div>'; return; }
-
-  ranked.forEach(([name, qty], idx) => {
-    const wrapper = document.createElement('div');
-    wrapper.className = 'rank-item';
-    wrapper.style.display = 'flex';
-    wrapper.style.alignItems = 'center';
-    wrapper.style.justifyContent = 'space-between';
-
-    const left = document.createElement('div');
-    left.style.display = 'flex'; left.style.alignItems = 'center'; left.style.gap = '12px';
-
-    const pos = document.createElement('div');
-    pos.className = 'rank-pos';
-    pos.textContent = (idx+1);
-    pos.style.fontWeight = '800';
-    pos.style.background = idx===0 ? 'rgba(255,255,255,0.22)' : 'rgba(255,255,255,0.08)';
-    pos.style.color = '#fff';
-    pos.style.width = '44px';
-    pos.style.height = '44px';
-    pos.style.display = 'flex';
-    pos.style.alignItems = 'center';
-    pos.style.justifyContent = 'center';
-    pos.style.borderRadius = '10px';
-    pos.style.fontSize = '15px';
-
-    const nameEl = document.createElement('div');
-    nameEl.className = 'rank-name';
-    nameEl.innerHTML = `<div style="font-weight:800">${escapeHtml(name)}</div><div style="font-size:12px;opacity:.9"> ${qty} registro(s)</div>`;
-
-    left.appendChild(pos);
-    left.appendChild(nameEl);
-
-    wrapper.appendChild(left);
-
-    const right = document.createElement('div');
-    right.className = 'rank-count';
-    right.textContent = `${qty}`;
-    right.style.background = 'rgba(255,255,255,0.08)';
-    right.style.color = '#fff';
-    right.style.padding = '8px 12px';
-    right.style.borderRadius = '10px';
-    right.style.fontWeight = '800';
-
-    wrapper.appendChild(right);
-
-    container.appendChild(wrapper);
-  });
-}
-
-function renderList(containerId, items){
-  const container = document.getElementById(containerId);
-  container.innerHTML = '';
-  if (!items || items.length === 0) {
-    container.innerHTML = '<div class="small-muted">Sem registros</div>';
-    return;
-  }
-
+function renderTable(tableId, items){
+  const tbody = document.querySelector(`#${tableId} tbody`);
+  tbody.innerHTML = '';
   items.forEach(it => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${escapeHtml(it.motorista)}</td><td>${escapeHtml(it.displayDate)}</td><td>${escapeHtml(it.displayTime)}</td><td>${escapeHtml(it.missao)}</td>`;
+    tbody.appendChild(tr);
+  });
+}
+
+function renderRanking(containerId, items, gradientClass){
+  const counts = {};
+  items.forEach(i => { const k = i.motorista || 'Sem nome'; counts[k] = (counts[k]||0)+1; });
+  const ranked = Object.entries(counts).sort((a,b)=>b[1]-a[1]).slice(0,7);
+  const container = document.getElementById(containerId);
+  container.innerHTML = '';
+  if (ranked.length===0){ container.innerHTML = '<div class="muted">Sem registros</div>'; return; }
+  // compute top value for bar scaling
+  const max = ranked[0][1] || 1;
+  ranked.forEach(([name,qty],idx)=>{
     const card = document.createElement('div');
-    card.className = 'list-card';
-    // content
-    card.innerHTML = `
-      <div class="card-top">
-        <div>
-          <div class="card-driver">${escapeHtml(it.motorista)}</div>
-          <div class="card-mission">${escapeHtml(it.missao)}</div>
-        </div>
-        <div style="text-align:right">
-          <div class="chip">${escapeHtml(it.horaText || '')}</div>
-          <div class="small-muted" style="margin-top:8px">${escapeHtml(it.dataText || '')}</div>
-        </div>
-      </div>
-    `;
+    card.className = 'rank-item';
+    const avatar = document.createElement('div'); avatar.className='avatar'; avatar.textContent = name.split(' ').map(w=>w[0]||'').slice(0,2).join('').toUpperCase();
+    const left = document.createElement('div'); left.className='left';
+    const ndiv = document.createElement('div'); ndiv.innerHTML = `<div style="font-weight:700">${escapeHtml(name)}</div><div style="font-size:12px;color:rgba(255,255,255,0.85)">${qty} ocorrência(s)</div>`;
+    const barWrap = document.createElement('div'); barWrap.className='bar';
+    const fill = document.createElement('div'); fill.className='bar-fill';
+    const pct = Math.round((qty / max) * 100);
+    fill.style.width = pct + '%';
+    // color fill slightly different per list
+    fill.style.background = gradientClass==='early' ? 'rgba(255,255,255,0.94)' : 'rgba(255,255,255,0.96)';
+    barWrap.appendChild(fill);
+    left.appendChild(avatar); left.appendChild(ndiv); left.appendChild(barWrap);
+    const right = document.createElement('div'); right.style.fontWeight='800'; right.style.minWidth='48px'; right.style.textAlign='right'; right.textContent = qty;
+    card.appendChild(left); card.appendChild(right);
     container.appendChild(card);
   });
 }
 
-function updateStats(total, earlyCount, lateCount){
-  setText('statTotal', String(total));
-  setText('statEarly', String(earlyCount));
-  setText('statLate', String(lateCount));
+/* ---------------- update mini right panel ---------------- */
+function updateSummary(total, earlyCount, lateCount, lastFive){
+  document.getElementById('statTotal').textContent = total;
+  document.getElementById('statEarly').textContent = earlyCount;
+  document.getElementById('statLate').textContent = lateCount;
+  document.getElementById('miniList').innerHTML = `<div>Chegadas cedo: ${earlyCount}</div><div>Saídas tarde: ${lateCount}</div>`;
+  document.getElementById('lastFive').innerHTML = lastFive.map(it=>`${escapeHtml(it.motorista)} — ${escapeHtml(it.displayDate)} ${escapeHtml(it.displayTime)}<br>`).join('');
+  document.getElementById('badgeStatus').textContent = 'OK';
 }
 
-/* ===================== MAIN FLOW ===================== */
+/* ---------------- main flow ---------------- */
 async function loadAll(){
   try {
-    setText('status', 'Carregando dados...');
-    const [rawAntes, rawDepois] = await Promise.all([fetchSheet(ABA_ANTES), fetchSheet(ABA_DEPOIS)]);
-    const normAntes = normalizeRows(rawAntes).filter(r => r.motorista || r.dataText || r.horaText);
-    const normDepois = normalizeRows(rawDepois).filter(r => r.motorista || r.dataText || r.horaText);
+    document.getElementById('badgeStatus').textContent = 'Carregando...';
+    const [rawEarly, rawLate] = await Promise.all([fetchSheet(SHEET_EARLY), fetchSheet(SHEET_LATE)]);
+    const normEarly = normalize(rawEarly).filter(r => r.motorista || r.displayDate || r.displayTime);
+    const normLate = normalize(rawLate).filter(r => r.motorista || r.displayDate || r.displayTime);
 
-    // order most recent first
-    const orderDesc = arr => arr.slice().sort((a,b) => {
+    const orderDesc = arr => arr.slice().sort((a,b)=>{
       if (!a.dateObj && !b.dateObj) return 0;
       if (!a.dateObj) return 1;
       if (!b.dateObj) return -1;
       return b.dateObj - a.dateObj;
     });
 
-    const orderedAntes = orderDesc(normAntes);
-    const orderedDepois = orderDesc(normDepois);
+    const orderedEarly = orderDesc(normEarly);
+    const orderedLate = orderDesc(normLate);
 
-    // limit show to 200 records each to keep UI snappy
-    renderList('listAntes', orderedAntes.slice(0,200));
-    renderList('listDepois', orderedDepois.slice(0,200));
+    renderTable('tableEarly', orderedEarly);
+    renderTable('tableLate', orderedLate);
 
-    renderRank('rankListAntes', normAntes);
-    renderRank('rankListDepois', normDepois);
+    renderRanking('rankingEarly', normEarly, 'early');
+    renderRanking('rankingLate', normLate, 'late');
 
-    // simple counts: total rows & early/late counts - define early/late by presence in respective sheet
-    updateStats(normAntes.length + normDepois.length, normAntes.length, normDepois.length);
+    const lastFive = orderedEarly.slice(0,3).concat(orderedLate.slice(0,2));
+    updateSummary(normEarly.length + normLate.length, normEarly.length, normLate.length, lastFive);
 
-    setText('status', 'Dados carregados com sucesso');
-  } catch (err) {
+    document.getElementById('badgeStatus').textContent = 'Concluído';
+  } catch (err){
     console.error(err);
-    setText('status', 'Erro ao carregar dados: ' + (err.message || err));
-    // show fallback
-    document.getElementById('listAntes').innerHTML = '<div class="small-muted">Erro ao carregar a aba ANTES DO EXPEDIENTE</div>';
-    document.getElementById('listDepois').innerHTML = '<div class="small-muted">Erro ao carregar a aba DEPOIS DO EXPEDIENTE</div>';
-    document.getElementById('rankListAntes').innerHTML = '<div class="small-muted">—</div>';
-    document.getElementById('rankListDepois').innerHTML = '<div class="small-muted">—</div>';
+    document.getElementById('badgeStatus').textContent = 'Erro';
+    document.getElementById('miniList').innerHTML = `<div class="muted">Erro: ${escapeHtml(err.message || String(err))}</div>`;
   }
 }
 
-/* ===================== UTIL ===================== */
-function escapeHtml(s){
-  if (s === null || s === undefined) return '';
-  return String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+/* ---------------- fetch helper for GViz ---------------- */
+async function fetchSheet(name){
+  const url = BASE + encodeURIComponent(name);
+  const res = await fetch(url, {cache:'no-store'});
+  if (!res.ok) throw new Error('HTTP ' + res.status);
+  const txt = await res.text();
+  const start = txt.indexOf('{'), end = txt.lastIndexOf('}');
+  if (start===-1 || end===-1) throw new Error('Formato inesperado');
+  const obj = JSON.parse(txt.slice(start,end+1));
+  const rows = (obj.table && obj.table.rows) ? obj.table.rows : [];
+  return rows.map(r => (r.c||[]).map(c=>{
+    if (!c) return null;
+    if (c.f && typeof c.f === 'string') return c.f;
+    if (c.v !== undefined && c.v !== null) return String(c.v);
+    return null;
+  }));
 }
 
-/* ===================== INIT PWA (manifest + sw blob) ===================== */
-(function initPWA(){
-  try{
-    const manifest = {
-      name: "Painel Motoristas",
-      short_name: "Motoristas",
-      start_url: ".",
-      display: "standalone",
-      background_color: "#07192a",
-      theme_color: "#1e90ff",
-      icons: []
-    };
-    const mBlob = new Blob([JSON.stringify(manifest)], {type:'application/json'});
-    document.getElementById('manifestPlaceholder').href = URL.createObjectURL(mBlob);
+/* ---------------- DOM events ---------------- */
+document.getElementById('refreshBtn').addEventListener('click', ()=>loadAll());
 
-    const swCode = `
-      self.addEventListener('install', e => { self.skipWaiting(); });
-      self.addEventListener('activate', e => { clients.claim(); });
-      self.addEventListener('fetch', e => { e.respondWith(fetch(e.request)); });
-    `;
-    const swBlob = new Blob([swCode], {type:'text/javascript'});
-    const swUrl = URL.createObjectURL(swBlob);
-    if ('serviceWorker' in navigator) navigator.serviceWorker.register(swUrl).catch(()=>{/* ignore */});
-  }catch(e){ console.warn('PWA init failed', e); }
-})();
-
-/* ===================== START ===================== */
+/* ---------------- init ---------------- */
 loadAll();
 
+/* ---------------- optional: quick PWA manifest (dynamic) ---------------- */
+(function initManifest(){
+  try{
+    const manifest = {name:'Dashboard Motoristas',short_name:'Motoristas',start_url:'.',display:'standalone',background_color:'#f4f6fb',theme_color:varTheme()};
+    const blob = new Blob([JSON.stringify(manifest)],{type:'application/json'});
+    const url = URL.createObjectURL(blob);
+    document.getElementById('manifestPlaceholder').href = url;
+  }catch(e){/* ignore manifest errors */}
+
+  function varTheme(){ try{return getComputedStyle(document.documentElement).getPropertyValue('--primary')||'#0b63d4'}catch(e){return '#0b63d4'} }
+})();
 </script>
 </body>
 </html>
