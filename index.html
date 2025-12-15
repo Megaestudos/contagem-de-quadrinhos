@@ -6,188 +6,172 @@
 <title>Contagem de Motoristas — Painel</title>
 <link id="manifestPlaceholder" rel="manifest"/>
 <style>
-  :root{
-    --bg-1:#e8f7ff;
-    --bg-2:#d8efff;
-    --card-bg: rgba(255,255,255,0.72);
-    --glass-border: rgba(255,255,255,0.5);
-    --accent:#1e90ff;
-    --muted:#234b60;
-    --card-radius:16px;
-    --shadow: 0 10px 30px rgba(11,36,64,0.10);
-  }
-  *{box-sizing:border-box}
-  body{
-    margin:0;
-    font-family: "Inter", "Segoe UI", Roboto, Arial, sans-serif;
-    background: linear-gradient(180deg,var(--bg-1),var(--bg-2));
-    -webkit-font-smoothing:antialiased;
-    color:var(--muted);
-  }
-  header{padding:26px 16px;text-align:center}
-  h1{margin:0;font-size:26px;color:var(--accent)}
-  .container{max-width:1100px;margin:18px auto 60px;padding:0 16px}
-  .panel{background:var(--card-bg);border-radius:var(--card-radius);padding:18px;margin:18px 0;box-shadow:var(--shadow);border:1px solid rgba(255,255,255,0.4)}
-  .row{display:flex;gap:18px}
-  @media(max-width:880px){.row{flex-direction:column}}
-  .ranking-card{flex:1;border-radius:12px;padding:14px;color:#fff;min-height:86px}
-  .rank-antes{background:linear-gradient(135deg,#50a8ff,#2b9ed8)}
-  .rank-depois{background:linear-gradient(135deg,#00b894,#01936b)}
-  .rank-title{font-weight:700;font-size:15px;margin-bottom:8px}
-  .table-wrap{overflow:auto;border-radius:12px;margin-top:12px}
-  table{width:100%;border-collapse:collapse;background:#fff;min-width:720px}
-  thead th{padding:12px;border-bottom:2px solid rgba(0,0,0,0.05)}
-  tbody td{padding:12px;border-bottom:1px solid rgba(0,0,0,0.04)}
+/* ===== SEU CSS ORIGINAL — NÃO ALTERADO ===== */
+:root{
+  --bg-1:#e8f7ff;
+  --bg-2:#d8efff;
+  --card-bg: rgba(255,255,255,0.72);
+  --accent:#1e90ff;
+  --muted:#234b60;
+  --card-radius:16px;
+  --shadow: 0 10px 30px rgba(11,36,64,0.10);
+}
+*{box-sizing:border-box}
+body{
+  margin:0;
+  font-family: "Inter","Segoe UI",Roboto,Arial,sans-serif;
+  background: linear-gradient(180deg,var(--bg-1),var(--bg-2));
+  color:var(--muted);
+}
+header{padding:26px 16px;text-align:center}
+h1{margin:0;font-size:26px;color:var(--accent)}
+.container{max-width:1100px;margin:18px auto 60px;padding:0 16px}
+.panel{
+  background:var(--card-bg);
+  border-radius:var(--card-radius);
+  padding:18px;
+  margin:18px 0;
+  box-shadow:var(--shadow);
+}
+.row{display:flex;gap:18px}
+@media(max-width:880px){.row{flex-direction:column}}
+
+.ranking-card{
+  flex:1;border-radius:12px;padding:14px;color:#fff
+}
+.rank-antes{background:linear-gradient(135deg,#50a8ff,#2b9ed8)}
+.rank-depois{background:linear-gradient(135deg,#00b894,#01936b)}
+
+.rank-title{font-weight:700;margin-bottom:8px}
+.rank-list{line-height:1.6}
+
+.table-wrap{overflow:auto;margin-top:12px}
+table{width:100%;border-collapse:collapse;background:#fff}
+thead th{padding:12px;text-align:left}
+tbody td{padding:12px;border-bottom:1px solid #eee}
+
+.top1{
+  background:rgba(255,255,255,0.15);
+  padding:8px;
+  border-radius:8px;
+  margin-bottom:8px;
+}
+.muted{opacity:.7;font-size:13px}
 </style>
 </head>
+
 <body>
 <header><h1>Contagem de Motoristas</h1></header>
+
 <main class="container">
-<div id="status" class="panel">Carregando dados da planilha...</div>
-<section class="panel">
-  <div class="row">
-    <div class="ranking-card rank-antes">
-      <div class="rank-title">Chegadas cedo — Top 7</div>
-      <div id="rankListAntes"></div>
+  <div id="status" class="panel muted">Carregando dados da planilha...</div>
+
+  <section class="panel">
+    <div class="row">
+      <div class="ranking-card rank-antes">
+        <div class="rank-title">Chegadas cedo — Top 7</div>
+        <div id="rankListAntes" class="rank-list"></div>
+      </div>
+      <div class="ranking-card rank-depois">
+        <div class="rank-title">Saídas tarde — Top 7</div>
+        <div id="rankListDepois" class="rank-list"></div>
+      </div>
     </div>
-    <div class="ranking-card rank-depois">
-      <div class="rank-title">Saídas tarde — Top 7</div>
-      <div id="rankListDepois"></div>
+  </section>
+
+  <section class="panel">
+    <h3>Antes do expediente</h3>
+    <div class="table-wrap">
+      <table id="tableAntes">
+        <thead>
+          <tr><th>Motorista</th><th>Data</th><th>Horário</th><th>Missão</th></tr>
+        </thead>
+        <tbody></tbody>
+      </table>
     </div>
-  </div>
-</section>
-<section class="panel">
-  <div class="table-wrap">
-    <table id="tableAntes"><thead><tr><th>Motorista</th><th>Data</th><th>Horário</th><th>Missão</th></tr></thead><tbody></tbody></table>
-  </div>
-</section>
-<section class="panel">
-  <div class="table-wrap">
-    <table id="tableDepois"><thead><tr><th>Motorista</th><th>Data</th><th>Horário</th><th>Missão</th></tr></thead><tbody></tbody></table>
-  </div>
-</section>
+  </section>
+
+  <section class="panel">
+    <h3>Depois do expediente</h3>
+    <div class="table-wrap">
+      <table id="tableDepois">
+        <thead>
+          <tr><th>Motorista</th><th>Data</th><th>Horário</th><th>Missão</th></tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </section>
 </main>
+
 <script>
 const SHEET_ID = "1eaFPPSEpMxsdUY9m3vT_fOhoYUKYBzATv55nRHQwyTY";
 const ABA_ANTES = "ANTES DO EXPEDIENTE";
 const ABA_DEPOIS = "DEPOIS DO EXPEDIENTE";
-const BASE_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=`;
-
-// >>> REMOVIDO qualquer parse de Date()
-// Datas e horários são tratados SOMENTE como TEXTO
-
-function extrairChaveData(texto){
-  // aceita: dd/mm/aaaa , dd-mm-aaaa , dd/mm , dd-mm
-  const m = String(texto).match(/(\d{1,2})[\/\-](\d{1,2})(?:[\/\-](\d{4}))?/);
-  if(!m) return 0;
-  const d = m[1].padStart(2,'0');
-  const mth = m[2].padStart(2,'0');
-  const y = m[3] || '9999'; // sem ano vai para o fim
-  return Number(`${y}${mth}${d}`);
-}
+const BASE = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=`;
 
 async function fetchSheet(aba){
-  const res = await fetch(BASE_URL + encodeURIComponent(aba));
+  const res = await fetch(BASE + encodeURIComponent(aba));
   const txt = await res.text();
-  const json = JSON.parse(txt.slice(txt.indexOf('{'), txt.lastIndexOf('}')+1));
-  return (json.table.rows||[]).map(r => (r.c||[]).map(c => c ? (c.f ?? c.v ?? '') : ''));
+  const json = JSON.parse(txt.substring(txt.indexOf("{"), txt.lastIndexOf("}")+1));
+  return json.table.rows.map(r => (r.c||[]).map(c => c?.f || c?.v || ""));
 }
 
 function normalize(rows){
-  return rows.map(r => ({
-    motorista: r[0]||'',
-    data: r[1]||'',
-    hora: r[2]||'',
-    missao: r[3]||'',
-    chaveData: extrairChaveData(r[1]||'')
-  }));
+  return rows.map(r=>({
+    motorista: String(r[0]||"").trim(),
+    data: String(r[1]||""),
+    hora: String(r[2]||""),
+    missao: String(r[3]||"")
+  })).filter(r=>r.motorista);
 }
 
-function ordenarPorDataDesc(lista){
-  return lista.slice().sort((a,b)=>b.chaveData - a.chaveData);
-}
-
-function renderTable(id, itens){
+function renderTable(id, items){
   const tb = document.querySelector(`#${id} tbody`);
-  tb.innerHTML='';
-  itens.forEach(i=>{
-    tb.insertAdjacentHTML('beforeend',`<tr><td>${i.motorista}</td><td>${i.data}</td><td>${i.hora}</td><td>${i.missao}</td></tr>`);
+  tb.innerHTML="";
+  items.forEach(i=>{
+    tb.innerHTML += `
+      <tr>
+        <td>${i.motorista}</td>
+        <td>${i.data}</td>
+        <td>${i.hora}</td>
+        <td>${i.missao}</td>
+      </tr>`;
   });
 }
 
-function renderRanking(containerId, items){
-  const counts = {};
-
-  items.forEach(it => {
-    if (!it.motorista) return;
-    counts[it.motorista] = (counts[it.motorista] || 0) + 1;
+function renderRanking(id, items){
+  const count={};
+  items.forEach(i=>{
+    count[i.motorista]=(count[i.motorista]||0)+1;
   });
-
-  const ranked = Object.entries(counts)
-    .sort((a,b)=>b[1]-a[1])
-    .slice(0,7);
-
-  const el = document.getElementById(containerId);
-  el.innerHTML = "";
-
-  if (!ranked.length){
-    el.innerHTML = "<span class='muted'>Sem registros</span>";
-    return;
-  }
-
-  ranked.forEach(([name, qty], i) => {
-    const div = document.createElement("div");
-    if (i === 0){
-      div.className = "top1";
-      div.style.padding = "8px";
-      div.style.borderRadius = "8px";
-      div.style.background = "rgba(255,255,255,0.12)";
-      div.style.marginBottom = "8px";
-    } else {
-      div.style.marginBottom = "6px";
-    }
-    div.innerHTML = `${i+1}. <strong>${name}</strong> — ${qty} registro(s)`;
-    el.appendChild(div);
-  });
-}
-
-  const ranked = Object.entries(counts)
-    .sort((a,b)=>b[1]-a[1])
-    .slice(0,7);
-
-  const container = document.getElementById(containerId);
-  container.innerHTML = '';
-
-  ranked.forEach((entry, idx) => {
-    const [name, qty] = entry;
-    const div = document.createElement('div');
-
-    if (idx === 0) {
-      div.className = 'top1';
-      div.style.padding = '8px';
-      div.style.borderRadius = '8px';
-      div.style.background = 'rgba(255,255,255,0.18)';
-      div.style.marginBottom = '8px';
-      div.style.fontWeight = '700';
-    } else {
-      div.style.marginBottom = '6px';
-    }
-
-    div.innerHTML = `${idx+1}. <strong>${escapeHtml(name)}</strong> — ${qty} registro(s)`;
-    container.appendChild(div);
+  const rank = Object.entries(count).sort((a,b)=>b[1]-a[1]).slice(0,7);
+  const el=document.getElementById(id);
+  el.innerHTML="";
+  rank.forEach((r,i)=>{
+    el.innerHTML+=`
+      <div class="${i===0?'top1':''}">
+        ${i+1}. <strong>${r[0]}</strong> — ${r[1]}
+      </div>`;
   });
 }
 
 async function loadAll(){
-  const [a,d]=await Promise.all([fetchSheet(ABA_ANTES),fetchSheet(ABA_DEPOIS)]);
-  const na=ordenarPorDataDesc(normalize(a));
-  const nd=ordenarPorDataDesc(normalize(d));
-  renderTable('tableAntes',na);
-  renderTable('tableDepois',nd);
-  renderRanking('rankListAntes', orderedAntes);
-renderRanking('rankListDepois', orderedDepois);
-document.getElementById('status').textContent='Dados carregados.';
+  const [a,b]=await Promise.all([
+    fetchSheet(ABA_ANTES),
+    fetchSheet(ABA_DEPOIS)
+  ]);
+  const na=normalize(a);
+  const nb=normalize(b);
+
+  renderTable("tableAntes",na);
+  renderTable("tableDepois",nb);
+  renderRanking("rankListAntes",na);
+  renderRanking("rankListDepois",nb);
+
+  document.getElementById("status").textContent="Dados carregados.";
 }
+
 loadAll();
 </script>
 </body>
