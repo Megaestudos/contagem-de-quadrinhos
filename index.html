@@ -115,12 +115,41 @@ function renderTable(id, itens){
   });
 }
 
-function renderRanking(containerId, items, highlightFirst=true){
+function renderRanking(containerId, items){
   const counts = {};
+
   items.forEach(it => {
-    const k = it.motorista || 'Sem nome';
-    counts[k] = (counts[k] || 0) + 1;
+    if (!it.motorista) return;
+    counts[it.motorista] = (counts[it.motorista] || 0) + 1;
   });
+
+  const ranked = Object.entries(counts)
+    .sort((a,b)=>b[1]-a[1])
+    .slice(0,7);
+
+  const el = document.getElementById(containerId);
+  el.innerHTML = "";
+
+  if (!ranked.length){
+    el.innerHTML = "<span class='muted'>Sem registros</span>";
+    return;
+  }
+
+  ranked.forEach(([name, qty], i) => {
+    const div = document.createElement("div");
+    if (i === 0){
+      div.className = "top1";
+      div.style.padding = "8px";
+      div.style.borderRadius = "8px";
+      div.style.background = "rgba(255,255,255,0.12)";
+      div.style.marginBottom = "8px";
+    } else {
+      div.style.marginBottom = "6px";
+    }
+    div.innerHTML = `${i+1}. <strong>${name}</strong> — ${qty} registro(s)`;
+    el.appendChild(div);
+  });
+}
 
   const ranked = Object.entries(counts)
     .sort((a,b)=>b[1]-a[1])
@@ -155,9 +184,9 @@ async function loadAll(){
   const nd=ordenarPorDataDesc(normalize(d));
   renderTable('tableAntes',na);
   renderTable('tableDepois',nd);
-  renderRanking('rankListAntes',na);
-  renderRanking('rankListDepois',nd);
-  document.getElementById('status').textContent='Dados carregados.';
+  renderRanking('rankListAntes', orderedAntes);
+renderRanking('rankListDepois', orderedDepois);
+document.getElementById('status').textContent='Dados carregados.';
 }
 loadAll();
 </script>
