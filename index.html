@@ -115,9 +115,38 @@ function renderTable(id, itens){
   });
 }
 
-function renderRanking(id, itens){
-  const c={};itens.forEach(i=>c[i.motorista]=(c[i.motorista]||0)+1);
-  document.getElementById(id).innerHTML = Object.entries(c).sort((a,b)=>b[1]-a[1]).slice(0,7).map((e,i)=>`${i+1}. ${e[0]} — ${e[1]}`).join('<br>');
+function renderRanking(containerId, items, highlightFirst=true){
+  const counts = {};
+  items.forEach(it => {
+    const k = it.motorista || 'Sem nome';
+    counts[k] = (counts[k] || 0) + 1;
+  });
+
+  const ranked = Object.entries(counts)
+    .sort((a,b)=>b[1]-a[1])
+    .slice(0,7);
+
+  const container = document.getElementById(containerId);
+  container.innerHTML = '';
+
+  ranked.forEach((entry, idx) => {
+    const [name, qty] = entry;
+    const div = document.createElement('div');
+
+    if (idx === 0) {
+      div.className = 'top1';
+      div.style.padding = '8px';
+      div.style.borderRadius = '8px';
+      div.style.background = 'rgba(255,255,255,0.18)';
+      div.style.marginBottom = '8px';
+      div.style.fontWeight = '700';
+    } else {
+      div.style.marginBottom = '6px';
+    }
+
+    div.innerHTML = `${idx+1}. <strong>${escapeHtml(name)}</strong> — ${qty} registro(s)`;
+    container.appendChild(div);
+  });
 }
 
 async function loadAll(){
