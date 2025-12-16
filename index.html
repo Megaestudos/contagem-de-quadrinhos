@@ -9,9 +9,8 @@
 <link id="manifestPlaceholder" rel="manifest"/>
 
 <style>
-  html {
-  color-scheme: light;
-}
+html { color-scheme: light; }
+
 :root{
   --bg-1:#e8f7ff;
   --bg-2:#d8efff;
@@ -21,13 +20,16 @@
   --card-radius:16px;
   --shadow: 0 10px 30px rgba(11,36,64,0.10);
 }
+
 *{box-sizing:border-box}
+
 body{
   margin:0;
   font-family: Inter, Segoe UI, Roboto, Arial, sans-serif;
   background: linear-gradient(180deg,var(--bg-1),var(--bg-2));
   color:var(--muted);
 }
+
 header{padding:26px 16px;text-align:center}
 h1{margin:0;font-size:26px;color:var(--accent)}
 
@@ -64,18 +66,32 @@ tbody td{padding:12px;border-bottom:1px solid #eee}
   border-radius:8px;
   margin-bottom:8px;
 }
-  @media (prefers-color-scheme: dark) {
+
+/* ===== TÍTULOS DESTACADOS ===== */
+.section-title{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding:10px 14px;
+  margin:0 0 12px 0;
+  font-size:18px;
+  font-weight:700;
+  color:var(--accent);
+  background:rgba(30,144,255,0.12);
+  border-left:6px solid var(--accent);
+  border-radius:10px;
+  box-shadow:var(--shadow);
+}
+
+@media (prefers-color-scheme: dark) {
   html, body {
     background: linear-gradient(180deg,#e8f7ff,#d8efff) !important;
     color: #234b60 !important;
   }
-
-  .panel,
-  table {
+  .panel, table {
     background: rgba(255,255,255,0.95) !important;
   }
 }
-
 </style>
 </head>
 
@@ -99,7 +115,7 @@ tbody td{padding:12px;border-bottom:1px solid #eee}
 </section>
 
 <section class="panel">
-<h3>Registros — Antes do expediente</h3>
+<h3 class="section-title">Registros — Antes do expediente</h3>
 <div class="table-wrap">
 <table id="tableAntes">
 <thead><tr><th>Motorista</th><th>Data</th><th>Horário</th><th>Missão</th></tr></thead>
@@ -109,7 +125,7 @@ tbody td{padding:12px;border-bottom:1px solid #eee}
 </section>
 
 <section class="panel">
-<h3>Registros — Depois do expediente</h3>
+<h3 class="section-title">Registros — Depois do expediente</h3>
 <div class="table-wrap">
 <table id="tableDepois">
 <thead><tr><th>Motorista</th><th>Data</th><th>Horário</th><th>Missão</th></tr></thead>
@@ -125,7 +141,6 @@ const ABA_ANTES = "ANTES DO EXPEDIENTE";
 const ABA_DEPOIS = "DEPOIS DO EXPEDIENTE";
 const BASE_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=`;
 
-/* ===== DATA COMO TEXTO + ORDENAÇÃO ===== */
 function dateToNumber(txt){
   if(!txt) return 0;
   const p = txt.split('/');
@@ -139,7 +154,6 @@ function sortByDate(items){
   return items.slice().sort((a,b)=>dateToNumber(b.data)-dateToNumber(a.data));
 }
 
-/* ===== FETCH ===== */
 async function fetchSheet(aba){
   const r = await fetch(BASE_URL+encodeURIComponent(aba));
   const t = await r.text();
@@ -147,7 +161,6 @@ async function fetchSheet(aba){
   return (j.table.rows||[]).map(r=>(r.c||[]).map(c=>c?.f||c?.v||""));
 }
 
-/* ===== NORMALIZE ===== */
 function normalize(rows){
   return rows.map(r=>({
     motorista:String(r[0]||""),
@@ -157,7 +170,6 @@ function normalize(rows){
   })).filter(r=>r.motorista);
 }
 
-/* ===== RENDER ===== */
 function renderTable(id,items){
   const tb=document.querySelector(`#${id} tbody`);
   tb.innerHTML="";
@@ -184,7 +196,6 @@ function renderRanking(id,items){
   });
 }
 
-/* ===== MAIN ===== */
 async function loadAll(){
   const [a,b]=await Promise.all([
     fetchSheet(ABA_ANTES),
