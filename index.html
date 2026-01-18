@@ -412,14 +412,9 @@ const SECTIONS_ORDER = ['telefones', 'expediente', 'eventos', 'diarias', 'repres
 
 // Função para navegar entre seções
 function showSection(id){
-  // Esconder todas as seções
   document.querySelectorAll('.content-section').forEach(s => s.classList.remove('active'));
   document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-  
-  // Mostrar seção selecionada
   document.getElementById(id).classList.add('active');
-  
-  // Ativar botão correspondente
   const btnIndex = SECTIONS_ORDER.indexOf(id);
   if(btnIndex >= 0){
     document.querySelectorAll('.nav-btn')[btnIndex].classList.add('active');
@@ -451,7 +446,6 @@ async function fetchSheet(aba){
   }
 }
 
-// Normalizar dados genéricos
 function normalize(rows){
   return rows.map(r=({
     motorista:String(r[0]||""),
@@ -462,7 +456,6 @@ function normalize(rows){
   })).filter(r=>r.motorista);
 }
 
-// Normalizar telefones
 function normalizeTelefones(rows){
   return rows.map(r=({
     nome:String(r[0]||""),
@@ -527,7 +520,6 @@ function renderStats(totalId, driversId, items){
 }
 
 async function loadAll(){
-  // Carregar todas as abas em paralelo
   const [telRows, antRows, depRows, evRows, diRows, repRows] = await Promise.all([
     fetchSheet(ABA_TELEFONES),
     fetchSheet(ABA_ANTES),
@@ -537,11 +529,9 @@ async function loadAll(){
     fetchSheet(ABA_REPRESENTACOES)
   ]);
 
-  // 1. Processar telefones
   const telefones = normalizeTelefones(telRows);
   renderTelefones(telefones);
 
-  // 2. Processar antes/depois do expediente
   const antes = sortByDate(normalize(antRows));
   const depois = sortByDate(normalize(depRows));
   renderTable("tableAntes", antes);
@@ -549,19 +539,16 @@ async function loadAll(){
   renderRanking("rankListAntes", antes);
   renderRanking("rankListDepois", depois);
 
-  // 3. Processar eventos
   const eventos = sortByDate(normalize(evRows));
   renderTable("tableEventos", eventos, true);
   renderRanking("rankEventos", eventos);
   renderStats("totalEventos", "motoristasEventos", eventos);
 
-  // 4. Processar diárias
   const diarias = sortByDate(normalize(diRows));
   renderTable("tableDiarias", diarias, true);
   renderRanking("rankDiarias", diarias);
   renderStats("totalDiarias", "motoristasDiarias", diarias);
 
-  // 5. Processar representações
   const representacoes = sortByDate(normalize(repRows));
   renderTable("tableRepresentacoes", representacoes, true);
   renderRanking("rankRepresentacoes", representacoes);
