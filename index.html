@@ -406,7 +406,7 @@ tbody td{padding:12px;border-bottom:1px solid #eee}
 
 <script>
 // URL da API do Apps Script
-const API_URL = "https://script.google.com/macros/s/AKfycbyuq_lqzCQ9S3TybAWTcj6YuajwC81OMHrysKmVAiagpBlZzgZFcqdwdKnm6-jn2ycE1g/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbwl00IOYe3EkNkzoMDTnAlOFshingbS-P7e-4Xdjr1Tbl_teTyU9gHnK--TRjBV8rlkGA/exec";
 
 // Nome das abas na planilha
 const ABA_TELEFONES = "TELEFONES ÚTEIS";
@@ -501,10 +501,26 @@ function normalizeData(rows, headers){
       obj[key] = row[i];
     });
     
+    // Debug: mostrar todos os valores da linha
+    console.log('Linha completa:', row);
+    console.log('Headers:', headers);
+    console.log('Objeto mapeado:', obj);
+    
     // Função para extrair hora do timestamp ISO
     function extrairHora(valor) {
       if (!valor) return '';
       const str = String(valor).trim();
+      
+      // Se for timestamp ISO (1899-12-30T09:54:00.000Z) - PRIORIDADE!
+      if (str.includes('T')) {
+        const match = str.match(/T(\d{2}):(\d{2})/);
+        if (match) {
+          const hours = parseInt(match[1]);
+          const minutes = match[2];
+          // Se for 1899 (data fake do Excel), usar a hora diretamente
+          return `${String(hours).padStart(2, '0')}:${minutes}`;
+        }
+      }
       
       // Se for formato AM/PM (7:20:00 AM ou 2:30:00 PM)
       if (str.includes('AM') || str.includes('PM')) {
@@ -523,12 +539,6 @@ function normalizeData(rows, headers){
           
           return `${String(hours).padStart(2, '0')}:${minutes}`;
         }
-      }
-      
-      // Se for timestamp ISO (1899-12-30T09:34:00.000Z)
-      if (str.includes('T')) {
-        const match = str.match(/T(\d{2}):(\d{2})/);
-        if (match) return `${match[1]}:${match[2]}`;
       }
       
       // Se for número (Excel serial date com hora)
