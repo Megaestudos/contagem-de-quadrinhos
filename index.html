@@ -30,10 +30,64 @@ body{
   color:var(--muted);
 }
 
-header{padding:26px 16px;text-align:center}
+header{padding:20px 16px;text-align:center}
 h1{margin:0;font-size:26px;color:var(--accent)}
 
+/* ===== BARRA DE NAVEGAÇÃO ===== */
+.nav-bar{
+  display:flex;
+  justify-content:center;
+  gap:10px;
+  flex-wrap:wrap;
+  padding:15px 16px;
+  background:rgba(255,255,255,0.5);
+  backdrop-filter:blur(10px);
+  position:sticky;
+  top:0;
+  z-index:100;
+  box-shadow:0 2px 10px rgba(0,0,0,0.05);
+}
+
+.nav-btn{
+  padding:12px 24px;
+  border:none;
+  border-radius:25px;
+  font-size:14px;
+  font-weight:600;
+  cursor:pointer;
+  transition:all 0.3s ease;
+  background:rgba(255,255,255,0.8);
+  color:var(--muted);
+  box-shadow:0 2px 8px rgba(0,0,0,0.08);
+}
+
+.nav-btn:hover{
+  transform:translateY(-2px);
+  box-shadow:0 4px 12px rgba(0,0,0,0.12);
+}
+
+.nav-btn.active{
+  background:var(--accent);
+  color:#fff;
+  box-shadow:0 4px 15px rgba(30,144,255,0.35);
+}
+
 .container{max-width:1100px;margin:18px auto 60px;padding:0 16px}
+
+/* Ocultar seções inativas */
+.content-section{
+  display:none;
+  animation:fadeIn 0.3s ease;
+}
+
+.content-section.active{
+  display:block;
+}
+
+@keyframes fadeIn{
+  from{opacity:0;transform:translateY(10px)}
+  to{opacity:1;transform:translateY(0)}
+}
 
 .panel{
   background:var(--card-bg);
@@ -52,13 +106,91 @@ h1{margin:0;font-size:26px;color:var(--accent)}
   padding:14px;
   color:#fff;
 }
+
 .rank-antes{background:linear-gradient(135deg,#50a8ff,#2b9ed8)}
 .rank-depois{background:linear-gradient(135deg,#00b894,#01936b)}
+.rank-eventos{background:linear-gradient(135deg,#fd79a8,#e84393)}
+.rank-diarias{background:linear-gradient(135deg,#a29bfe,#6c5ce7)}
+.rank-representacoes{background:linear-gradient(135deg,#fdcb6e,#e17055)}
 
 .table-wrap{overflow:auto;margin-top:12px}
 table{width:100%;border-collapse:collapse;background:#fff}
 thead th{padding:12px;border-bottom:2px solid #ddd}
 tbody td{padding:12px;border-bottom:1px solid #eee}
+
+/* ===== TELEFONES ===== */
+.telefones-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(280px,1fr));
+  gap:15px;
+  margin-top:12px;
+}
+
+.telefone-card{
+  background:#fff;
+  border-radius:12px;
+  padding:16px;
+  box-shadow:0 2px 8px rgba(0,0,0,0.08);
+  border-left:4px solid var(--accent);
+  transition:transform 0.2s;
+}
+
+.telefone-card:hover{
+  transform:translateX(5px);
+}
+
+.telefone-card .nome{
+  font-weight:700;
+  font-size:15px;
+  color:var(--accent);
+  margin-bottom:6px;
+}
+
+.telefone-card .numero{
+  font-size:18px;
+  font-weight:600;
+  color:var(--muted);
+}
+
+.telefone-card .obs{
+  font-size:12px;
+  color:#666;
+  margin-top:6px;
+  font-style:italic;
+}
+
+/* ===== CONTADORES DE MISSÕES ===== */
+.mission-stats{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
+  gap:15px;
+  margin:15px 0;
+}
+
+.stat-card{
+  background:linear-gradient(135deg,var(--accent),#0099ff);
+  color:#fff;
+  border-radius:12px;
+  padding:20px;
+  text-align:center;
+}
+
+.stat-card.success{
+  background:linear-gradient(135deg,#00b894,#00a381);
+}
+
+.stat-card .numero{
+  font-size:42px;
+  font-weight:800;
+  margin-bottom:5px;
+}
+
+.stat-card .label{
+  font-size:13px;
+  opacity:0.9;
+  text-transform:uppercase;
+  letter-spacing:1px;
+}
 
 .top1{
   background:rgba(255,255,255,0.15);
@@ -83,12 +215,19 @@ tbody td{padding:12px;border-bottom:1px solid #eee}
   box-shadow:var(--shadow);
 }
 
+/* ===== STATUS ===== */
+#status{
+  text-align:center;
+  font-weight:600;
+  color:var(--accent);
+}
+
 @media (prefers-color-scheme: dark) {
   html, body {
     background: linear-gradient(180deg,#e8f7ff,#d8efff) !important;
     color: #234b60 !important;
   }
-  .panel, table {
+  .panel, table, .telefone-card {
     background: rgba(255,255,255,0.95) !important;
   }
 }
@@ -96,50 +235,196 @@ tbody td{padding:12px;border-bottom:1px solid #eee}
 </head>
 
 <body>
-<header><h1>Contagem de Quadrinhos</h1></header>
+<header><h1>Contagem de Motoristas</h1></header>
+
+<!-- BARRA DE NAVEGAÇÃO COM BOTÕES -->
+<nav class="nav-bar">
+  <button class="nav-btn active" onclick="showSection('telefones')">📞 Telefones Úteis</button>
+  <button class="nav-btn" onclick="showSection('expediente')">📋 Antes/Depois Expediente</button>
+  <button class="nav-btn" onclick="showSection('eventos')">🎉 Missões Eventos</button>
+  <button class="nav-btn" onclick="showSection('diarias')">🚗 Missões Externas Diárias</button>
+  <button class="nav-btn" onclick="showSection('representacoes')">🏛️ Missões Representações</button>
+</nav>
 
 <main class="container">
+
 <div id="status" class="panel">Carregando dados...</div>
 
-<section class="panel">
-<div class="row">
-  <div class="ranking-card rank-antes">
-    <strong>Chegadas cedo — TOP 7</strong>
-    <div id="rankListAntes"></div>
-  </div>
-  <div class="ranking-card rank-depois">
-    <strong>Saídas tarde — TOP 7</strong>
-    <div id="rankListDepois"></div>
-  </div>
-</div>
+<!-- ===== 1. TELEFONES ÚTEIS ===== -->
+<section id="telefones" class="content-section active">
+  <section class="panel">
+    <h3 class="section-title">📞 Telefones Úteis</h3>
+    <div id="telefonesGrid" class="telefones-grid"></div>
+  </section>
 </section>
 
-<section class="panel">
-<h3 class="section-title">Registros — Antes do expediente</h3>
-<div class="table-wrap">
-<table id="tableAntes">
-<thead><tr><th>Motorista</th><th>Data</th><th>Horário</th><th>Missão</th></tr></thead>
-<tbody></tbody>
-</table>
-</div>
+<!-- ===== 2. ANTES/DEPOIS DO EXPEDIENTE ===== -->
+<section id="expediente" class="content-section">
+  <section class="panel">
+    <div class="row">
+      <div class="ranking-card rank-antes">
+        <strong>Chegadas cedo — TOP 7</strong>
+        <div id="rankListAntes"></div>
+      </div>
+      <div class="ranking-card rank-depois">
+        <strong>Saídas tarde — TOP 7</strong>
+        <div id="rankListDepois"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel">
+    <h3 class="section-title">Registros — Antes do expediente</h3>
+    <div class="table-wrap">
+      <table id="tableAntes">
+        <thead><tr><th>Motorista</th><th>Data</th><th>Horário</th><th>Missão</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="panel">
+    <h3 class="section-title">Registros — Depois do expediente</h3>
+    <div class="table-wrap">
+      <table id="tableDepois">
+        <thead><tr><th>Motorista</th><th>Data</th><th>Horário</th><th>Missão</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </section>
 </section>
 
-<section class="panel">
-<h3 class="section-title">Registros — Depois do expediente</h3>
-<div class="table-wrap">
-<table id="tableDepois">
-<thead><tr><th>Motorista</th><th>Data</th><th>Horário</th><th>Missão</th></tr></thead>
-<tbody></tbody>
-</table>
-</div>
+<!-- ===== 3. MISSÕES EVENTOS ===== -->
+<section id="eventos" class="content-section">
+  <section class="panel">
+    <h3 class="section-title">🎉 Contagem — Missões de Eventos</h3>
+    <div class="mission-stats">
+      <div class="stat-card">
+        <div class="numero" id="totalEventos">0</div>
+        <div class="label">Total de Eventos</div>
+      </div>
+      <div class="stat-card success">
+        <div class="numero" id="motoristasEventos">0</div>
+        <div class="label">Motoristas Ativos</div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="ranking-card rank-eventos">
+        <strong>Ranking — TOP 7 Eventos</strong>
+        <div id="rankEventos"></div>
+      </div>
+    </div>
+  </section>
+  
+  <section class="panel">
+    <h3 class="section-title">Todas as Missões — Eventos</h3>
+    <div class="table-wrap">
+      <table id="tableEventos">
+        <thead><tr><th>Motorista</th><th>Data</th><th>Horário</th><th>Missão</th><th>Observação</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </section>
 </section>
+
+<!-- ===== 4. MISSÕES EXTERNAS DIÁRIAS ===== -->
+<section id="diarias" class="content-section">
+  <section class="panel">
+    <h3 class="section-title">🚗 Contagem — Missões Externas em Diárias</h3>
+    <div class="mission-stats">
+      <div class="stat-card">
+        <div class="numero" id="totalDiarias">0</div>
+        <div class="label">Total de Diárias</div>
+      </div>
+      <div class="stat-card success">
+        <div class="numero" id="motoristasDiarias">0</div>
+        <div class="label">Motoristas Ativos</div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="ranking-card rank-diarias">
+        <strong>Ranking — TOP 7 Diárias</strong>
+        <div id="rankDiarias"></div>
+      </div>
+    </div>
+  </section>
+  
+  <section class="panel">
+    <h3 class="section-title">Todas as Missões — Diárias</h3>
+    <div class="table-wrap">
+      <table id="tableDiarias">
+        <thead><tr><th>Motorista</th><th>Data</th><th>Horário</th><th>Missão</th><th>Observação</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </section>
+</section>
+
+<!-- ===== 5. MISSÕES EXTERNAS REPRESENTAÇÕES ===== -->
+<section id="representacoes" class="content-section">
+  <section class="panel">
+    <h3 class="section-title">🏛️ Contagem — Missões Externas em Representações</h3>
+    <div class="mission-stats">
+      <div class="stat-card">
+        <div class="numero" id="totalRepresentacoes">0</div>
+        <div class="label">Total de Representações</div>
+      </div>
+      <div class="stat-card success">
+        <div class="numero" id="motoristasRepresentacoes">0</div>
+        <div class="label">Motoristas Ativos</div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="ranking-card rank-representacoes">
+        <strong>Ranking — TOP 7 Representações</strong>
+        <div id="rankRepresentacoes"></div>
+      </div>
+    </div>
+  </section>
+  
+  <section class="panel">
+    <h3 class="section-title">Todas as Missões — Representações</h3>
+    <div class="table-wrap">
+      <table id="tableRepresentacoes">
+        <thead><tr><th>Motorista</th><th>Data</th><th>Horário</th><th>Missão</th><th>Observação</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </section>
+</section>
+
 </main>
 
 <script>
 const SHEET_ID = "1eaFPPSEpMxsdUY9m3vT_fOhoYUKYBzATv55nRHQwyTY";
+const BASE_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=`;
+
+// Nome das abas na planilha
+const ABA_TELEFONES = "TELEFONES ÚTEIS";
 const ABA_ANTES = "ANTES DO EXPEDIENTE";
 const ABA_DEPOIS = "DEPOIS DO EXPEDIENTE";
-const BASE_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=`;
+const ABA_EVENTOS = "MISSÕES EVENTOS";
+const ABA_DIARIAS = "MISSÕES EXTERNAS DIÁRIAS";
+const ABA_REPRESENTACOES = "MISSÕES EXTERNAS REPRESENTAÇÕES";
+
+// Ordem das abas na navegação
+const SECTIONS_ORDER = ['telefones', 'expediente', 'eventos', 'diarias', 'representacoes'];
+
+// Função para navegar entre seções
+function showSection(id){
+  // Esconder todas as seções
+  document.querySelectorAll('.content-section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  
+  // Mostrar seção selecionada
+  document.getElementById(id).classList.add('active');
+  
+  // Ativar botão correspondente
+  const btnIndex = SECTIONS_ORDER.indexOf(id);
+  if(btnIndex >= 0){
+    document.querySelectorAll('.nav-btn')[btnIndex].classList.add('active');
+  }
+}
 
 function dateToNumber(txt){
   if(!txt) return 0;
@@ -155,31 +440,57 @@ function sortByDate(items){
 }
 
 async function fetchSheet(aba){
-  const r = await fetch(BASE_URL+encodeURIComponent(aba));
-  const t = await r.text();
-  const j = JSON.parse(t.slice(t.indexOf('{'),t.lastIndexOf('}')+1));
-  return (j.table.rows||[]).map(r=>(r.c||[]).map(c=>c?.f||c?.v||""));
+  try{
+    const r = await fetch(BASE_URL+encodeURIComponent(aba));
+    const t = await r.text();
+    const j = JSON.parse(t.slice(t.indexOf('{'),t.lastIndexOf('}')+1));
+    return (j.table.rows||[]).map(r=>(r.c||[]).map(c=>c?.f||c?.v||""));
+  }catch(e){
+    console.error(`Erro ao carregar aba ${aba}:`, e);
+    return [];
+  }
 }
 
+// Normalizar dados genéricos
 function normalize(rows){
-  return rows.map(r=>({
+  return rows.map(r=({
     motorista:String(r[0]||""),
     data:String(r[1]||""),
     hora:String(r[2]||""),
-    missao:String(r[3]||"")
+    missao:String(r[3]||""),
+    observacao:String(r[4]||"")
   })).filter(r=>r.motorista);
 }
 
-function renderTable(id,items){
+// Normalizar telefones
+function normalizeTelefones(rows){
+  return rows.map(r=({
+    nome:String(r[0]||""),
+    numero:String(r[1]||""),
+    obs:String(r[2]||"")
+  })).filter(r=>r.nome && r.numero);
+}
+
+function renderTable(id,items, hasObs = false){
   const tb=document.querySelector(`#${id} tbody`);
   tb.innerHTML="";
   items.forEach(i=>{
-    tb.innerHTML+=`<tr>
-      <td>${i.motorista}</td>
-      <td>${i.data}</td>
-      <td>${i.hora}</td>
-      <td>${i.missao}</td>
-    </tr>`;
+    if(hasObs){
+      tb.innerHTML+=`<tr>
+        <td>${i.motorista}</td>
+        <td>${i.data}</td>
+        <td>${i.hora}</td>
+        <td>${i.missao}</td>
+        <td>${i.observacao}</td>
+      </tr>`;
+    }else{
+      tb.innerHTML+=`<tr>
+        <td>${i.motorista}</td>
+        <td>${i.data}</td>
+        <td>${i.hora}</td>
+        <td>${i.missao}</td>
+      </tr>`;
+    }
   });
 }
 
@@ -194,23 +505,69 @@ function renderRanking(id,items){
       ${i+1}. <strong>${n}</strong> — ${q}
     </div>`;
   });
+  return r.length;
+}
+
+function renderTelefones(items){
+  const grid=document.getElementById("telefonesGrid");
+  grid.innerHTML="";
+  items.forEach(t=>{
+    grid.innerHTML+=`<div class="telefone-card">
+      <div class="nome">${t.nome}</div>
+      <div class="numero">${t.numero}</div>
+      ${t.obs ? `<div class="obs">${t.obs}</div>` : ''}
+    </div>`;
+  });
+}
+
+function renderStats(totalId, driversId, items){
+  document.getElementById(totalId).innerText = items.length;
+  const uniqueDrivers = new Set(items.map(i=>i.motorista)).size;
+  document.getElementById(driversId).innerText = uniqueDrivers;
 }
 
 async function loadAll(){
-  const [a,b]=await Promise.all([
+  // Carregar todas as abas em paralelo
+  const [telRows, antRows, depRows, evRows, diRows, repRows] = await Promise.all([
+    fetchSheet(ABA_TELEFONES),
     fetchSheet(ABA_ANTES),
-    fetchSheet(ABA_DEPOIS)
+    fetchSheet(ABA_DEPOIS),
+    fetchSheet(ABA_EVENTOS),
+    fetchSheet(ABA_DIARIAS),
+    fetchSheet(ABA_REPRESENTACOES)
   ]);
 
-  const na=sortByDate(normalize(a));
-  const nb=sortByDate(normalize(b));
+  // 1. Processar telefones
+  const telefones = normalizeTelefones(telRows);
+  renderTelefones(telefones);
 
-  renderTable("tableAntes",na);
-  renderTable("tableDepois",nb);
-  renderRanking("rankListAntes",na);
-  renderRanking("rankListDepois",nb);
+  // 2. Processar antes/depois do expediente
+  const antes = sortByDate(normalize(antRows));
+  const depois = sortByDate(normalize(depRows));
+  renderTable("tableAntes", antes);
+  renderTable("tableDepois", depois);
+  renderRanking("rankListAntes", antes);
+  renderRanking("rankListDepois", depois);
 
-  document.getElementById("status").innerText="Dados carregados.";
+  // 3. Processar eventos
+  const eventos = sortByDate(normalize(evRows));
+  renderTable("tableEventos", eventos, true);
+  renderRanking("rankEventos", eventos);
+  renderStats("totalEventos", "motoristasEventos", eventos);
+
+  // 4. Processar diárias
+  const diarias = sortByDate(normalize(diRows));
+  renderTable("tableDiarias", diarias, true);
+  renderRanking("rankDiarias", diarias);
+  renderStats("totalDiarias", "motoristasDiarias", diarias);
+
+  // 5. Processar representações
+  const representacoes = sortByDate(normalize(repRows));
+  renderTable("tableRepresentacoes", representacoes, true);
+  renderRanking("rankRepresentacoes", representacoes);
+  renderStats("totalRepresentacoes", "motoristasRepresentacoes", representacoes);
+
+  document.getElementById("status").innerText="✅ Dados carregados com sucesso!";
 }
 
 loadAll();
