@@ -516,67 +516,6 @@ function normalizeDiarias(rows, headers){
     };
   }).filter(r => r.motorista);
 }
-    
-    // Debug: mostrar todos os valores da linha
-    console.log('Linha completa:', row);
-    console.log('Headers:', headers);
-    console.log('Objeto mapeado:', obj);
-    
-    // Função para extrair hora do timestamp ISO
-    function extrairHora(valor) {
-      if (!valor) return '';
-      const str = String(valor).trim();
-      
-      // Se for timestamp ISO (1899-12-30T09:54:00.000Z) - PRIORIDADE!
-      if (str.includes('T')) {
-        const match = str.match(/T(\d{2}):(\d{2})/);
-        if (match) {
-          const hours = parseInt(match[1]);
-          const minutes = match[2];
-          // Se for 1899 (data fake do Excel), usar a hora diretamente
-          return `${String(hours).padStart(2, '0')}:${minutes}`;
-        }
-      }
-      
-      // Se for formato AM/PM (7:20:00 AM ou 2:30:00 PM)
-      if (str.includes('AM') || str.includes('PM')) {
-        const match = str.match(/(\d{1,2}):(\d{2}):\d{2}\s(AM|PM)/i);
-        if (match) {
-          let hours = parseInt(match[1]);
-          const minutes = match[2];
-          const period = match[3].toUpperCase();
-          
-          // Converter para formato 24h
-          if (period === 'PM' && hours !== 12) {
-            hours += 12;
-          } else if (period === 'AM' && hours === 12) {
-            hours = 0;
-          }
-          
-          return `${String(hours).padStart(2, '0')}:${minutes}`;
-        }
-      }
-      
-      // Se for número (Excel serial date com hora)
-      if (!isNaN(valor) && typeof valor === 'number') {
-        const hours = Math.floor((valor % 1) * 24);
-        const minutes = Math.floor(((valor % 1) * 24 - hours) * 60);
-        return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
-      }
-      
-      // Se for formato normal (7:00, 09:34, etc)
-      return str;
-    }
-    
-    return {
-      motorista: obj['MOTORISTA'] || obj['MOTORISTA '] || '',
-      data: obj['DATA'] || obj['DATA '] || '',
-      hora: extrairHora(obj['HORÁRIO'] || obj['HORARIO'] || obj['HORÁRIO '] || ''),
-      missao: obj['MISSÃO'] || obj['MISSAO'] || obj['MISSÃO '] || '',
-      observacao: obj['OBSERVAÇÃO'] || obj['OBSERVACAO'] || obj['OBSERVAÇÃO '] || obj['OBSERCAÇÃO'] || ''
-    };
-  }).filter(r => r.motorista);
-}
 
 // Processar telefones
 function normalizeTelefones(rows, headers){
@@ -724,14 +663,6 @@ function renderRankingDiarias(id, items){
     </div>`;
   });
 }
-
-  function renderRankingMissoes(id, items){
-  const count = {};
-  items.forEach(i=>{
-    if(i.motorista){
-      count[i.motorista] = (count[i.motorista] || 0) + 1;
-    }
-  });
 
   const rank = Object.entries(count)
     .sort((a,b)=>b[1]-a[1])
