@@ -339,30 +339,35 @@ tbody td{padding:12px;border-bottom:1px solid #eee}
 <!-- ===== 4. MISSÕES EXTERNAS DIÁRIAS ===== -->
 <section id="diarias" class="content-section">
   <section class="panel">
-    <h3 class="section-title">🚗 Contagem — Missões Externas em Diárias</h3>
-    <div class="mission-stats">
-      <div class="stat-card">
-        <div class="numero" id="totalDiarias">0</div>
-        <div class="label">Total de Diárias</div>
-      </div>
-      <div class="stat-card success">
-        <div class="numero" id="motoristasDiarias">0</div>
-        <div class="label">Motoristas Ativos</div>
-      </div>
-    </div>
+    <h3 class="section-title">🚗 Missões Externas Diárias</h3>
+
     <div class="row">
       <div class="ranking-card rank-diarias">
-        <strong>Ranking — TOP 7 Diárias</strong>
-        <div id="rankDiarias"></div>
+        <strong>🏆 TOP 10 — Motoristas com mais missões</strong>
+        <div id="rankDiariasMissoes"></div>
+      </div>
+
+      <div class="ranking-card rank-diarias">
+        <strong>💰 TOP 10 — Motoristas com mais diárias</strong>
+        <div id="rankDiariasValores"></div>
       </div>
     </div>
   </section>
-  
+
   <section class="panel">
-    <h3 class="section-title">Todas as Missões — Diárias</h3>
+    <h3 class="section-title">📋 Registros — Missões Externas Diárias</h3>
     <div class="table-wrap">
       <table id="tableDiarias">
-        <thead><tr><th>Motorista</th><th>Data</th><th>Horário</th><th>Missão</th><th>Observação</th></tr></thead>
+        <thead>
+          <tr>
+            <th>Data da Viagem</th>
+            <th>Missão</th>
+            <th>Motoristas</th>
+            <th>Viatura</th>
+            <th>Destino</th>
+            <th>Diárias</th>
+          </tr>
+        </thead>
         <tbody></tbody>
       </table>
     </div>
@@ -491,15 +496,26 @@ async function fetchSheet(aba){
 }
 
 // Processar dados genéricos
-function normalizeData(rows, headers){
+function normalizeDiarias(rows, headers){
   if(!rows || rows.length === 0) return [];
-  
+
   return rows.map(row => {
     const obj = {};
     headers.forEach((h, i) => {
       const key = String(h || '').trim().toUpperCase();
       obj[key] = row[i];
     });
+
+    return {
+      data: obj['DATA DA VIAGEM'] || '',
+      missao: obj['MISSÃO'] || obj['MISSAO'] || '',
+      motorista: obj['MOTORISTAS'] || obj['MOTORISTA'] || '',
+      viatura: obj['VIATURA'] || '',
+      destino: obj['DESTINO'] || '',
+      diarias: Number(obj['DIÁRIAS'] || obj['DIARIAS'] || 0)
+    };
+  }).filter(r => r.motorista);
+}
     
     // Debug: mostrar todos os valores da linha
     console.log('Linha completa:', row);
@@ -597,21 +613,30 @@ function renderTable(id,items){
   });
 }
 
-function renderTableWithObs(id,items){
-  const tb=document.querySelector(`#${id} tbody`);
-  tb.innerHTML="";
+function renderTableDiarias(items){
+  const tb = document.querySelector("#tableDiarias tbody");
+  tb.innerHTML = "";
+
   if(items.length === 0){
-    tb.innerHTML = '<tr><td colspan="5" style="text-align:center;color:#666;">Nenhum registro encontrado</td></tr>';
+    tb.innerHTML = `
+      <tr>
+        <td colspan="6" style="text-align:center;color:#666;">
+          Nenhum registro encontrado
+        </td>
+      </tr>`;
     return;
   }
+
   items.forEach(i=>{
-    tb.innerHTML+=`<tr>
-      <td>${i.motorista}</td>
-      <td>${i.data}</td>
-      <td>${i.hora}</td>
-      <td>${i.missao}</td>
-      <td>${i.observacao}</td>
-    </tr>`;
+    tb.innerHTML += `
+      <tr>
+        <td>${i.data}</td>
+        <td>${i.missao}</td>
+        <td>${i.motorista}</td>
+        <td>${i.viatura}</td>
+        <td>${i.destino}</td>
+        <td>${i.diarias}</td>
+      </tr>`;
   });
 }
 
@@ -656,6 +681,94 @@ function renderTelefones(items){
   });
 }
 
+  function renderRankingMissoes(id, items){
+  const count = {};
+  items.forEach(i=>{
+    if(i.motorista){
+      count[i.motorista] = (count[i.motorista] || 0) + 1;
+    }
+  });
+
+  const rank = Object.entries(count)
+    .sort((a,b)=>b[1]-a[1])
+    .slice(0,10);
+
+  const el = document.getElementById(id);
+  el.innerHTML = "";
+
+  rank.forEach(([nome, qtd], i)=>{
+    el.innerHTML += `<div class="${i===0?'top1':''}">
+      ${i+1}. <strong>${nome}</strong> — ${qtd} missões
+    </div>`;
+  });
+}
+
+function renderRankingDiarias(id, items){
+  const total = {};
+  items.forEach(i=>{
+    if(i.motorista){
+      total[i.motorista] = (total[i.motorista] || 0) + i.diarias;
+    }
+  });
+
+  const rank = Object.entries(total)
+    .sort((a,b)=>b[1]-a[1])
+    .slice(0,10);
+
+  const el = document.getElementById(id);
+  el.innerHTML = "";
+
+  rank.forEach(([nome, qtd], i)=>{
+    el.innerHTML += `<div class="${i===0?'top1':''}">
+      ${i+1}. <strong>${nome}</strong> — ${qtd} diárias
+    </div>`;
+  });
+}
+
+  function renderRankingMissoes(id, items){
+  const count = {};
+  items.forEach(i=>{
+    if(i.motorista){
+      count[i.motorista] = (count[i.motorista] || 0) + 1;
+    }
+  });
+
+  const rank = Object.entries(count)
+    .sort((a,b)=>b[1]-a[1])
+    .slice(0,10);
+
+  const el = document.getElementById(id);
+  el.innerHTML = "";
+
+  rank.forEach(([nome, qtd], i)=>{
+    el.innerHTML += `<div class="${i===0?'top1':''}">
+      ${i+1}. <strong>${nome}</strong> — ${qtd} missões
+    </div>`;
+  });
+}
+
+function renderRankingDiarias(id, items){
+  const total = {};
+  items.forEach(i=>{
+    if(i.motorista){
+      total[i.motorista] = (total[i.motorista] || 0) + i.diarias;
+    }
+  });
+
+  const rank = Object.entries(total)
+    .sort((a,b)=>b[1]-a[1])
+    .slice(0,10);
+
+  const el = document.getElementById(id);
+  el.innerHTML = "";
+
+  rank.forEach(([nome, qtd], i)=>{
+    el.innerHTML += `<div class="${i===0?'top1':''}">
+      ${i+1}. <strong>${nome}</strong> — ${qtd} diárias
+    </div>`;
+  });
+}
+
 function renderStats(totalId, driversId, items){
   document.getElementById(totalId).innerText = items.length;
   const uniqueDrivers = new Set(items.map(i=>i.motorista).filter(Boolean));
@@ -693,10 +806,14 @@ async function loadAll(){
     renderRanking("rankEventos", eventos);
     renderStats("totalEventos", "motoristasEventos", eventos);
 
-    const diarias = sortByDate(normalizeData(diData.data || [], diData.headers || []));
-    renderTableWithObs("tableDiarias", diarias);
-    renderRanking("rankDiarias", diarias);
-    renderStats("totalDiarias", "motoristasDiarias", diarias);
+    const diarias = sortByDate(
+    normalizeDiarias(diData.data || [], diData.headers || [])
+   );
+
+   renderTableDiarias(diarias);
+   renderRankingMissoes("rankDiariasMissoes", diarias);
+   renderRankingDiarias("rankDiariasValores", diarias);
+
 
     const representacoes = sortByDate(normalizeData(repData.data || [], repData.headers || []));
     renderTableWithObs("tableRepresentacoes", representacoes);
