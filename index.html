@@ -432,7 +432,7 @@ function showSection(id){
   document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
   document.getElementById(id)?.classList.add('active');
   const i = SECTIONS_ORDER.indexOf(id);
-  if(i>=0) document.querySelectorAll('.nav-btn')[i]?.classList.add('active');
+  if(i >= 0) document.querySelectorAll('.nav-btn')[i]?.classList.add('active');
 }
 
 // ======================================================
@@ -441,8 +441,9 @@ function showSection(id){
 async function fetchSheet(aba){
   const res = await fetch(`${API_URL}?aba=${encodeURIComponent(aba)}`);
   const text = await res.text();
-  if(!text || text.startsWith('<')) return {headers:[],data:[]};
-  return JSON.parse(text);
+  if(!text || text.startsWith('<')) return { headers:[], data:[] };
+  const json = JSON.parse(text);
+  return json;
 }
 
 // ======================================================
@@ -456,62 +457,42 @@ function escapeHtml(s){
 }
 
 // ======================================================
-// 🔧 FUNÇÃO QUE ESTAVA FALTANDO (ERRO REAL)
-// ======================================================
-function renderTelefones(items){
-  const g=document.getElementById('telefonesGrid');
-  g.innerHTML='';
-  items.forEach(t=>{
-    g.innerHTML+=`<div class="telefone-card">
-      <div class="nome">${escapeHtml(t.nome)}</div>
-      <div class="numero">${escapeHtml(t.numero)}</div>
-      ${t.obs?`<div class="obs">${escapeHtml(t.obs)}</div>`:''}
-    </div>`;
-  });
-}
-
-// ======================================================
-// RENDER TABELAS GENÉRICAS
-// ======================================================
-function renderTableGeneric(tableId, rows){
-  const tb = document.querySelector(`#${tableId} tbody`);
-  tb.innerHTML='';
-  rows.forEach(r=>{
-    tb.innerHTML+=`<tr>${r.map(c=>`<td>${escapeHtml(c)}</td>`).join('')}</tr>`;
-  });
-}
-
-// ======================================================
-// RANKING SIMPLES (ANTES / DEPOIS)
-// ======================================================
-function renderRankingSimples(containerId, rows){
-  const map={};
-  rows.forEach(r=>{
-    const nome=r[0];
-    if(nome) map[nome]=(map[nome]||0)+1;
-  });
-
-  const el=document.getElementById(containerId);
-  el.innerHTML='';
-
-  Object.entries(map)
-    .sort((a,b)=>b[1]-a[1])
-    .slice(0,7)
-    .forEach(([n,q],i)=>{
-      el.innerHTML+=`<div class="${i===0?'top1':''}">
-        ${i+1}. <strong>${escapeHtml(n)}</strong> — ${q}
-      </div>`;
-    });
-}
-
-// ======================================================
-// NORMALIZERS (ORIGINAIS)
+// NORMALIZERS
 // ======================================================
 function normalizeTelefones(rows, headers){
   return rows.map(r=>{
     const o={}; headers.forEach((h,i)=>o[h.toUpperCase()]=r[i]);
-    return {nome:o['NOME'],numero:o['TELEFONE'],obs:o['OBSERVAÇÃO']};
+    return {
+      nome:o['NOME']||'',
+      numero:o['TELEFONE']||'',
+      obs:o['OBSERVAÇÃO']||''
+    };
   }).filter(x=>x.nome && x.numero);
+}
+
+function normalizeExpediente(rows, headers){
+  return rows.map(r=>{
+    const o={}; headers.forEach((h,i)=>o[h.toUpperCase()]=r[i]);
+    return {
+      motorista:o['MOTORISTA']||'',
+      data:o['DATA']||'',
+      hora:o['HORÁRIO']||o['HORARIO']||'',
+      missao:o['MISSÃO']||o['MISSAO']||''
+    };
+  }).filter(x=>x.motorista);
+}
+
+function normalizeEventos(rows, headers){
+  return rows.map(r=>{
+    const o={}; headers.forEach((h,i)=>o[h.toUpperCase()]=r[i]);
+    return {
+      motorista:o['MOTORISTA']||'',
+      data:o['DATA']||'',
+      hora:o['HORÁRIO']||'',
+      missao:o['MISSÃO']||'',
+      obs:o['OBSERVAÇÃO']||''
+    };
+  }).filter(x=>x.motorista);
 }
 
 function normalizeDiarias(rows, headers){
@@ -529,29 +510,149 @@ function normalizeDiarias(rows, headers){
 }
 
 // ======================================================
-// LOAD (AGORA FUNCIONA)
+// RENDER TABLES
+// ======================================================
+function renderTelefones(items){
+  const g=document.getElementById('telefonesGrid'); 
+  g.innerHTML='';
+  items.forEach(t=>{
+    g.innerHTML+=`<div class="telefone-card">
+      <div class="nome">${escapeHtml(t.nome)}</div>
+      <div class="numero">${escapeHtml(t.numero)}</div>
+      ${t.obs?`<div class="obs">${escapeHtml(t.obs)}</div>`:''}
+    </div>`;
+  });
+}
+
+function renderTableExpediente(id, items){
+  const tb=document.querySelector(`#${id} tbody`);
+  tb.innerHTML='';
+  items.forEach(i=>{
+    tb.innerHTML+=`<tr>
+      <td>${escapeHtml(i.motorista)}</td>
+      <td>${escapeHtml(i.data)}</td>
+      <td>${escapeHtml(i.hora)}</td>
+      <td>${escapeHtml(i.missao)}</td>
+    </tr>`;
+  });
+}
+
+function renderTableEventos(id, items){
+  const tb=document.querySelector(`#${id} tbody`);
+  tb.innerHTML='';
+  items.forEach(i=>{
+    tb.innerHTML+=`<tr>
+      <td>${escapeHtml(i.motorista)}</td>
+      <td>${escapeHtml(i.data)}</td>
+      <td>${escapeHtml(i.hora)}</td>
+      <td>${escapeHtml(i.missao)}</td>
+      <td>${escapeHtml(i.obs)}</td>
+    </tr>`;
+  });
+}
+
+function renderTableDiarias(items){
+  const tb=document.querySelector('#tableDiarias tbody');
+  tb.innerHTML='';
+  items.forEach(i=>{
+    tb.innerHTML+=`<tr>
+      <td>${escapeHtml(i.data)}</td>
+      <td>${escapeHtml(i.missao)}</td>
+      <td>${escapeHtml(i.motorista)}</td>
+      <td>${escapeHtml(i.viatura)}</td>
+      <td>${escapeHtml(i.destino)}</td>
+      <td>${i.diarias}</td>
+    </tr>`;
+  });
+}
+
+// ======================================================
+// RANKINGS DIÁRIAS (LINHA 10+)
+// ======================================================
+function renderRankingMissoes(id, rows){
+  const el=document.getElementById(id); el.innerHTML='';
+  const map={};
+
+  for(let i=9;i<rows.length;i++){
+    const nome=String(rows[i][0]||'').trim(); // coluna A
+    const qtd=Number(rows[i][1]||0);          // coluna B
+    if(nome) map[nome]=(map[nome]||0)+qtd;
+  }
+
+  Object.entries(map)
+    .sort((a,b)=>b[1]-a[1])
+    .slice(0,10)
+    .forEach(([n,q],i)=>{
+      el.innerHTML+=`<div class="${i===0?'top1':''}">
+        ${i+1}. <strong>${escapeHtml(n)}</strong> — ${q} missões
+      </div>`;
+    });
+}
+
+function renderRankingDiarias(id, rows){
+  const el=document.getElementById(id); el.innerHTML='';
+  const map={};
+
+  for(let i=9;i<rows.length;i++){
+    const nome=String(rows[i][3]||'').trim(); // coluna D
+    const qtd=Number(rows[i][4]||0);          // coluna E
+    if(nome) map[nome]=(map[nome]||0)+qtd;
+  }
+
+  Object.entries(map)
+    .sort((a,b)=>b[1]-a[1])
+    .slice(0,10)
+    .forEach(([n,q],i)=>{
+      el.innerHTML+=`<div class="${i===0?'top1':''}">
+        ${i+1}. <strong>${escapeHtml(n)}</strong> — ${q} diárias
+      </div>`;
+    });
+}
+
+// ======================================================
+// LOAD ALL
 // ======================================================
 async function loadAll(){
   document.getElementById('status').innerText='⏳ Carregando...';
 
-  const [tel, antes, depois, di] = await Promise.all([
+  const [
+    tel,
+    antes,
+    depois,
+    eventos,
+    diarias,
+    representacoes
+  ] = await Promise.all([
     fetchSheet(ABA_TELEFONES),
     fetchSheet(ABA_ANTES),
     fetchSheet(ABA_DEPOIS),
-    fetchSheet(ABA_DIARIAS)
+    fetchSheet(ABA_EVENTOS),
+    fetchSheet(ABA_DIARIAS),
+    fetchSheet(ABA_REPRESENTACOES)
   ]);
 
   renderTelefones(normalizeTelefones(tel.data||[], tel.headers||[]));
 
-  renderTableGeneric('tableAntes', antes.data||[]);
-  renderTableGeneric('tableDepois', depois.data||[]);
-  renderRankingSimples('rankListAntes', antes.data||[]);
-  renderRankingSimples('rankListDepois', depois.data||[]);
+  renderTableExpediente('tableAntes',
+    normalizeExpediente(antes.data||[], antes.headers||[])
+  );
+  renderTableExpediente('tableDepois',
+    normalizeExpediente(depois.data||[], depois.headers||[])
+  );
 
-  const diarias = normalizeDiarias(di.data||[], di.headers||[]);
-  renderTableDiarias(diarias);
-  renderRankingMissoes('rankDiariasMissoes', di.data||[]);
-  renderRankingDiarias('rankDiariasValores', di.data||[]);
+  renderTableEventos('tableEventos',
+    normalizeEventos(eventos.data||[], eventos.headers||[])
+  );
+
+  const diRows = diarias.data || [];
+  const diNorm = normalizeDiarias(diRows, diarias.headers||[]);
+  renderTableDiarias(diNorm);
+  renderRankingMissoes('rankDiariasMissoes', diRows);
+  renderRankingDiarias('rankDiariasValores', diRows);
+
+  renderTableEventos('tableRepresentacoes',
+    normalizeEventos(representacoes.data||[], representacoes.headers||[])
+  );
 
   document.getElementById('status').innerText='✅ Dados carregados';
 }
