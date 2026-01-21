@@ -456,13 +456,28 @@ function escapeHtml(s){
 }
 
 // ======================================================
-// RENDER TABELAS SIMPLES
+// 🔧 FUNÇÃO QUE ESTAVA FALTANDO (ERRO REAL)
+// ======================================================
+function renderTelefones(items){
+  const g=document.getElementById('telefonesGrid');
+  g.innerHTML='';
+  items.forEach(t=>{
+    g.innerHTML+=`<div class="telefone-card">
+      <div class="nome">${escapeHtml(t.nome)}</div>
+      <div class="numero">${escapeHtml(t.numero)}</div>
+      ${t.obs?`<div class="obs">${escapeHtml(t.obs)}</div>`:''}
+    </div>`;
+  });
+}
+
+// ======================================================
+// RENDER TABELAS GENÉRICAS
 // ======================================================
 function renderTableGeneric(tableId, rows){
   const tb = document.querySelector(`#${tableId} tbody`);
-  tb.innerHTML = '';
+  tb.innerHTML='';
   rows.forEach(r=>{
-    tb.innerHTML += `<tr>${r.map(c=>`<td>${escapeHtml(c)}</td>`).join('')}</tr>`;
+    tb.innerHTML+=`<tr>${r.map(c=>`<td>${escapeHtml(c)}</td>`).join('')}</tr>`;
   });
 }
 
@@ -470,27 +485,27 @@ function renderTableGeneric(tableId, rows){
 // RANKING SIMPLES (ANTES / DEPOIS)
 // ======================================================
 function renderRankingSimples(containerId, rows){
-  const map = {};
+  const map={};
   rows.forEach(r=>{
-    const nome = r[0];
-    if(nome) map[nome] = (map[nome]||0)+1;
+    const nome=r[0];
+    if(nome) map[nome]=(map[nome]||0)+1;
   });
 
-  const el = document.getElementById(containerId);
-  el.innerHTML = '';
+  const el=document.getElementById(containerId);
+  el.innerHTML='';
 
   Object.entries(map)
     .sort((a,b)=>b[1]-a[1])
     .slice(0,7)
     .forEach(([n,q],i)=>{
-      el.innerHTML += `<div class="${i===0?'top1':''}">
+      el.innerHTML+=`<div class="${i===0?'top1':''}">
         ${i+1}. <strong>${escapeHtml(n)}</strong> — ${q}
       </div>`;
     });
 }
 
 // ======================================================
-// NORMALIZERS JÁ EXISTENTES
+// NORMALIZERS (ORIGINAIS)
 // ======================================================
 function normalizeTelefones(rows, headers){
   return rows.map(r=>{
@@ -514,7 +529,7 @@ function normalizeDiarias(rows, headers){
 }
 
 // ======================================================
-// LOAD (CORRIGIDO)
+// LOAD (AGORA FUNCIONA)
 // ======================================================
 async function loadAll(){
   document.getElementById('status').innerText='⏳ Carregando...';
@@ -526,16 +541,13 @@ async function loadAll(){
     fetchSheet(ABA_DIARIAS)
   ]);
 
-  // Telefones
   renderTelefones(normalizeTelefones(tel.data||[], tel.headers||[]));
 
-  // Antes / Depois (🔥 CORREÇÃO AQUI 🔥)
   renderTableGeneric('tableAntes', antes.data||[]);
   renderTableGeneric('tableDepois', depois.data||[]);
   renderRankingSimples('rankListAntes', antes.data||[]);
   renderRankingSimples('rankListDepois', depois.data||[]);
 
-  // Diárias (intocado)
   const diarias = normalizeDiarias(di.data||[], di.headers||[]);
   renderTableDiarias(diarias);
   renderRankingMissoes('rankDiariasMissoes', di.data||[]);
