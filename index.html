@@ -410,10 +410,11 @@ tbody td{padding:12px;border-bottom:1px solid #eee}
 </main>
 
 <script>
-// URL da API do Apps Script
-const API_URL = "https://script.google.com/macros/s/AKfycbwUZWCgn5lJ834kEO1sDrWfnLfvOXg0Jzrehb39xA1gI_e0c-Z84jmqW0Kp41h72rpJOA/exec";
+// ======================================================
+// CONFIG
+// ======================================================
+const API_URL = "https://script.google.com/macros/s/AKfycbwaAW_uqEu0z6YcqY0cK2AZyHj9rv1t8BSG_h7dT85jVrMrN_nUJgQre8rOvLuSYVWf4g/exec";
 
-// Nome das abas na planilha
 const ABA_TELEFONES = "TELEFONES ÚTEIS";
 const ABA_ANTES = "ANTES DO EXPEDIENTE";
 const ABA_DEPOIS = "DEPOIS DO EXPEDIENTE";
@@ -421,353 +422,446 @@ const ABA_EVENTOS = "MISSÕES EVENTOS";
 const ABA_DIARIAS = "MISSÕES EXTERNAS DIÁRIAS";
 const ABA_REPRESENTACOES = "MISSÕES EXTERNAS REPRESENTAÇÕES";
 
-// Ordem das abas na navegação
 const SECTIONS_ORDER = ['telefones', 'expediente', 'eventos', 'diarias', 'representacoes'];
 
-// Função para navegar entre seções
+// ======================================================
+// UI NAV
+// ======================================================
 function showSection(id){
   document.querySelectorAll('.content-section').forEach(s => s.classList.remove('active'));
   document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
+
+  const sec = document.getElementById(id);
+  if (sec) sec.classList.add('active');
+
   const btnIndex = SECTIONS_ORDER.indexOf(id);
-  if(btnIndex >= 0){
-    document.querySelectorAll('.nav-btn')[btnIndex].classList.add('active');
+  if (btnIndex >= 0) {
+    const btns = document.querySelectorAll('.nav-btn');
+    if (btns[btnIndex]) btns[btnIndex].classList.add('active');
   }
+}
+
+// ======================================================
+// HELPERS
+// ======================================================
+function safeText(v){
+  if (v === null || v === undefined) return '';
+  return String(v);
+}
+
+function normalizeHeader(h){
+  return safeText(h).trim().toUpperCase();
 }
 
 function dateToNumber(txt){
+  // Espera dd/MM/yyyy
   if(!txt) return 0;
-  const p = String(txt).split('/');
-  if(p.length<3) return 0;
-  let [d,m,y]=p;
-  if(y.length===2) y='20'+y;
-  return Number(`${y}${m.padStart(2,'0')}${d.padStart(2,'0')}`);
+  const p = safeText(txt).trim().split('/');
+  if(p.length < 3) return 0;
+
+  let d = p[0], m = p[1], y = p[2];
+  if (!d || !m || !y) return 0;
+
+  y = safeText(y);
+  if (y.length === 2) y = '20' + y;
+
+  const yy = y.padStart(4,'0');
+  const mm = safeText(m).padStart(2,'0');
+  const dd = safeText(d).padStart(2,'0');
+
+  const n = Number(`${yy}${mm}${dd}`);
+  return Number.isFinite(n) ? n : 0;
 }
 
-function sortByDate(items){
-  return items.slice().sort((a,b)=>dateToNumber(b.data)-dateToNumber(a.data));
+function sortByDateField(items, fieldName){
+  return items.slice().sort((a,b)=>dateToNumber(b[fieldName]) - dateToNumber(a[fieldName]));
 }
 
-// Função para buscar dados da API - versão simplificada
-async function fetchSheet(aba){
+async function fetchTextWithTimeout(url, timeoutMs=20000){
+  const controller = new AbortController();
+  const t = setTimeout(() => controller.abort(), timeoutMs);
   try{
-    const url = `${API_URL}?aba=${encodeURIComponent(aba)}`;
-    
-    // Usar fetch com redirect follow (padrão)
-    const response = await fetch(url, {
+    const res = await fetch(url, {
       method: 'GET',
-      headers: {
-        'Accept': 'application/json'
-      }
+      headers: { 'Accept':'application/json' },
+      signal: controller.signal
     });
-    
-    const text = await response.text();
-    
-    // Debug: mostrar o que foi recebido
-    console.log(`Aba ${aba}: resposta (${text.length} chars) =`, text.substring(0, 300));
-    
-    // Verificar se resposta está vazia
-    if (!text || text.trim() === '') {
-      return { data: [], headers: [], erro: 'Resposta vazia' };
-    }
-    
-    // Verificar se é HTML (erro de redirecionamento)
-    if (text.startsWith('<HTML>') || text.startsWith('<!DOCTYPE') || text.includes('<HEAD>')) {
-      return { data: [], headers: [], erro: 'API retornou HTML (possível erro de configuração)' };
-    }
-    
-    // Tentar fazer parse do JSON
-    let data;
-    try {
-      data = JSON.parse(text);
-    } catch(e) {
-      return { data: [], headers: [], erro: 'JSON inválido' };
-    }
-    
-    if(data.erro){
-      return { data: [], headers: [], erro: data.erro };
-    }
-    
-    return data;
-  }catch(e){
-    console.error(`Erro ao carregar aba ${aba}:`, e);
-    return { data: [], headers: [], erro: e.message };
+    const text = await res.text();
+    return { ok: res.ok, status: res.status, text };
+  } finally {
+    clearTimeout(t);
   }
 }
 
-// Processar dados genéricos
-function normalizeDiarias(rows, headers){
-  if(!rows || rows.length === 0) return [];
+async function fetchSheet(aba){
+  const url = `${API_URL}?aba=${encodeURIComponent(aba)}`;
+  try{
+    const { ok, status, text } = await fetchTextWithTimeout(url, 25000);
 
-  return rows.map(row => {
-    const obj = {};
-    headers.forEach((h, i) => {
-      const key = String(h || '').trim().toUpperCase();
-      obj[key] = row[i];
-    });
+    if (!text || text.trim() === '') {
+      return { headers: [], data: [], erro: `Resposta vazia (${status})` };
+    }
+    if (text.startsWith('<HTML') || text.startsWith('<!DOCTYPE') || text.includes('<HEAD')) {
+      return { headers: [], data: [], erro: 'API retornou HTML (Web App não publicado corretamente ou URL errada)' };
+    }
+
+    let json;
+    try { json = JSON.parse(text); } catch(e){
+      return { headers: [], data: [], erro: 'JSON inválido retornado pela API' };
+    }
+
+    if (!ok && !json.erro) {
+      return { headers: [], data: [], erro: `HTTP ${status}` };
+    }
+    if (json.erro) {
+      return { headers: json.headers || [], data: json.data || [], erro: json.erro };
+    }
 
     return {
-      data: obj['DATA DA VIAGEM'] || '',
-      missao: obj['MISSÃO'] || obj['MISSAO'] || '',
-      motorista: obj['MOTORISTAS'] || obj['MOTORISTA'] || '',
-      viatura: obj['VIATURA'] || '',
-      destino: obj['DESTINO'] || '',
-      diarias: Number(obj['DIÁRIAS'] || obj['DIARIAS'] || 0)
+      headers: Array.isArray(json.headers) ? json.headers : [],
+      data: Array.isArray(json.data) ? json.data : [],
+      totalLinhas: json.totalLinhas || 0
     };
-  }).filter(r => r.motorista);
+  } catch(e){
+    const msg = (e && e.name === 'AbortError') ? 'Timeout chamando a API' : safeText(e.message || e);
+    return { headers: [], data: [], erro: msg };
+  }
 }
 
-// Processar telefones
+// Mapeia uma linha (array) em objeto {HEADER: valor}
+function rowToObj(row, headers){
+  const obj = {};
+  for (let i=0;i<headers.length;i++){
+    obj[normalizeHeader(headers[i])] = row[i];
+  }
+  return obj;
+}
+
+function toNumberSafe(v){
+  if (typeof v === 'number') return Number.isFinite(v) ? v : 0;
+  const n = Number(safeText(v).replace(',', '.'));
+  return Number.isFinite(n) ? n : 0;
+}
+
+// ======================================================
+// NORMALIZERS
+// ======================================================
 function normalizeTelefones(rows, headers){
   if(!rows || rows.length === 0) return [];
-  
-  return rows.map(row => {
-    const obj = {};
-    headers.forEach((h, i) => {
-      const key = String(h || '').trim().toUpperCase();
-      obj[key] = row[i];
-    });
-    return {
-      nome: obj['NOME'] || obj['NOME '] || '',
-      numero: obj['TELEFONE'] || obj['TELEFONE '] || obj['NÚMERO'] || '',
-      obs: obj['OBSERVAÇÃO'] || obj['OBSERVAÇÃO '] || ''
-    };
-  }).filter(row => row.nome && row.numero);
+  return rows.map(r=>{
+    const o = rowToObj(r, headers);
+    const nome = safeText(o['NOME']).trim();
+    const numero = safeText(o['TELEFONE'] || o['NÚMERO'] || o['NUMERO']).trim();
+    const obs = safeText(o['OBSERVAÇÃO'] || o['OBSERVACAO']).trim();
+    return { nome, numero, obs };
+  }).filter(x => x.nome && x.numero);
 }
 
-function renderTable(id,items){
-  const tb=document.querySelector(`#${id} tbody`);
-  tb.innerHTML="";
-  if(items.length === 0){
-    tb.innerHTML = '<tr><td colspan="4" style="text-align:center;color:#666;">Nenhum registro encontrado</td></tr>';
-    return;
-  }
-  items.forEach(i=>{
-    tb.innerHTML+=`<tr>
-      <td>${i.motorista}</td>
-      <td>${i.data}</td>
-      <td>${i.hora}</td>
-      <td>${i.missao}</td>
-    </tr>`;
-  });
+function normalizeDataGenerica(rows, headers){
+  // Para: ANTES, DEPOIS, EVENTOS, REPRESENTAÇÕES
+  // Espera colunas: MOTORISTA, DATA, HORÁRIO, MISSÃO, OBSERVAÇÃO (algumas podem faltar)
+  if(!rows || rows.length === 0) return [];
+
+  return rows.map(r=>{
+    const o = rowToObj(r, headers);
+    const motorista = safeText(o['MOTORISTA']).trim();
+    const data = safeText(o['DATA']).trim();
+    const hora = safeText(o['HORÁRIO'] || o['HORARIO']).trim();
+    const missao = safeText(o['MISSÃO'] || o['MISSAO']).trim();
+    const observacao = safeText(o['OBSERVAÇÃO'] || o['OBSERVACAO'] || o['OBSERCAÇÃO']).trim();
+    return { motorista, data, hora, missao, observacao };
+  }).filter(x => x.motorista);
 }
 
-function renderTableDiarias(items){
-  const tb = document.querySelector("#tableDiarias tbody");
-  tb.innerHTML = "";
+function normalizeDiarias(rows, headers){
+  // Espera: DATA DA VIAGEM, MISSÃO, MOTORISTAS, VIATURA, DESTINO, DIÁRIAS
+  if(!rows || rows.length === 0) return [];
 
-  if(items.length === 0){
-    tb.innerHTML = `
-      <tr>
-        <td colspan="6" style="text-align:center;color:#666;">
-          Nenhum registro encontrado
-        </td>
-      </tr>`;
-    return;
-  }
-
-  items.forEach(i=>{
-    tb.innerHTML += `
-      <tr>
-        <td>${i.data}</td>
-        <td>${i.missao}</td>
-        <td>${i.motorista}</td>
-        <td>${i.viatura}</td>
-        <td>${i.destino}</td>
-        <td>${i.diarias}</td>
-      </tr>`;
-  });
+  return rows.map(r=>{
+    const o = rowToObj(r, headers);
+    const data = safeText(o['DATA DA VIAGEM'] || o['DATA']).trim();
+    const missao = safeText(o['MISSÃO'] || o['MISSAO']).trim();
+    const motorista = safeText(o['MOTORISTAS'] || o['MOTORISTA']).trim();
+    const viatura = safeText(o['VIATURA']).trim();
+    const destino = safeText(o['DESTINO']).trim();
+    const diarias = toNumberSafe(o['DIÁRIAS'] || o['DIARIAS']);
+    return { data, missao, motorista, viatura, destino, diarias };
+  }).filter(x => x.motorista);
 }
 
-function renderRanking(id,items){
-  const c={};
-  items.forEach(i=>{
-    if(i.motorista){
-      c[i.motorista]=(c[i.motorista]||0)+1;
-    }
-  });
-  const r=Object.entries(c).sort((a,b)=>b[1]-a[1]).slice(0,7);
-  const el=document.getElementById(id);
-  el.innerHTML="";
-  
-  if(r.length === 0){
-    el.innerHTML = '<div style="padding:10px;color:rgba(255,255,255,0.7);">Nenhum registro encontrado</div>';
-    return;
-  }
-  
-  r.forEach(([n,q],i)=>{
-    el.innerHTML+=`<div class="${i===0?'top1':''}">
-      ${i+1}. <strong>${n}</strong> — ${q}
-    </div>`;
-  });
+// ======================================================
+// RENDERERS
+// ======================================================
+function setStatus(text, isError=false){
+  const el = document.getElementById('status');
+  if (!el) return;
+  el.innerHTML = text;
+  el.classList.toggle('error', !!isError);
 }
 
 function renderTelefones(items){
-  const grid=document.getElementById("telefonesGrid");
-  grid.innerHTML="";
-  
+  const grid = document.getElementById("telefonesGrid");
+  if (!grid) return;
+  grid.innerHTML = "";
+
   if(items.length === 0){
     grid.innerHTML = '<div style="padding:20px;color:#666;">Nenhum telefone encontrado</div>';
     return;
   }
-  
+
   items.forEach(t=>{
-    grid.innerHTML+=`<div class="telefone-card">
-      <div class="nome">${t.nome}</div>
-      <div class="numero">${t.numero}</div>
-      ${t.obs ? `<div class="obs">${t.obs}</div>` : ''}
+    grid.innerHTML += `<div class="telefone-card">
+      <div class="nome">${escapeHtml(t.nome)}</div>
+      <div class="numero">${escapeHtml(t.numero)}</div>
+      ${t.obs ? `<div class="obs">${escapeHtml(t.obs)}</div>` : ''}
     </div>`;
   });
 }
 
-  function renderRankingMissoes(id, items){
-  const count = {};
-  items.forEach(i=>{
-    if(i.motorista){
-      count[i.motorista] = (count[i.motorista] || 0) + 1;
-    }
-  });
+function renderTableSimple(tableId, items){
+  const tb = document.querySelector(`#${tableId} tbody`);
+  if (!tb) return;
+  tb.innerHTML = "";
 
-  const rank = Object.entries(count)
-    .sort((a,b)=>b[1]-a[1])
-    .slice(0,10);
+  if(items.length === 0){
+    tb.innerHTML = '<tr><td colspan="4" style="text-align:center;color:#666;">Nenhum registro encontrado</td></tr>';
+    return;
+  }
 
-  const el = document.getElementById(id);
+  for (const i of items){
+    tb.innerHTML += `<tr>
+      <td>${escapeHtml(i.motorista)}</td>
+      <td>${escapeHtml(i.data)}</td>
+      <td>${escapeHtml(i.hora)}</td>
+      <td>${escapeHtml(i.missao)}</td>
+    </tr>`;
+  }
+}
+
+function renderTableWithObs(tableId, items){
+  const tb = document.querySelector(`#${tableId} tbody`);
+  if (!tb) return;
+  tb.innerHTML = "";
+
+  if(items.length === 0){
+    tb.innerHTML = '<tr><td colspan="5" style="text-align:center;color:#666;">Nenhum registro encontrado</td></tr>';
+    return;
+  }
+
+  for (const i of items){
+    tb.innerHTML += `<tr>
+      <td>${escapeHtml(i.motorista)}</td>
+      <td>${escapeHtml(i.data)}</td>
+      <td>${escapeHtml(i.hora)}</td>
+      <td>${escapeHtml(i.missao)}</td>
+      <td>${escapeHtml(i.observacao)}</td>
+    </tr>`;
+  }
+}
+
+function renderTableDiarias(items){
+  const tb = document.querySelector(`#tableDiarias tbody`);
+  if (!tb) return;
+  tb.innerHTML = "";
+
+  if(items.length === 0){
+    tb.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#666;">Nenhum registro encontrado</td></tr>';
+    return;
+  }
+
+  for (const i of items){
+    tb.innerHTML += `<tr>
+      <td>${escapeHtml(i.data)}</td>
+      <td>${escapeHtml(i.missao)}</td>
+      <td>${escapeHtml(i.motorista)}</td>
+      <td>${escapeHtml(i.viatura)}</td>
+      <td>${escapeHtml(i.destino)}</td>
+      <td>${escapeHtml(String(i.diarias))}</td>
+    </tr>`;
+  }
+}
+
+function renderRankingTop7(containerId, items){
+  const el = document.getElementById(containerId);
+  if (!el) return;
+  const counts = {};
+  for (const i of items){
+    if (!i.motorista) continue;
+    counts[i.motorista] = (counts[i.motorista] || 0) + 1;
+  }
+  const rank = Object.entries(counts).sort((a,b)=>b[1]-a[1]).slice(0,7);
+
   el.innerHTML = "";
+  if(rank.length === 0){
+    el.innerHTML = '<div style="padding:10px;color:rgba(255,255,255,0.7);">Nenhum registro encontrado</div>';
+    return;
+  }
 
-  rank.forEach(([nome, qtd], i)=>{
-    el.innerHTML += `<div class="${i===0?'top1':''}">
-      ${i+1}. <strong>${nome}</strong> — ${qtd} missões
+  rank.forEach(([n,q], idx)=>{
+    el.innerHTML += `<div class="${idx===0?'top1':''}">
+      ${idx+1}. <strong>${escapeHtml(n)}</strong> — ${q}
     </div>`;
   });
 }
 
-function renderRankingDiarias(id, items){
-  const total = {};
-  items.forEach(i=>{
-    if(i.motorista){
-      total[i.motorista] = (total[i.motorista] || 0) + i.diarias;
-    }
-  });
+function renderRankingMissoesTop10(containerId, items){
+  const el = document.getElementById(containerId);
+  if (!el) return;
 
-  const rank = Object.entries(total)
-    .sort((a,b)=>b[1]-a[1])
-    .slice(0,10);
+  const counts = {};
+  for (const i of items){
+    if (!i.motorista) continue;
+    counts[i.motorista] = (counts[i.motorista] || 0) + 1;
+  }
+  const rank = Object.entries(counts).sort((a,b)=>b[1]-a[1]).slice(0,10);
 
-  const el = document.getElementById(id);
   el.innerHTML = "";
+  if(rank.length === 0){
+    el.innerHTML = '<div style="padding:10px;color:rgba(255,255,255,0.7);">Nenhum registro encontrado</div>';
+    return;
+  }
 
-  rank.forEach(([nome, qtd], i)=>{
-    el.innerHTML += `<div class="${i===0?'top1':''}">
-      ${i+1}. <strong>${nome}</strong> — ${qtd} diárias
+  rank.forEach(([n,q], idx)=>{
+    el.innerHTML += `<div class="${idx===0?'top1':''}">
+      ${idx+1}. <strong>${escapeHtml(n)}</strong> — ${q} missões
     </div>`;
   });
 }
 
-  const rank = Object.entries(count)
-    .sort((a,b)=>b[1]-a[1])
-    .slice(0,10);
+function renderRankingDiariasTop10(containerId, items){
+  const el = document.getElementById(containerId);
+  if (!el) return;
 
-  const el = document.getElementById(id);
+  const totals = {};
+  for (const i of items){
+    if (!i.motorista) continue;
+    totals[i.motorista] = (totals[i.motorista] || 0) + (Number(i.diarias) || 0);
+  }
+  const rank = Object.entries(totals).sort((a,b)=>b[1]-a[1]).slice(0,10);
+
   el.innerHTML = "";
+  if(rank.length === 0){
+    el.innerHTML = '<div style="padding:10px;color:rgba(255,255,255,0.7);">Nenhum registro encontrado</div>';
+    return;
+  }
 
-  rank.forEach(([nome, qtd], i)=>{
-    el.innerHTML += `<div class="${i===0?'top1':''}">
-      ${i+1}. <strong>${nome}</strong> — ${qtd} missões
-    </div>`;
-  });
-}
-
-function renderRankingDiarias(id, items){
-  const total = {};
-  items.forEach(i=>{
-    if(i.motorista){
-      total[i.motorista] = (total[i.motorista] || 0) + i.diarias;
-    }
-  });
-
-  const rank = Object.entries(total)
-    .sort((a,b)=>b[1]-a[1])
-    .slice(0,10);
-
-  const el = document.getElementById(id);
-  el.innerHTML = "";
-
-  rank.forEach(([nome, qtd], i)=>{
-    el.innerHTML += `<div class="${i===0?'top1':''}">
-      ${i+1}. <strong>${nome}</strong> — ${qtd} diárias
+  rank.forEach(([n,q], idx)=>{
+    el.innerHTML += `<div class="${idx===0?'top1':''}">
+      ${idx+1}. <strong>${escapeHtml(n)}</strong> — ${q} diárias
     </div>`;
   });
 }
 
 function renderStats(totalId, driversId, items){
-  document.getElementById(totalId).innerText = items.length;
-  const uniqueDrivers = new Set(items.map(i=>i.motorista).filter(Boolean));
-  document.getElementById(driversId).innerText = uniqueDrivers.size;
+  const totalEl = document.getElementById(totalId);
+  const driversEl = document.getElementById(driversId);
+  if (!totalEl || !driversEl) return;
+
+  totalEl.innerText = String(items.length);
+  const unique = new Set(items.map(i=>i.motorista).filter(Boolean));
+  driversEl.innerText = String(unique.size);
 }
 
+// HTML escape (evita quebrar a tabela por caracteres especiais)
+function escapeHtml(str){
+  return safeText(str)
+    .replaceAll('&','&amp;')
+    .replaceAll('<','&lt;')
+    .replaceAll('>','&gt;')
+    .replaceAll('"','&quot;')
+    .replaceAll("'","&#039;");
+}
+
+// ======================================================
+// LOAD ALL
+// ======================================================
 async function loadAll(){
-  const status = document.getElementById('status');
-  status.innerHTML = "⏳ Carregando dados...";
-  
-  try {
-    const [telData, antData, depData, evData, diData, repData] = await Promise.all([
-      fetchSheet(ABA_TELEFONES),
-      fetchSheet(ABA_ANTES),
-      fetchSheet(ABA_DEPOIS),
-      fetchSheet(ABA_EVENTOS),
-      fetchSheet(ABA_DIARIAS),
-      fetchSheet(ABA_REPRESENTACOES)
-    ]);
+  setStatus("⏳ Carregando dados...");
 
-    console.log('Dados recebidos:', { telData, antData, depData, evData, diData, repData });
+  // Busca em paralelo
+  const [telData, antData, depData, evData, diData, repData] = await Promise.all([
+    fetchSheet(ABA_TELEFONES),
+    fetchSheet(ABA_ANTES),
+    fetchSheet(ABA_DEPOIS),
+    fetchSheet(ABA_EVENTOS),
+    fetchSheet(ABA_DIARIAS),
+    fetchSheet(ABA_REPRESENTACOES)
+  ]);
 
-    const telefones = normalizeTelefones(telData.data || [], telData.headers || []);
-    renderTelefones(telefones);
-
-    const antes = sortByDate(normalizeData(antData.data || [], antData.headers || []));
-    const depois = sortByDate(normalizeData(depData.data || [], depData.headers || []));
-    renderTable("tableAntes", antes);
-    renderTable("tableDepois", depois);
-    renderRanking("rankListAntes", antes);
-    renderRanking("rankListDepois", depois);
-
-    const eventos = sortByDate(normalizeData(evData.data || [], evData.headers || []));
-    renderTableWithObs("tableEventos", eventos);
-    renderRanking("rankEventos", eventos);
-    renderStats("totalEventos", "motoristasEventos", eventos);
-
-    const diarias = sortByDate(
-    normalizeDiarias(diData.data || [], diData.headers || [])
-   );
-
-   renderTableDiarias(diarias);
-   renderRankingMissoes("rankDiariasMissoes", diarias);
-   renderRankingDiarias("rankDiariasValores", diarias);
-
-
-    const representacoes = sortByDate(normalizeData(repData.data || [], repData.headers || []));
-    renderTableWithObs("tableRepresentacoes", representacoes);
-    renderRanking("rankRepresentacoes", representacoes);
-    renderStats("totalRepresentacoes", "motoristasRepresentacoes", representacoes);
-
-    const hasData = telefones.length > 0 || antes.length > 0 || depois.length > 0 || 
-                    eventos.length > 0 || diarias.length > 0 || representacoes.length > 0;
-    
-    if (hasData) {
-      status.innerHTML = "✅ Dados carregados com sucesso!";
-    } else {
-      status.innerHTML = "⚠️ Nenhum dado encontrado.<br>Verifique se as abas estão com os nomes corretos:<br>" +
-        "<small>TELEFONES ÚTEIS, ANTES DO EXPEDIENTE, DEPOIS DO EXPEDIENTE,<br>MISSÕES EVENTOS, MISSÕES EXTERNAS DIÁRIAS, MISSÕES EXTERNAS REPRESENTAÇÕES</small>";
-    }
-    
-  } catch (error) {
-    console.error("Erro completo:", error);
-    status.innerHTML = `❌ Erro ao carregar dados: ${error.message}`;
-    status.classList.add('error');
+  // Se alguma aba falhou, mostramos no status mas ainda tentamos renderizar o resto
+  const erros = [];
+  const packs = [
+    { nome: ABA_TELEFONES, pack: telData },
+    { nome: ABA_ANTES, pack: antData },
+    { nome: ABA_DEPOIS, pack: depData },
+    { nome: ABA_EVENTOS, pack: evData },
+    { nome: ABA_DIARIAS, pack: diData },
+    { nome: ABA_REPRESENTACOES, pack: repData },
+  ];
+  for (const p of packs){
+    if (p.pack && p.pack.erro) erros.push(`${p.nome}: ${p.pack.erro}`);
   }
+
+  // Telefones
+  const telefones = normalizeTelefones(telData.data || [], telData.headers || []);
+  renderTelefones(telefones);
+
+  // Antes / Depois
+  const antes = sortByDateField(normalizeDataGenerica(antData.data || [], antData.headers || []), 'data');
+  const depois = sortByDateField(normalizeDataGenerica(depData.data || [], depData.headers || []), 'data');
+  renderTableSimple("tableAntes", antes);
+  renderTableSimple("tableDepois", depois);
+  renderRankingTop7("rankListAntes", antes);
+  renderRankingTop7("rankListDepois", depois);
+
+  // Eventos
+  const eventos = sortByDateField(normalizeDataGenerica(evData.data || [], evData.headers || []), 'data');
+  renderTableWithObs("tableEventos", eventos);
+  renderRankingTop7("rankEventos", eventos);
+  renderStats("totalEventos", "motoristasEventos", eventos);
+
+  // Diárias (nova estrutura)
+  const diarias = sortByDateField(normalizeDiarias(diData.data || [], diData.headers || []), 'data');
+  renderTableDiarias(diarias);
+  renderRankingMissoesTop10("rankDiariasMissoes", diarias);
+  renderRankingDiariasTop10("rankDiariasValores", diarias);
+
+  // Representações
+  const representacoes = sortByDateField(normalizeDataGenerica(repData.data || [], repData.headers || []), 'data');
+  renderTableWithObs("tableRepresentacoes", representacoes);
+  renderRankingTop7("rankRepresentacoes", representacoes);
+  renderStats("totalRepresentacoes", "motoristasRepresentacoes", representacoes);
+
+  // Status final
+  const hasAnyData =
+    telefones.length > 0 ||
+    antes.length > 0 ||
+    depois.length > 0 ||
+    eventos.length > 0 ||
+    diarias.length > 0 ||
+    representacoes.length > 0;
+
+  if (!hasAnyData && erros.length === 0){
+    setStatus(
+      "⚠️ Nenhum dado encontrado.<br>" +
+      "Verifique se as abas e colunas existem e estão preenchidas."
+      , true
+    );
+    return;
+  }
+
+  if (erros.length > 0){
+    setStatus(
+      "⚠️ Dados carregados com alertas:<br><small>" + escapeHtml(erros.join(" | ")) + "</small>",
+      true
+    );
+    return;
+  }
+
+  setStatus("✅ Dados carregados com sucesso!");
 }
 
+// Start
 loadAll();
 </script>
 </body>
