@@ -409,6 +409,29 @@ tbody td{padding:12px;border-bottom:1px solid #eee}
 
 </main>
 
+  <!-- 1️⃣ SCRIPT DE PROTEÇÃO (Firebase Auth Guard) -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-app.js";
+  import { getAuth, onAuthStateChanged } 
+    from "https://www.gstatic.com/firebasejs/10.12.4/firebase-auth.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyA1QL_UioBdIEqlcTxujW3U6uh3cc0sv6U",
+    authDomain: "contagem-de-quadrinhos.firebaseapp.com",
+    projectId: "contagem-de-quadrinhos",
+    appId: "1:947344780647:web:e062a1f039a169104c53c2"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+
+  onAuthStateChanged(auth, user => {
+    if (!user) {
+      window.location.href = "login.html";
+    }
+  });
+</script>
+
 <script>
 // ======================================================
 // CONFIG
