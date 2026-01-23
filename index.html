@@ -643,21 +643,20 @@ function renderTop7Antes(containerId, items){
   const el = document.getElementById(containerId);
   el.innerHTML = '';
 
-  // menor horário por motorista
-  const best = {}; // { motorista: {min, data} }
-  items.forEach(it=>{
+  const count = {}; // { motorista: quantidade }
+
+  items.forEach(it => {
     const m = String(it.motorista || '').trim();
     const min = parseTimeToMinutes(it.hora);
     if(!m || min === null) return;
 
-    if(!best[m] || min < best[m].min){
-      best[m] = { min, data: it.data || '' };
-    }
+    // considera chegada cedo (qualquer registro válido)
+    count[m] = (count[m] || 0) + 1;
   });
 
-  const list = Object.entries(best)
-    .map(([motorista, v]) => ({ motorista, min: v.min, data: v.data }))
-    .sort((a,b)=>a.min - b.min)
+  const list = Object.entries(count)
+    .map(([motorista, qtd]) => ({ motorista, qtd }))
+    .sort((a,b) => b.qtd - a.qtd)
     .slice(0,7);
 
   if(list.length === 0){
@@ -665,9 +664,9 @@ function renderTop7Antes(containerId, items){
     return;
   }
 
-  list.forEach((x, i)=>{
+  list.forEach((x, i) => {
     el.innerHTML += `<div class="${i===0?'top1':''}">
-      ${i+1}. <strong>${escapeHtml(x.motorista)}</strong> — ${escapeHtml(minutesToHHMM(x.min))}${x.data ? ` <span style="opacity:.85">(${escapeHtml(x.data)})</span>` : ''}
+      ${i+1}. <strong>${escapeHtml(x.motorista)}</strong> — ${x.qtd} chegadas
     </div>`;
   });
 }
@@ -676,21 +675,20 @@ function renderTop7Depois(containerId, items){
   const el = document.getElementById(containerId);
   el.innerHTML = '';
 
-  // maior horário por motorista
-  const best = {}; // { motorista: {max, data} }
-  items.forEach(it=>{
+  const count = {}; // { motorista: quantidade }
+
+  items.forEach(it => {
     const m = String(it.motorista || '').trim();
     const min = parseTimeToMinutes(it.hora);
     if(!m || min === null) return;
 
-    if(!best[m] || min > best[m].max){
-      best[m] = { max: min, data: it.data || '' };
-    }
+    // considera saída tarde (qualquer registro válido)
+    count[m] = (count[m] || 0) + 1;
   });
 
-  const list = Object.entries(best)
-    .map(([motorista, v]) => ({ motorista, min: v.max, data: v.data }))
-    .sort((a,b)=>b.min - a.min)
+  const list = Object.entries(count)
+    .map(([motorista, qtd]) => ({ motorista, qtd }))
+    .sort((a,b) => b.qtd - a.qtd)
     .slice(0,7);
 
   if(list.length === 0){
@@ -698,9 +696,9 @@ function renderTop7Depois(containerId, items){
     return;
   }
 
-  list.forEach((x, i)=>{
+  list.forEach((x, i) => {
     el.innerHTML += `<div class="${i===0?'top1':''}">
-      ${i+1}. <strong>${escapeHtml(x.motorista)}</strong> — ${escapeHtml(minutesToHHMM(x.min))}${x.data ? ` <span style="opacity:.85">(${escapeHtml(x.data)})</span>` : ''}
+      ${i+1}. <strong>${escapeHtml(x.motorista)}</strong> — ${x.qtd} saídas
     </div>`;
   });
 }
