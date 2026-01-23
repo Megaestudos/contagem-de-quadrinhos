@@ -464,9 +464,17 @@ function showSection(id){
 async function fetchSheet(aba){
   const res = await fetch(`${API_URL}?aba=${encodeURIComponent(aba)}`);
   const text = await res.text();
-  if(!text || text.startsWith('<')) return { headers:[], data:[] };
+
+  // Resposta vazia/HTML => retorna estrutura segura
+  if(!text || text.startsWith('<')) return { headers:[], data:[], erro: 'resposta_invalida' };
+
   const json = JSON.parse(text);
-  return json;
+  // Garante estrutura mínima
+  return {
+    headers: Array.isArray(json.headers) ? json.headers : [],
+    data: Array.isArray(json.data) ? json.data : [],
+    ...json
+  };
 }
 
 // ======================================================
@@ -479,55 +487,94 @@ function escapeHtml(s){
     .replaceAll('>','&gt;');
 }
 
+// remove acentos e padroniza
+function keyNorm(s){
+  return String(s||'')
+    .trim()
+    .toUpperCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, ''); // remove acentos
+}
+
+// monta objeto por linha usando headers
+function rowToObj(row, headers){
+  const o = {};
+  headers.forEach((h,i)=>{ o[keyNorm(h)] = row[i]; });
+  return o;
+}
+
+// parse "HH:MM" ou "HH:MM:SS" -> minutos
+function parseTimeToMinutes(v){
+  if(v === null || v === undefined) return null;
+  const s = String(v).trim();
+  if(!s) return null;
+
+  const parts = s.split(':').map(p=>p.trim());
+  if(parts.length < 2) return null;
+
+  const hh = Number(parts[0]);
+  const mm = Number(parts[1]);
+  if(Number.isNaN(hh) || Number.isNaN(mm)) return null;
+
+  return (hh * 60) + mm;
+}
+
+// minutos -> "HH:MM"
+function minutesToHHMM(min){
+  const hh = String(Math.floor(min / 60)).padStart(2,'0');
+  const mm = String(min % 60).padStart(2,'0');
+  return `${hh}:${mm}`;
+}
+
 // ======================================================
 // NORMALIZERS
 // ======================================================
 function normalizeTelefones(rows, headers){
   return rows.map(r=>{
-    const o={}; headers.forEach((h,i)=>o[h.toUpperCase()]=r[i]);
+    const o = rowToObj(r, headers);
     return {
-      nome:o['NOME']||'',
-      numero:o['TELEFONE']||'',
-      obs:o['OBSERVAÇÃO']||''
+      nome: o['NOME'] || '',
+      numero: o['TELEFONE'] || '',
+      obs: o['OBSERVACAO'] || ''
     };
   }).filter(x=>x.nome && x.numero);
 }
 
 function normalizeExpediente(rows, headers){
   return rows.map(r=>{
-    const o={}; headers.forEach((h,i)=>o[h.toUpperCase()]=r[i]);
+    const o = rowToObj(r, headers);
     return {
-      motorista:o['MOTORISTA']||'',
-      data:o['DATA']||'',
-      hora:o['HORÁRIO']||o['HORARIO']||'',
-      missao:o['MISSÃO']||o['MISSAO']||''
+      motorista: (o['MOTORISTA'] || o['MOTORISTAS'] || '').toString().trim(),
+      data: (o['DATA'] || '').toString().trim(),
+      hora: (o['HORARIO'] || '').toString().trim(),
+      missao: (o['MISSAO'] || '').toString().trim()
     };
   }).filter(x=>x.motorista);
 }
 
 function normalizeEventos(rows, headers){
   return rows.map(r=>{
-    const o={}; headers.forEach((h,i)=>o[h.toUpperCase()]=r[i]);
+    const o = rowToObj(r, headers);
     return {
-      motorista:o['MOTORISTA']||'',
-      data:o['DATA']||'',
-      hora:o['HORÁRIO']||'',
-      missao:o['MISSÃO']||'',
-      obs:o['OBSERVAÇÃO']||''
+      motorista: (o['MOTORISTA'] || o['MOTORISTAS'] || '').toString().trim(),
+      data: (o['DATA'] || '').toString().trim(),
+      hora: (o['HORARIO'] || '').toString().trim(),
+      missao: (o['MISSAO'] || '').toString().trim(),
+      obs: (o['OBSERVACAO'] || '').toString().trim()
     };
   }).filter(x=>x.motorista);
 }
 
 function normalizeDiarias(rows, headers){
   return rows.map(r=>{
-    const o={}; headers.forEach((h,i)=>o[h.toUpperCase()]=r[i]);
+    const o = rowToObj(r, headers);
     return {
-      data:o['DATA DA VIAGEM']||'',
-      missao:o['MISSÃO']||'',
-      motorista:o['MOTORISTAS']||'',
-      viatura:o['VIATURA']||'',
-      destino:o['DESTINO']||'',
-      diarias:Number(o['DIÁRIAS']||0)
+      data: (o['DATA DA VIAGEM'] || o['DATA'] || '').toString().trim(),
+      missao: (o['MISSAO'] || '').toString().trim(),
+      motorista: (o['MOTORISTAS'] || o['MOTORISTA'] || '').toString().trim(),
+      viatura: (o['VIATURA'] || '').toString().trim(),
+      destino: (o['DESTINO'] || '').toString().trim(),
+      diarias: Number(o['DIARIAS'] || 0)
     };
   }).filter(x=>x.motorista);
 }
@@ -536,22 +583,22 @@ function normalizeDiarias(rows, headers){
 // RENDER TABLES
 // ======================================================
 function renderTelefones(items){
-  const g=document.getElementById('telefonesGrid'); 
-  g.innerHTML='';
+  const g = document.getElementById('telefonesGrid');
+  g.innerHTML = '';
   items.forEach(t=>{
-    g.innerHTML+=`<div class="telefone-card">
+    g.innerHTML += `<div class="telefone-card">
       <div class="nome">${escapeHtml(t.nome)}</div>
       <div class="numero">${escapeHtml(t.numero)}</div>
-      ${t.obs?`<div class="obs">${escapeHtml(t.obs)}</div>`:''}
+      ${t.obs ? `<div class="obs">${escapeHtml(t.obs)}</div>` : ''}
     </div>`;
   });
 }
 
 function renderTableExpediente(id, items){
-  const tb=document.querySelector(`#${id} tbody`);
-  tb.innerHTML='';
+  const tb = document.querySelector(`#${id} tbody`);
+  tb.innerHTML = '';
   items.forEach(i=>{
-    tb.innerHTML+=`<tr>
+    tb.innerHTML += `<tr>
       <td>${escapeHtml(i.motorista)}</td>
       <td>${escapeHtml(i.data)}</td>
       <td>${escapeHtml(i.hora)}</td>
@@ -561,10 +608,10 @@ function renderTableExpediente(id, items){
 }
 
 function renderTableEventos(id, items){
-  const tb=document.querySelector(`#${id} tbody`);
-  tb.innerHTML='';
+  const tb = document.querySelector(`#${id} tbody`);
+  tb.innerHTML = '';
   items.forEach(i=>{
-    tb.innerHTML+=`<tr>
+    tb.innerHTML += `<tr>
       <td>${escapeHtml(i.motorista)}</td>
       <td>${escapeHtml(i.data)}</td>
       <td>${escapeHtml(i.hora)}</td>
@@ -575,17 +622,86 @@ function renderTableEventos(id, items){
 }
 
 function renderTableDiarias(items){
-  const tb=document.querySelector('#tableDiarias tbody');
-  tb.innerHTML='';
+  const tb = document.querySelector('#tableDiarias tbody');
+  tb.innerHTML = '';
   items.forEach(i=>{
-    tb.innerHTML+=`<tr>
+    tb.innerHTML += `<tr>
       <td>${escapeHtml(i.data)}</td>
       <td>${escapeHtml(i.missao)}</td>
       <td>${escapeHtml(i.motorista)}</td>
       <td>${escapeHtml(i.viatura)}</td>
       <td>${escapeHtml(i.destino)}</td>
-      <td>${i.diarias}</td>
+      <td>${Number.isFinite(i.diarias) ? i.diarias : 0}</td>
     </tr>`;
+  });
+}
+
+// ======================================================
+// ✅ TOP 7 — EXPEDIENTE (CORREÇÃO AQUI)
+// ======================================================
+function renderTop7Antes(containerId, items){
+  const el = document.getElementById(containerId);
+  el.innerHTML = '';
+
+  // menor horário por motorista
+  const best = {}; // { motorista: {min, data} }
+  items.forEach(it=>{
+    const m = String(it.motorista || '').trim();
+    const min = parseTimeToMinutes(it.hora);
+    if(!m || min === null) return;
+
+    if(!best[m] || min < best[m].min){
+      best[m] = { min, data: it.data || '' };
+    }
+  });
+
+  const list = Object.entries(best)
+    .map(([motorista, v]) => ({ motorista, min: v.min, data: v.data }))
+    .sort((a,b)=>a.min - b.min)
+    .slice(0,7);
+
+  if(list.length === 0){
+    el.innerHTML = `<div style="opacity:.85">Sem dados para ranking.</div>`;
+    return;
+  }
+
+  list.forEach((x, i)=>{
+    el.innerHTML += `<div class="${i===0?'top1':''}">
+      ${i+1}. <strong>${escapeHtml(x.motorista)}</strong> — ${escapeHtml(minutesToHHMM(x.min))}${x.data ? ` <span style="opacity:.85">(${escapeHtml(x.data)})</span>` : ''}
+    </div>`;
+  });
+}
+
+function renderTop7Depois(containerId, items){
+  const el = document.getElementById(containerId);
+  el.innerHTML = '';
+
+  // maior horário por motorista
+  const best = {}; // { motorista: {max, data} }
+  items.forEach(it=>{
+    const m = String(it.motorista || '').trim();
+    const min = parseTimeToMinutes(it.hora);
+    if(!m || min === null) return;
+
+    if(!best[m] || min > best[m].max){
+      best[m] = { max: min, data: it.data || '' };
+    }
+  });
+
+  const list = Object.entries(best)
+    .map(([motorista, v]) => ({ motorista, min: v.max, data: v.data }))
+    .sort((a,b)=>b.min - a.min)
+    .slice(0,7);
+
+  if(list.length === 0){
+    el.innerHTML = `<div style="opacity:.85">Sem dados para ranking.</div>`;
+    return;
+  }
+
+  list.forEach((x, i)=>{
+    el.innerHTML += `<div class="${i===0?'top1':''}">
+      ${i+1}. <strong>${escapeHtml(x.motorista)}</strong> — ${escapeHtml(minutesToHHMM(x.min))}${x.data ? ` <span style="opacity:.85">(${escapeHtml(x.data)})</span>` : ''}
+    </div>`;
   });
 }
 
@@ -602,14 +718,20 @@ function renderRankingMissoes(id, rows){
     if(nome) map[nome]=(map[nome]||0)+qtd;
   }
 
-  Object.entries(map)
+  const arr = Object.entries(map)
     .sort((a,b)=>b[1]-a[1])
-    .slice(0,10)
-    .forEach(([n,q],i)=>{
-      el.innerHTML+=`<div class="${i===0?'top1':''}">
-        ${i+1}. <strong>${escapeHtml(n)}</strong> — ${q} missões
-      </div>`;
-    });
+    .slice(0,10);
+
+  if(arr.length === 0){
+    el.innerHTML = `<div style="opacity:.85">Sem dados para ranking.</div>`;
+    return;
+  }
+
+  arr.forEach(([n,q],i)=>{
+    el.innerHTML+=`<div class="${i===0?'top1':''}">
+      ${i+1}. <strong>${escapeHtml(n)}</strong> — ${q} missões
+    </div>`;
+  });
 }
 
 function renderRankingDiarias(id, rows){
@@ -622,21 +744,28 @@ function renderRankingDiarias(id, rows){
     if(nome) map[nome]=(map[nome]||0)+qtd;
   }
 
-  Object.entries(map)
+  const arr = Object.entries(map)
     .sort((a,b)=>b[1]-a[1])
-    .slice(0,10)
-    .forEach(([n,q],i)=>{
-      el.innerHTML+=`<div class="${i===0?'top1':''}">
-        ${i+1}. <strong>${escapeHtml(n)}</strong> — ${q} diárias
-      </div>`;
-    });
+    .slice(0,10);
+
+  if(arr.length === 0){
+    el.innerHTML = `<div style="opacity:.85">Sem dados para ranking.</div>`;
+    return;
+  }
+
+  arr.forEach(([n,q],i)=>{
+    el.innerHTML+=`<div class="${i===0?'top1':''}">
+      ${i+1}. <strong>${escapeHtml(n)}</strong> — ${q} diárias
+    </div>`;
+  });
 }
 
 // ======================================================
 // LOAD ALL
 // ======================================================
 async function loadAll(){
-  document.getElementById('status').innerText='⏳ Carregando...';
+  const statusEl = document.getElementById('status');
+  statusEl.innerText = '⏳ Carregando...';
 
   const [
     tel,
@@ -654,30 +783,34 @@ async function loadAll(){
     fetchSheet(ABA_REPRESENTACOES)
   ]);
 
+  // Telefones
   renderTelefones(normalizeTelefones(tel.data||[], tel.headers||[]));
 
-  renderTableExpediente('tableAntes',
-    normalizeExpediente(antes.data||[], antes.headers||[])
-  );
-  renderTableExpediente('tableDepois',
-    normalizeExpediente(depois.data||[], depois.headers||[])
-  );
+  // Antes / Depois (tabelas)
+  const antesNorm = normalizeExpediente(antes.data||[], antes.headers||[]);
+  const depoisNorm = normalizeExpediente(depois.data||[], depois.headers||[]);
 
-  renderTableEventos('tableEventos',
-    normalizeEventos(eventos.data||[], eventos.headers||[])
-  );
+  renderTableExpediente('tableAntes', antesNorm);
+  renderTableExpediente('tableDepois', depoisNorm);
 
+  // ✅ TOP 7 (CORRIGIDO)
+  renderTop7Antes('rankListAntes', antesNorm);
+  renderTop7Depois('rankListDepois', depoisNorm);
+
+  // Eventos
+  renderTableEventos('tableEventos', normalizeEventos(eventos.data||[], eventos.headers||[]));
+
+  // Diárias
   const diRows = diarias.data || [];
   const diNorm = normalizeDiarias(diRows, diarias.headers||[]);
   renderTableDiarias(diNorm);
   renderRankingMissoes('rankDiariasMissoes', diRows);
   renderRankingDiarias('rankDiariasValores', diRows);
 
-  renderTableEventos('tableRepresentacoes',
-    normalizeEventos(representacoes.data||[], representacoes.headers||[])
-  );
+  // Representações
+  renderTableEventos('tableRepresentacoes', normalizeEventos(representacoes.data||[], representacoes.headers||[]));
 
-  document.getElementById('status').innerText='✅ Dados carregados';
+  statusEl.innerText = '✅ Dados carregados';
 }
 
 loadAll();
