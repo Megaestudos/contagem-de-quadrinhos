@@ -1,817 +1,540 @@
-<!doctype html>
-<html lang="pt-BR">
+<!DOCTYPE html>
+<html lang="pt-BR" class="dark">
 <head>
-<meta charset="utf-8"/>
-<meta name="color-scheme" content="light">
-<meta name="theme-color" content="#e8f7ff">
-<meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>Contagem de Quadrinhos — Painel</title>
-<link id="manifestPlaceholder" rel="manifest"/>
-
-<style>
-html { color-scheme: light; }
-
-:root{
-  --bg-1:#e8f7ff;
-  --bg-2:#d8efff;
-  --card-bg: rgba(255,255,255,0.72);
-  --accent:#1e90ff;
-  --muted:#234b60;
-  --card-radius:16px;
-  --shadow: 0 10px 30px rgba(11,36,64,0.10);
-}
-
-*{box-sizing:border-box}
-
-body{
-  margin:0;
-  font-family: Inter, Segoe UI, Roboto, Arial, sans-serif;
-  background: linear-gradient(180deg,var(--bg-1),var(--bg-2));
-  color:var(--muted);
-}
-
-header{padding:20px 16px;text-align:center}
-h1{margin:0;font-size:26px;color:var(--accent)}
-
-/* ===== BARRA DE NAVEGAÇÃO ===== */
-.nav-bar{
-  display:flex;
-  justify-content:center;
-  gap:10px;
-  flex-wrap:wrap;
-  padding:15px 16px;
-  background:rgba(255,255,255,0.5);
-  backdrop-filter:blur(10px);
-  position:sticky;
-  top:0;
-  z-index:100;
-  box-shadow:0 2px 10px rgba(0,0,0,0.05);
-}
-
-.nav-btn{
-  padding:12px 24px;
-  border:none;
-  border-radius:25px;
-  font-size:14px;
-  font-weight:600;
-  cursor:pointer;
-  transition:all 0.3s ease;
-  background:rgba(255,255,255,0.8);
-  color:var(--muted);
-  box-shadow:0 2px 8px rgba(0,0,0,0.08);
-}
-
-.nav-btn:hover{
-  transform:translateY(-2px);
-  box-shadow:0 4px 12px rgba(0,0,0,0.12);
-}
-
-.nav-btn.active{
-  background:var(--accent);
-  color:#fff;
-  box-shadow:0 4px 15px rgba(30,144,255,0.35);
-}
-
-.container{max-width:1100px;margin:18px auto 60px;padding:0 16px}
-
-/* Ocultar seções inativas */
-.content-section{
-  display:none;
-  animation:fadeIn 0.3s ease;
-}
-
-.content-section.active{
-  display:block;
-}
-
-@keyframes fadeIn{
-  from{opacity:0;transform:translateY(10px)}
-  to{opacity:1;transform:translateY(0)}
-}
-
-.panel{
-  background:var(--card-bg);
-  border-radius:var(--card-radius);
-  padding:18px;
-  margin:18px 0;
-  box-shadow:var(--shadow);
-}
-
-.row{display:flex;gap:18px}
-@media(max-width:880px){.row{flex-direction:column}}
-
-.ranking-card{
-  flex:1;
-  border-radius:12px;
-  padding:14px;
-  color:#fff;
-}
-
-.rank-antes{background:linear-gradient(135deg,#50a8ff,#2b9ed8)}
-.rank-depois{background:linear-gradient(135deg,#00b894,#01936b)}
-.rank-eventos{background:linear-gradient(135deg,#fd79a8,#e84393)}
-.rank-diarias{background:linear-gradient(135deg,#a29bfe,#6c5ce7)}
-.rank-representacoes{background:linear-gradient(135deg,#fdcb6e,#e17055)}
-
-.table-wrap{overflow:auto;margin-top:12px}
-table{width:100%;border-collapse:collapse;background:#fff}
-thead th{padding:12px;border-bottom:2px solid #ddd}
-tbody td{padding:12px;border-bottom:1px solid #eee}
-
-/* ===== TELEFONES ===== */
-.telefones-grid{
-  display:grid;
-  grid-template-columns:repeat(auto-fill,minmax(280px,1fr));
-  gap:15px;
-  margin-top:12px;
-}
-
-.telefone-card{
-  background:#fff;
-  border-radius:12px;
-  padding:16px;
-  box-shadow:0 2px 8px rgba(0,0,0,0.08);
-  border-left:4px solid var(--accent);
-  transition:transform 0.2s;
-}
-
-.telefone-card:hover{
-  transform:translateX(5px);
-}
-
-.telefone-card .nome{
-  font-weight:700;
-  font-size:15px;
-  color:var(--accent);
-  margin-bottom:6px;
-}
-
-.telefone-card .numero{
-  font-size:18px;
-  font-weight:600;
-  color:var(--muted);
-}
-
-.telefone-card .obs{
-  font-size:12px;
-  color:#666;
-  margin-top:6px;
-  font-style:italic;
-}
-
-/* ===== CONTADORES DE MISSÕES ===== */
-.mission-stats{
-  display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
-  gap:15px;
-  margin:15px 0;
-}
-
-.stat-card{
-  background:linear-gradient(135deg,var(--accent),#0099ff);
-  color:#fff;
-  border-radius:12px;
-  padding:20px;
-  text-align:center;
-}
-
-.stat-card.success{
-  background:linear-gradient(135deg,#00b894,#00a381);
-}
-
-.stat-card .numero{
-  font-size:42px;
-  font-weight:800;
-  margin-bottom:5px;
-}
-
-.stat-card .label{
-  font-size:13px;
-  opacity:0.9;
-  text-transform:uppercase;
-  letter-spacing:1px;
-}
-
-.top1{
-  background:rgba(255,255,255,0.15);
-  padding:8px;
-  border-radius:8px;
-  margin-bottom:8px;
-}
-
-/* ===== TÍTULOS DESTACADOS ===== */
-.section-title{
-  display:flex;
-  align-items:center;
-  gap:10px;
-  padding:10px 14px;
-  margin:0 0 12px 0;
-  font-size:18px;
-  font-weight:700;
-  color:var(--accent);
-  background:rgba(30,144,255,0.12);
-  border-left:6px solid var(--accent);
-  border-radius:10px;
-  box-shadow:var(--shadow);
-}
-
-/* ===== STATUS ===== */
-#status{
-  text-align:center;
-  font-weight:600;
-  color:var(--accent);
-  padding:15px;
-  background:var(--card-bg);
-  border-radius:var(--card-radius);
-  margin:18px;
-}
-
-#status.error{
-  background:#f8d7da;
-  color:#721c24;
-}
-
-@media (prefers-color-scheme: dark) {
-  html, body {
-    background: linear-gradient(180deg,#e8f7ff,#d8efff) !important;
-    color: #234b60 !important;
-  }
-  .panel, table, .telefone-card {
-    background: rgba(255,255,255,0.95) !important;
-  }
-}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contagem de Quadrinhos — Premium OS</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#3b82f6',
+                        secondary: '#6366f1',
+                        surface: '#0f172a',
+                        card: '#1e293b',
+                        border: 'rgba(255, 255, 255, 0.1)',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { background-color: #020617; color: #f8fafc; }
+        .glass { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.1); }
+        .sidebar-item-active { background: rgba(59, 130, 246, 0.1); color: #3b82f6; border-right: 2px solid #3b82f6; }
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .animate-fade-in { animation: fadeIn 0.4s ease-out forwards; }
+    </style>
 </head>
+<body class="font-sans antialiased">
 
-<body>
-<header><h1>Contagem de Quadrinhos</h1></header>
+    <!-- Mobile Header -->
+    <header class="lg:hidden flex items-center justify-between p-4 glass fixed top-0 w-full z-50">
+        <h1 class="text-xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">CQ Premium</h1>
+        <button id="mobile-menu-toggle" class="p-2 text-slate-400 hover:text-white">
+            <i data-lucide="menu"></i>
+        </button>
+    </header>
 
-<!-- BARRA DE NAVEGAÇÃO COM BOTÕES -->
-<nav class="nav-bar">
-  <button class="nav-btn active" onclick="showSection('telefones')">📞 Telefones Úteis</button>
-  <button class="nav-btn" onclick="showSection('expediente')">📋 Antes/Depois Expediente</button>
-  <button class="nav-btn" onclick="showSection('eventos')">🎉 Missões Comitivas</button>
-  <button class="nav-btn" onclick="showSection('diarias')">🚗 Missões em Diárias</button>
-  <button class="nav-btn" onclick="showSection('representacoes')">🏛️ Missões em Representações</button>
-</nav>
+    <div class="flex h-screen overflow-hidden">
+        <!-- Sidebar -->
+        <aside id="sidebar" class="fixed inset-y-0 left-0 z-40 w-64 glass transform -translate-x-full lg:translate-x-0 transition-transform duration-300 ease-in-out lg:static lg:block h-full">
+            <div class="p-6">
+                <div class="flex items-center gap-3 mb-10">
+                    <div class="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
+                        <i data-lucide="layout-dashboard" class="text-white w-5 h-5"></i>
+                    </div>
+                    <span class="text-xl font-bold tracking-tight">CQ PREMIUM</span>
+                </div>
 
-<main class="container">
+                <nav class="space-y-1">
+                    <button onclick="showSection('dashboard')" class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-lg text-slate-400 hover:bg-slate-800 hover:text-white transition-all sidebar-item-active" data-section="dashboard">
+                        <i data-lucide="grid" class="w-5 h-5"></i>
+                        <span class="font-medium text-sm">Visão Geral</span>
+                    </button>
+                    <button onclick="showSection('telefones')" class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-lg text-slate-400 hover:bg-slate-800 hover:text-white transition-all" data-section="telefones">
+                        <i data-lucide="phone" class="w-5 h-5"></i>
+                        <span class="font-medium text-sm">Telefones Úteis</span>
+                    </button>
+                    <button onclick="showSection('expediente')" class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-lg text-slate-400 hover:bg-slate-800 hover:text-white transition-all" data-section="expediente">
+                        <i data-lucide="clock" class="w-5 h-5"></i>
+                        <span class="font-medium text-sm">Expediente</span>
+                    </button>
+                    <button onclick="showSection('comitivas')" class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-lg text-slate-400 hover:bg-slate-800 hover:text-white transition-all" data-section="comitivas">
+                        <i data-lucide="users" class="w-5 h-5"></i>
+                        <span class="font-medium text-sm">Comitivas</span>
+                    </button>
+                    <button onclick="showSection('diarias')" class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-lg text-slate-400 hover:bg-slate-800 hover:text-white transition-all" data-section="diarias">
+                        <i data-lucide="car" class="w-5 h-5"></i>
+                        <span class="font-medium text-sm">Diárias</span>
+                    </button>
+                    <button onclick="showSection('representacoes')" class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-lg text-slate-400 hover:bg-slate-800 hover:text-white transition-all" data-section="representacoes">
+                        <i data-lucide="landmark" class="w-5 h-5"></i>
+                        <span class="font-medium text-sm">Representações</span>
+                    </button>
+                </nav>
+            </div>
 
-<div id="status">Carregando dados...</div>
+            <div class="absolute bottom-0 w-full p-6 border-t border-slate-800">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center">
+                        <i data-lucide="user" class="text-slate-400 w-5 h-5"></i>
+                    </div>
+                    <div>
+                        <p class="text-sm font-semibold">Administrador</p>
+                        <p class="text-xs text-slate-500">Status: Online</p>
+                    </div>
+                </div>
+            </div>
+        </aside>
 
-<!-- ===== 1. TELEFONES ÚTEIS ===== -->
-<section id="telefones" class="content-section active">
-  <section class="panel">
-    <h3 class="section-title">📞 Telefones Úteis</h3>
-    <div id="telefonesGrid" class="telefones-grid"></div>
-  </section>
-</section>
+        <!-- Main Content -->
+        <main class="flex-1 overflow-y-auto custom-scrollbar pt-20 lg:pt-0">
+            <!-- Header/TopBar (Desktop) -->
+            <header class="hidden lg:flex items-center justify-between px-8 py-6 sticky top-0 bg-slate-950/80 backdrop-blur-md z-30">
+                <div>
+                    <h2 id="page-title" class="text-2xl font-bold">Resumo Operacional</h2>
+                    <p class="text-slate-500 text-sm">Gerenciamento inteligente de missões e recursos.</p>
+                </div>
+                <div id="status-badge" class="flex items-center gap-2 px-3 py-1 bg-green-500/10 text-green-500 rounded-full text-xs font-semibold">
+                    <span class="relative flex h-2 w-2">
+                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                        <span class="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+                    </span>
+                    Carregando...
+                </div>
+            </header>
 
-<!-- ===== 2. ANTES/DEPOIS DO EXPEDIENTE ===== -->
-<section id="expediente" class="content-section">
-  <section class="panel">
-    <div class="row">
-      <div class="ranking-card rank-antes">
-        <strong>Chegadas cedo — TOP 7</strong>
-        <div id="rankListAntes"></div>
-      </div>
-      <div class="ranking-card rank-depois">
-        <strong>Saídas tarde — TOP 7</strong>
-        <div id="rankListDepois"></div>
-      </div>
+            <div class="p-4 lg:p-8 space-y-8 max-w-7xl mx-auto">
+                
+                <!-- Sections -->
+                
+                <!-- 1. DASHBOARD -->
+                <section id="section-dashboard" class="content-section animate-fade-in">
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                        <!-- Stat Card 1 -->
+                        <div class="glass p-6 rounded-2xl">
+                            <div class="flex justify-between items-start mb-4">
+                                <div class="bg-blue-500/10 p-2 rounded-lg text-blue-500">
+                                    <i data-lucide="zap" class="w-6 h-6"></i>
+                                </div>
+                                <span class="text-xs font-bold text-green-500">+12%</span>
+                            </div>
+                            <h3 class="text-slate-500 text-xs font-bold uppercase tracking-wider mb-1">Média de Saídas</h3>
+                            <p id="stat-saidas" class="text-3xl font-bold">--</p>
+                        </div>
+                        <!-- Stat Card 2 -->
+                        <div class="glass p-6 rounded-2xl">
+                            <div class="flex justify-between items-start mb-4">
+                                <div class="bg-purple-500/10 p-2 rounded-lg text-purple-500">
+                                    <i data-lucide="award" class="w-6 h-6"></i>
+                                </div>
+                                <span class="text-xs font-bold text-slate-500">Global</span>
+                            </div>
+                            <h3 class="text-slate-500 text-xs font-bold uppercase tracking-wider mb-1">Missões Totais</h3>
+                            <p id="stat-missoes" class="text-3xl font-bold">--</p>
+                        </div>
+                        <!-- Stat Card 3 -->
+                        <div class="glass p-6 rounded-2xl">
+                            <div class="flex justify-between items-start mb-4">
+                                <div class="bg-orange-500/10 p-2 rounded-lg text-orange-500">
+                                    <i data-lucide="trending-up" class="w-6 h-6"></i>
+                                </div>
+                                <span class="text-xs font-bold text-orange-500">Active</span>
+                            </div>
+                            <h3 class="text-slate-500 text-xs font-bold uppercase tracking-wider mb-1">Diárias Atribuídas</h3>
+                            <p id="stat-diarias" class="text-3xl font-bold">--</p>
+                        </div>
+                        <!-- Stat Card 4 -->
+                        <div class="glass p-6 rounded-2xl">
+                            <div class="flex justify-between items-start mb-4">
+                                <div class="bg-green-500/10 p-2 rounded-lg text-green-500">
+                                    <i data-lucide="check-circle" class="w-6 h-6"></i>
+                                </div>
+                                <span class="text-xs font-bold text-blue-500">100%</span>
+                            </div>
+                            <h3 class="text-slate-500 text-xs font-bold uppercase tracking-wider mb-1">Motoristas Online</h3>
+                            <p id="stat-ativos" class="text-3xl font-bold">--</p>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-8">
+                        <div class="glass p-6 rounded-2xl">
+                            <h3 class="text-lg font-semibold mb-6">Produtividade Semanal</h3>
+                            <div class="h-64">
+                                <canvas id="prodChart"></canvas>
+                            </div>
+                        </div>
+                        <div class="glass p-6 rounded-2xl">
+                            <div class="flex justify-between items-center mb-6">
+                                <h3 class="text-lg font-semibold">Top Performance</h3>
+                                <button class="text-sm text-primary font-medium hover:underline">Ver tudo</button>
+                            </div>
+                            <div id="top7-ranking-dashboard" class="space-y-4">
+                                <!-- Ranking entries -->
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 2. TELEFONES -->
+                <section id="section-telefones" class="content-section hidden animate-fade-in">
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="telefones-grid">
+                        <!-- Phones cards -->
+                    </div>
+                </section>
+
+                <!-- 3. EXPEDIENTE -->
+                <section id="section-expediente" class="content-section hidden animate-fade-in space-y-8">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div class="glass p-6 rounded-2xl">
+                            <h3 class="text-blue-400 font-bold mb-4 flex items-center gap-2">
+                                <i data-lucide="sun" class="w-5 h-5"></i> Chegadas Cedo - Top 7
+                            </h3>
+                            <div id="rankListAntes" class="space-y-2"></div>
+                        </div>
+                        <div class="glass p-6 rounded-2xl">
+                            <h3 class="text-orange-400 font-bold mb-4 flex items-center gap-2">
+                                <i data-lucide="moon" class="w-5 h-5"></i> Saídas Tarde - Top 7
+                            </h3>
+                            <div id="rankListDepois" class="space-y-2"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="glass rounded-2xl overflow-hidden overflow-x-auto">
+                        <table class="w-full text-left">
+                            <thead class="bg-slate-800/50">
+                                <tr>
+                                    <th class="px-6 py-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Motorista</th>
+                                    <th class="px-6 py-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Data</th>
+                                    <th class="px-6 py-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Horário</th>
+                                    <th class="px-6 py-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Missão</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tableExpediente" class="divide-y divide-slate-800"></tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- 4. COMITIVAS -->
+                <section id="section-comitivas" class="content-section hidden animate-fade-in space-y-8">
+                    <div class="glass p-6 rounded-2xl">
+                        <h3 class="text-lg font-bold mb-6">Contagem de Missões Comitivas</h3>
+                        <div id="rankEventos" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+                    </div>
+                    <div class="glass rounded-2xl overflow-hidden overflow-x-auto">
+                        <table class="w-full text-left">
+                            <thead class="bg-slate-800/50">
+                                <tr>
+                                    <th class="px-6 py-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Motorista</th>
+                                    <th class="px-6 py-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Data</th>
+                                    <th class="px-6 py-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Horário</th>
+                                    <th class="px-6 py-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Missão</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tableEventos" class="divide-y divide-slate-800"></tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- 5. DIARIAS -->
+                <section id="section-diarias" class="content-section hidden animate-fade-in space-y-8">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div class="glass p-6 rounded-2xl">
+                            <h3 class="text-lg font-bold mb-6">Top Missões (Diárias)</h3>
+                            <div id="rankDiariasMissoes" class="space-y-3"></div>
+                        </div>
+                        <div class="glass p-6 rounded-2xl">
+                            <h3 class="text-lg font-bold mb-6">Top Valores Acumulados</h3>
+                            <div id="rankDiariasValores" class="space-y-3"></div>
+                        </div>
+                    </div>
+                    <div class="glass rounded-2xl overflow-hidden overflow-x-auto">
+                        <table class="w-full text-left">
+                            <thead class="bg-slate-800/50">
+                                <tr>
+                                    <th class="px-6 py-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Data</th>
+                                    <th class="px-6 py-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Missão</th>
+                                    <th class="px-6 py-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Motoristas</th>
+                                    <th class="px-6 py-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Viatura</th>
+                                    <th class="px-6 py-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Destino</th>
+                                    <th class="px-6 py-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Diárias</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tableDiarias" class="divide-y divide-slate-800"></tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- 6. REPRESENTACOES -->
+                <section id="section-representacoes" class="content-section hidden animate-fade-in space-y-8">
+                    <div class="glass p-6 rounded-2xl">
+                        <div id="rankRepresentacoes" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+                    </div>
+                    <div class="glass rounded-2xl overflow-hidden overflow-x-auto">
+                        <table class="w-full text-left">
+                            <tbody id="tableRepresentacoes" class="divide-y divide-slate-800"></tbody>
+                        </table>
+                    </div>
+                </section>
+
+            </div>
+        </main>
     </div>
-  </section>
 
-  <section class="panel">
-    <h3 class="section-title">Registros — Antes do expediente</h3>
-    <div class="table-wrap">
-      <table id="tableAntes">
-        <thead><tr><th>Motorista</th><th>Data</th><th>Horário</th><th>Missão</th></tr></thead>
-        <tbody></tbody>
-      </table>
-    </div>
-  </section>
-
-  <section class="panel">
-    <h3 class="section-title">Registros — Depois do expediente</h3>
-    <div class="table-wrap">
-      <table id="tableDepois">
-        <thead><tr><th>Motorista</th><th>Data</th><th>Horário</th><th>Missão</th></tr></thead>
-        <tbody></tbody>
-      </table>
-    </div>
-  </section>
-</section>
-
-<!-- ===== 3. MISSÕES EVENTOS ===== -->
-<section id="eventos" class="content-section">
-  <section class="panel">
-    <h3 class="section-title">🎉 Contagem — Missões Comitivas</h3>
-    <div class="mission-stats">
-      <div class="stat-card">
-        <div class="numero" id="totalEventos">0</div>
-        <div class="label">Total de Eventos</div>
-      </div>
-      <div class="stat-card success">
-        <div class="numero" id="motoristasEventos">0</div>
-        <div class="label">Motoristas Ativos</div>
-      </div>
-    </div>
-    <div class="row">
-      <div class="ranking-card rank-eventos">
-        <strong>Ranking — TOP 7 Eventos</strong>
-        <div id="rankEventos"></div>
-      </div>
-    </div>
-  </section>
-  
-  <section class="panel">
-    <h3 class="section-title">Todas as Missões — Comitivas</h3>
-    <div class="table-wrap">
-      <table id="tableEventos">
-        <thead><tr><th>Motorista</th><th>Data</th><th>Horário</th><th>Missão</th><th>Observação</th></tr></thead>
-        <tbody></tbody>
-      </table>
-    </div>
-  </section>
-</section>
-
-<!-- ===== 4. MISSÕES EXTERNAS DIÁRIAS ===== -->
-<section id="diarias" class="content-section">
-  <section class="panel">
-    <h3 class="section-title">🚗 Missões Externas em Diárias</h3>
-
-    <div class="row">
-      <div class="ranking-card rank-diarias">
-        <strong>🏆 TOP 10 — Motoristas com mais missões</strong>
-        <div id="rankDiariasMissoes"></div>
-      </div>
-
-      <div class="ranking-card rank-diarias">
-        <strong>💰 TOP 10 — Motoristas com mais diárias</strong>
-        <div id="rankDiariasValores"></div>
-      </div>
-    </div>
-  </section>
-
-  <section class="panel">
-    <h3 class="section-title">📋 Registros — Missões Externas Diárias</h3>
-    <div class="table-wrap">
-      <table id="tableDiarias">
-        <thead>
-          <tr>
-            <th>Data da Viagem</th>
-            <th>Missão</th>
-            <th>Motoristas</th>
-            <th>Viatura</th>
-            <th>Destino</th>
-            <th>Diárias</th>
-          </tr>
-        </thead>
-        <tbody></tbody>
-      </table>
-    </div>
-  </section>
-</section>
-
-<!-- ===== 5. MISSÕES EXTERNAS REPRESENTAÇÕES ===== -->
-<section id="representacoes" class="content-section">
-  <section class="panel">
-    <h3 class="section-title">🏛️ Contagem — Missões Externas em Representações</h3>
-    <div class="mission-stats">
-      <div class="stat-card">
-        <div class="numero" id="totalRepresentacoes">0</div>
-        <div class="label">Total de Representações</div>
-      </div>
-      <div class="stat-card success">
-        <div class="numero" id="motoristasRepresentacoes">0</div>
-        <div class="label">Motoristas Ativos</div>
-      </div>
-    </div>
-    <div class="row">
-      <div class="ranking-card rank-representacoes">
-        <strong>Ranking — TOP 7 Representações</strong>
-        <div id="rankRepresentacoes"></div>
-      </div>
-    </div>
-  </section>
-  
-  <section class="panel">
-    <h3 class="section-title">Todas as Missões — Representações</h3>
-    <div class="table-wrap">
-      <table id="tableRepresentacoes">
-        <thead><tr><th>Motorista</th><th>Data</th><th>Horário</th><th>Missão</th><th>Observação</th></tr></thead>
-        <tbody></tbody>
-      </table>
-    </div>
-  </section>
-</section>
-
-</main>
-
-  <!-- 1️⃣ SCRIPT DE PROTEÇÃO (Firebase Auth Guard) -->
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-app.js";
-  import { getAuth, onAuthStateChanged } 
-    from "https://www.gstatic.com/firebasejs/10.12.4/firebase-auth.js";
-
-  const firebaseConfig = {
-    apiKey: "AIzaSyA1QL_UioBdIEqlcTxujW3U6uh3cc0sv6U",
-    authDomain: "contagem-de-quadrinhos.firebaseapp.com",
-    projectId: "contagem-de-quadrinhos",
-    appId: "1:947344780647:web:e062a1f039a169104c53c2"
-  };
-
-  const app = initializeApp(firebaseConfig);
-  const auth = getAuth(app);
-
-  onAuthStateChanged(auth, user => {
-    if (!user) {
-      window.location.href = "login.html";
-    }
-  });
-</script>
-
-<script>
-// ======================================================
-// CONFIG
-// ======================================================
-const API_URL = "https://script.google.com/macros/s/AKfycbzy_h5lJ-wOHbd41_mwME9mSjJwzpIYygpg0ptfR0h6BdOQ-dhTpVd2rgsitABGPm8UlA/exec";
-
-const ABA_TELEFONES = "TELEFONES ÚTEIS";
-const ABA_ANTES = "ANTES DO EXPEDIENTE";
-const ABA_DEPOIS = "DEPOIS DO EXPEDIENTE";
-const ABA_EVENTOS = "MISSÕES EVENTOS";
-const ABA_DIARIAS = "MISSÕES EXTERNAS DIÁRIAS";
-const ABA_REPRESENTACOES = "MISSÕES EXTERNAS REPRESENTAÇÕES";
-
-const SECTIONS_ORDER = ['telefones','expediente','eventos','diarias','representacoes'];
-
-// ======================================================
-// NAV
-// ======================================================
-function showSection(id){
-  document.querySelectorAll('.content-section').forEach(s=>s.classList.remove('active'));
-  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
-  document.getElementById(id)?.classList.add('active');
-  const i = SECTIONS_ORDER.indexOf(id);
-  if(i >= 0) document.querySelectorAll('.nav-btn')[i]?.classList.add('active');
-}
-
-// ======================================================
-// FETCH
-// ======================================================
-async function fetchSheet(aba){
-  const res = await fetch(`${API_URL}?aba=${encodeURIComponent(aba)}`);
-  const text = await res.text();
-
-  // Resposta vazia/HTML => retorna estrutura segura
-  if(!text || text.startsWith('<')) return { headers:[], data:[], erro: 'resposta_invalida' };
-
-  const json = JSON.parse(text);
-  // Garante estrutura mínima
-  return {
-    headers: Array.isArray(json.headers) ? json.headers : [],
-    data: Array.isArray(json.data) ? json.data : [],
-    ...json
-  };
-}
-
-// ======================================================
-// HELPERS
-// ======================================================
-function escapeHtml(s){
-  return String(s||'')
-    .replaceAll('&','&amp;')
-    .replaceAll('<','&lt;')
-    .replaceAll('>','&gt;');
-}
-
-// remove acentos e padroniza
-function keyNorm(s){
-  return String(s||'')
-    .trim()
-    .toUpperCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, ''); // remove acentos
-}
-
-// monta objeto por linha usando headers
-function rowToObj(row, headers){
-  const o = {};
-  headers.forEach((h,i)=>{ o[keyNorm(h)] = row[i]; });
-  return o;
-}
-
-// parse "HH:MM" ou "HH:MM:SS" -> minutos
-function parseTimeToMinutes(v){
-  if(v === null || v === undefined) return null;
-  const s = String(v).trim();
-  if(!s) return null;
-
-  const parts = s.split(':').map(p=>p.trim());
-  if(parts.length < 2) return null;
-
-  const hh = Number(parts[0]);
-  const mm = Number(parts[1]);
-  if(Number.isNaN(hh) || Number.isNaN(mm)) return null;
-
-  return (hh * 60) + mm;
-}
-
-// minutos -> "HH:MM"
-function minutesToHHMM(min){
-  const hh = String(Math.floor(min / 60)).padStart(2,'0');
-  const mm = String(min % 60).padStart(2,'0');
-  return `${hh}:${mm}`;
-}
-
-// ======================================================
-// NORMALIZERS
-// ======================================================
-function normalizeTelefones(rows, headers){
-  return rows.map(r=>{
-    const o = rowToObj(r, headers);
-    return {
-      nome: o['NOME'] || '',
-      numero: o['TELEFONE'] || '',
-      obs: o['OBSERVACAO'] || ''
-    };
-  }).filter(x=>x.nome && x.numero);
-}
-
-function normalizeExpediente(rows, headers){
-  return rows.map(r=>{
-    const o = rowToObj(r, headers);
-    return {
-      motorista: (o['MOTORISTA'] || o['MOTORISTAS'] || '').toString().trim(),
-      data: (o['DATA'] || '').toString().trim(),
-      hora: (o['HORARIO'] || '').toString().trim(),
-      missao: (o['MISSAO'] || '').toString().trim()
-    };
-  }).filter(x=>x.motorista);
-}
-
-function normalizeEventos(rows, headers){
-  return rows.map(r=>{
-    const o = rowToObj(r, headers);
-    return {
-      motorista: (o['MOTORISTA'] || o['MOTORISTAS'] || '').toString().trim(),
-      data: (o['DATA'] || '').toString().trim(),
-      hora: (o['HORARIO'] || '').toString().trim(),
-      missao: (o['MISSAO'] || '').toString().trim(),
-      obs: (o['OBSERVACAO'] || '').toString().trim()
-    };
-  }).filter(x=>x.motorista);
-}
-
-function normalizeDiarias(rows, headers){
-  return rows.map(r=>{
-    const o = rowToObj(r, headers);
-    return {
-      data: (o['DATA DA VIAGEM'] || o['DATA'] || '').toString().trim(),
-      missao: (o['MISSAO'] || '').toString().trim(),
-      motorista: (o['MOTORISTAS'] || o['MOTORISTA'] || '').toString().trim(),
-      viatura: (o['VIATURA'] || '').toString().trim(),
-      destino: (o['DESTINO'] || '').toString().trim(),
-      diarias: Number(o['DIARIAS'] || 0)
-    };
-  }).filter(x=>x.motorista);
-}
-
-// ======================================================
-// RENDER TABLES
-// ======================================================
-function renderTelefones(items){
-  const g = document.getElementById('telefonesGrid');
-  g.innerHTML = '';
-  items.forEach(t=>{
-    g.innerHTML += `<div class="telefone-card">
-      <div class="nome">${escapeHtml(t.nome)}</div>
-      <div class="numero">${escapeHtml(t.numero)}</div>
-      ${t.obs ? `<div class="obs">${escapeHtml(t.obs)}</div>` : ''}
-    </div>`;
-  });
-}
-
-function renderTableExpediente(id, items){
-  const tb = document.querySelector(`#${id} tbody`);
-  tb.innerHTML = '';
-  items.forEach(i=>{
-    tb.innerHTML += `<tr>
-      <td>${escapeHtml(i.motorista)}</td>
-      <td>${escapeHtml(i.data)}</td>
-      <td>${escapeHtml(i.hora)}</td>
-      <td>${escapeHtml(i.missao)}</td>
-    </tr>`;
-  });
-}
-
-function renderTableEventos(id, items){
-  const tb = document.querySelector(`#${id} tbody`);
-  tb.innerHTML = '';
-  items.forEach(i=>{
-    tb.innerHTML += `<tr>
-      <td>${escapeHtml(i.motorista)}</td>
-      <td>${escapeHtml(i.data)}</td>
-      <td>${escapeHtml(i.hora)}</td>
-      <td>${escapeHtml(i.missao)}</td>
-      <td>${escapeHtml(i.obs)}</td>
-    </tr>`;
-  });
-}
-
-function renderTableDiarias(items){
-  const tb = document.querySelector('#tableDiarias tbody');
-  tb.innerHTML = '';
-  items.forEach(i=>{
-    tb.innerHTML += `<tr>
-      <td>${escapeHtml(i.data)}</td>
-      <td>${escapeHtml(i.missao)}</td>
-      <td>${escapeHtml(i.motorista)}</td>
-      <td>${escapeHtml(i.viatura)}</td>
-      <td>${escapeHtml(i.destino)}</td>
-      <td>${Number.isFinite(i.diarias) ? i.diarias : 0}</td>
-    </tr>`;
-  });
-}
-
-// ======================================================
-// ✅ TOP 7 — EXPEDIENTE (CORREÇÃO AQUI)
-// ======================================================
-function renderTop7Antes(containerId, items){
-  const el = document.getElementById(containerId);
-  el.innerHTML = '';
-
-  const count = {}; // { motorista: quantidade }
-
-  items.forEach(it => {
-    const m = String(it.motorista || '').trim();
-    const min = parseTimeToMinutes(it.hora);
-    if(!m || min === null) return;
-
-    // considera chegada cedo (qualquer registro válido)
-    count[m] = (count[m] || 0) + 1;
-  });
-
-  const list = Object.entries(count)
-    .map(([motorista, qtd]) => ({ motorista, qtd }))
-    .sort((a,b) => b.qtd - a.qtd)
-    .slice(0,7);
-
-  if(list.length === 0){
-    el.innerHTML = `<div style="opacity:.85">Sem dados para ranking.</div>`;
-    return;
-  }
-
-  list.forEach((x, i) => {
-    el.innerHTML += `<div class="${i===0?'top1':''}">
-      ${i+1}. <strong>${escapeHtml(x.motorista)}</strong> — ${x.qtd} chegadas
-    </div>`;
-  });
-}
-
-function renderTop7Depois(containerId, items){
-  const el = document.getElementById(containerId);
-  el.innerHTML = '';
-
-  const count = {}; // { motorista: quantidade }
-
-  items.forEach(it => {
-    const m = String(it.motorista || '').trim();
-    const min = parseTimeToMinutes(it.hora);
-    if(!m || min === null) return;
-
-    // considera saída tarde (qualquer registro válido)
-    count[m] = (count[m] || 0) + 1;
-  });
-
-  const list = Object.entries(count)
-    .map(([motorista, qtd]) => ({ motorista, qtd }))
-    .sort((a,b) => b.qtd - a.qtd)
-    .slice(0,7);
-
-  if(list.length === 0){
-    el.innerHTML = `<div style="opacity:.85">Sem dados para ranking.</div>`;
-    return;
-  }
-
-  list.forEach((x, i) => {
-    el.innerHTML += `<div class="${i===0?'top1':''}">
-      ${i+1}. <strong>${escapeHtml(x.motorista)}</strong> — ${x.qtd} saídas
-    </div>`;
-  });
-}
-
-// ======================================================
-// RANKINGS DIÁRIAS (LINHA 10+)
-// ======================================================
-function renderRankingMissoes(id, rows){
-  const el=document.getElementById(id); el.innerHTML='';
-  const map={};
-
-  for(let i=9;i<rows.length;i++){
-    const nome=String(rows[i][0]||'').trim(); // coluna A
-    const qtd=Number(rows[i][1]||0);          // coluna B
-    if(nome) map[nome]=(map[nome]||0)+qtd;
-  }
-
-  const arr = Object.entries(map)
-    .sort((a,b)=>b[1]-a[1])
-    .slice(0,10);
-
-  if(arr.length === 0){
-    el.innerHTML = `<div style="opacity:.85">Sem dados para ranking.</div>`;
-    return;
-  }
-
-  arr.forEach(([n,q],i)=>{
-    el.innerHTML+=`<div class="${i===0?'top1':''}">
-      ${i+1}. <strong>${escapeHtml(n)}</strong> — ${q} missões
-    </div>`;
-  });
-}
-
-function renderRankingDiarias(id, rows){
-  const el=document.getElementById(id); el.innerHTML='';
-  const map={};
-
-  for(let i=9;i<rows.length;i++){
-    const nome=String(rows[i][3]||'').trim(); // coluna D
-    const qtd=Number(rows[i][4]||0);          // coluna E
-    if(nome) map[nome]=(map[nome]||0)+qtd;
-  }
-
-  const arr = Object.entries(map)
-    .sort((a,b)=>b[1]-a[1])
-    .slice(0,10);
-
-  if(arr.length === 0){
-    el.innerHTML = `<div style="opacity:.85">Sem dados para ranking.</div>`;
-    return;
-  }
-
-  arr.forEach(([n,q],i)=>{
-    el.innerHTML+=`<div class="${i===0?'top1':''}">
-      ${i+1}. <strong>${escapeHtml(n)}</strong> — ${q} diárias
-    </div>`;
-  });
-}
-
-// ======================================================
-// LOAD ALL
-// ======================================================
-async function loadAll(){
-  const statusEl = document.getElementById('status');
-  statusEl.innerText = '⏳ Carregando...';
-
-  const [
-    tel,
-    antes,
-    depois,
-    eventos,
-    diarias,
-    representacoes
-  ] = await Promise.all([
-    fetchSheet(ABA_TELEFONES),
-    fetchSheet(ABA_ANTES),
-    fetchSheet(ABA_DEPOIS),
-    fetchSheet(ABA_EVENTOS),
-    fetchSheet(ABA_DIARIAS),
-    fetchSheet(ABA_REPRESENTACOES)
-  ]);
-
-  // Telefones
-  renderTelefones(normalizeTelefones(tel.data||[], tel.headers||[]));
-
-  // Antes / Depois (tabelas)
-  const antesNorm = normalizeExpediente(antes.data||[], antes.headers||[]);
-  const depoisNorm = normalizeExpediente(depois.data||[], depois.headers||[]);
-
-  renderTableExpediente('tableAntes', antesNorm);
-  renderTableExpediente('tableDepois', depoisNorm);
-
-  // ✅ TOP 7 (CORRIGIDO)
-  renderTop7Antes('rankListAntes', antesNorm);
-  renderTop7Depois('rankListDepois', depoisNorm);
-
-  // Eventos
-  renderTableEventos('tableEventos', normalizeEventos(eventos.data||[], eventos.headers||[]));
-
-  // Diárias
-  const diRows = diarias.data || [];
-  const diNorm = normalizeDiarias(diRows, diarias.headers||[]);
-  renderTableDiarias(diNorm);
-  renderRankingMissoes('rankDiariasMissoes', diRows);
-  renderRankingDiarias('rankDiariasValores', diRows);
-
-  // Representações
-  renderTableEventos('tableRepresentacoes', normalizeEventos(representacoes.data||[], representacoes.headers||[]));
-
-  statusEl.innerText = '✅ Dados carregados';
-}
-
-loadAll();
-</script>
+    <!-- Firebase SDK (Modular) -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-app.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-auth.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyA1QL_UioBdIEqlcTxujW3U6uh3cc0sv6U",
+            authDomain: "contagem-de-quadrinhos.firebaseapp.com",
+            projectId: "contagem-de-quadrinhos",
+            appId: "1:947344780647:web:e062a1f039a169104c53c2"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+
+        onAuthStateChanged(auth, user => {
+            if (!user) {
+                window.location.href = "login.html";
+            } else {
+                window.loadDashboardData();
+            }
+        });
+    </script>
+
+    <script>
+        // Config & State
+        const API_URL = "https://script.google.com/macros/s/AKfycbzy_h5lJ-wOHbd41_mwME9mSjJwzpIYygpg0ptfR0h6BdOQ-dhTpVd2rgsitABGPm8UlA/exec";
+        const SECTION_TITLES = {
+            dashboard: "Resumo Operacional",
+            telefones: "Central de Contatos",
+            expediente: "Controle de Expediente",
+            comitivas: "Missões em Comitiva",
+            diarias: "Missões em Diárias",
+            representacoes: "Representações Oficiais"
+        };
+
+        // Navigation
+        function showSection(id) {
+            document.querySelectorAll('.content-section').forEach(s => s.classList.add('hidden'));
+            document.getElementById(`section-${id}`).classList.remove('hidden');
+            
+            document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('sidebar-item-active'));
+            document.querySelector(`[data-section="${id}"]`).classList.add('sidebar-item-active');
+            
+            document.getElementById('page-title').innerText = SECTION_TITLES[id];
+            
+            if(window.innerWidth < 1024) toggleSidebar();
+        }
+
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('-translate-x-full');
+        }
+
+        document.getElementById('mobile-menu-toggle').addEventListener('click', toggleSidebar);
+
+        // Data Fetching & Normalization
+        async function fetchSheet(aba) {
+            try {
+                const res = await fetch(`${API_URL}?aba=${encodeURIComponent(aba)}`);
+                const text = await res.text();
+                const json = JSON.parse(text);
+                return {
+                    headers: Array.isArray(json.headers) ? json.headers : [],
+                    data: Array.isArray(json.data) ? json.data : [],
+                    ...json
+                };
+            } catch (e) {
+                console.error("Error fetching", aba, e);
+                return { headers: [], data: [] };
+            }
+        }
+
+        function rowToObj(row, headers) {
+            const o = {};
+            headers.forEach((h, i) => { 
+                const key = String(h || '').trim().toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, '');
+                o[key] = row[i]; 
+            });
+            return o;
+        }
+
+        // Stats & Charts
+        let prodChart;
+        function updateCharts(data) {
+            const ctx = document.getElementById('prodChart').getContext('2d');
+            if (prodChart) prodChart.destroy();
+            
+            prodChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: data.labels,
+                    datasets: [{
+                        label: 'Missões',
+                        data: data.values,
+                        backgroundColor: 'rgba(59, 130, 246, 0.5)',
+                        borderColor: '#3b82f6',
+                        borderWidth: 1,
+                        borderRadius: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#64748b' } },
+                        x: { grid: { display: false }, ticks: { color: '#64748b' } }
+                    }
+                }
+            });
+        }
+
+        // Renderers
+        function renderTelefones(items) {
+            const grid = document.getElementById('telefones-grid');
+            grid.innerHTML = items.map(t => `
+                <div class="glass p-5 rounded-2xl hover:border-primary/50 transition-colors group">
+                    <div class="flex items-center gap-4">
+                        <div class="bg-slate-800 p-3 rounded-xl group-hover:bg-primary/20 transition-colors text-primary italic">
+                           #
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-slate-100">${t.NOME || ''}</h4>
+                            <p class="text-primary font-mono text-lg">${t.TELEFONE || ''}</p>
+                            ${t.OBSERVACAO ? `<p class="text-xs text-slate-500 italic mt-1 font-medium">${t.OBSERVACAO}</p>` : ''}
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderTable(id, rows, headers, keys) {
+            const tbody = document.getElementById(id);
+            tbody.innerHTML = rows.map(r => {
+                const o = rowToObj(r, headers);
+                return `<tr class="hover:bg-white/5 transition-colors">
+                    ${keys.map(k => `<td class="px-6 py-4 text-sm text-slate-300">${o[k] || '--'}</td>`).join('')}
+                </tr>`;
+            }).join('');
+        }
+
+        function renderRanking(id, data, titleKey, valueKey, label = "missões", limit = 7) {
+            const container = document.getElementById(id);
+            if (!data || data.length === 0) {
+                container.innerHTML = '<p class="text-slate-500 text-sm italic">Nenhum registro encontrado.</p>';
+                return;
+            }
+            container.innerHTML = data.slice(0, limit).map((item, i) => `
+                <div class="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-transparent hover:border-white/10 transition-all">
+                    <div class="flex items-center gap-3">
+                        <span class="w-6 h-6 flex items-center justify-center text-[10px] font-bold ${i < 3 ? 'bg-primary/20 text-primary' : 'bg-slate-800 text-slate-500'} rounded-full">${i+1}</span>
+                        <p class="font-medium text-sm text-slate-200">${item[titleKey]}</p>
+                    </div>
+                    <span class="text-[10px] font-bold px-2 py-1 bg-slate-800 rounded-lg text-slate-400 uppercase tracking-tighter">${item[valueKey]} ${label}</span>
+                </div>
+            `).join('');
+        }
+
+        // Global Data Load
+        window.loadDashboardData = async function() {
+            const badge = document.getElementById('status-badge');
+            badge.innerHTML = '<i data-lucide="loader" class="w-3 h-3 animate-spin"></i> Sincronizando...';
+            lucide.createIcons();
+
+            const [tel, antes, depois, eventos, diarias, representacoes] = await Promise.all([
+                fetchSheet("TELEFONES ÚTEIS"),
+                fetchSheet("ANTES DO EXPEDIENTE"),
+                fetchSheet("DEPOIS DO EXPEDIENTE"),
+                fetchSheet("MISSÕES EVENTOS"),
+                fetchSheet("MISSÕES EXTERNAS DIÁRIAS"),
+                fetchSheet("MISSÕES EXTERNAS REPRESENTAÇÕES")
+            ]);
+
+            // Stats
+            document.getElementById('stat-saidas').innerText = antes.data.length + depois.data.length;
+            document.getElementById('stat-missoes').innerText = eventos.data.length;
+            document.getElementById('stat-diarias').innerText = diarias.data.length;
+            document.getElementById('stat-ativos').innerText = new Set([...antes.data, ...depois.data, ...eventos.data].map(r => r[0])).size;
+
+            // Page 1: Telefones
+            renderTelefones(tel.data.map(r => rowToObj(r, tel.headers)));
+            
+            // Page 2: Expediente
+            const antesNorm = antes.data.map(r => rowToObj(r, antes.headers));
+            const afterNorm = depois.data.map(r => rowToObj(r, depois.headers));
+            renderTable('tableExpediente', antes.data, antes.headers, ['MOTORISTA', 'DATA', 'HORARIO', 'MISSAO']);
+            
+            const countByMotorista = (data) => {
+                const m = {};
+                data.forEach(d => { 
+                    const name = d.MOTORISTA || d.MOTORISTAS;
+                    if(name) m[name] = (m[name]||0)+1; 
+                });
+                return Object.entries(m).map(([name, count]) => ({ name, count })).sort((a,b) => b.count - a.count);
+            };
+
+            renderRanking('rankListAntes', countByMotorista(antesNorm), 'name', 'count', 'chegadas');
+            renderRanking('rankListDepois', countByMotorista(afterNorm), 'name', 'count', 'saídas');
+            renderRanking('top7-ranking-dashboard', countByMotorista([...antesNorm, ...afterNorm, ...eventos.data.map(r => rowToObj(r, eventos.headers))]), 'name', 'count');
+
+            // Page 3: Comitivas
+            renderTable('tableEventos', eventos.data, eventos.headers, ['MOTORISTA', 'DATA', 'HORARIO', 'MISSAO']);
+            renderRanking('rankEventos', countByMotorista(eventos.data.map(r => rowToObj(r, eventos.headers))), 'name', 'count');
+
+            // Page 4: Diárias (Logic from original for rows 10+)
+            const dRows = diarias.data || [];
+            const dMapMissoes = {};
+            const dMapValores = {};
+            for(let i=9; i<dRows.length; i++){
+                const n1 = String(dRows[i][0]||'').trim(); // Col A
+                const q1 = Number(dRows[i][1]||0);          // Col B
+                if(n1) dMapMissoes[n1] = (dMapMissoes[n1]||0)+q1;
+
+                const n2 = String(dRows[i][3]||'').trim(); // Col D
+                const q2 = Number(dRows[i][4]||0);          // Col E
+                if(n2) dMapValores[n2] = (dMapValores[n2]||0)+q2;
+            }
+            renderRanking('rankDiariasMissoes', Object.entries(dMapMissoes).map(([name, count]) => ({name, count})).sort((a,b)=>b.count-a.count), 'name', 'count', 'missões');
+            renderRanking('rankDiariasValores', Object.entries(dMapValores).map(([name, count]) => ({name, count})).sort((a,b)=>b.count-a.count), 'name', 'count', 'diárias');
+            renderTable('tableDiarias', diarias.data, diarias.headers, ['DATA DA VIAGEM', 'MISSAO', 'MOTORISTAS', 'VIATURA', 'DESTINO', 'DIARIAS']);
+
+            // Page 5: Representações
+            renderRanking('rankRepresentacoes', countByMotorista(representacoes.data.map(r => rowToObj(r, representacoes.headers))), 'name', 'count', 'representações');
+            renderTable('tableRepresentacoes', representacoes.data, representacoes.headers, ['MOTORISTA', 'DATA', 'HORARIO', 'MISSAO']);
+
+            // Chart Data (Example distribution)
+            updateCharts({
+                labels: ['C. Cedo', 'S. Tarde', 'Comitivas', 'Diárias', 'Repres.'],
+                values: [antes.data.length, depois.data.length, eventos.data.length, diarias.data.length, representacoes.data.length]
+            });
+
+            badge.className = "flex items-center gap-2 px-3 py-1 bg-green-500/10 text-green-500 rounded-full text-xs font-semibold";
+            badge.innerHTML = '<i data-lucide="check" class="w-3 h-3"></i> Protegido';
+            lucide.createIcons();
+        };
+
+        window.onload = () => {
+            lucide.createIcons();
+        };
+
+    </script>
 </body>
 </html>
