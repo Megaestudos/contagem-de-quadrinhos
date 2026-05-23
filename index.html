@@ -93,6 +93,24 @@
             background: linear-gradient(135deg, var(--primary), var(--secondary));
             box-shadow: 0 0 15px var(--primary-glow);
         }
+
+        .hall-of-fame {
+            background: radial-gradient(circle at top right, rgba(245, 158, 11, 0.15), transparent);
+            border: 1px solid rgba(245, 158, 11, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+        .hall-of-fame::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: conic-gradient(from 0deg, transparent, rgba(245, 158, 11, 0.1), transparent);
+            animation: rotate-conic 10s linear infinite;
+        }
+        @keyframes rotate-conic { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
     </style>
 </head>
 <body class="font-sans antialiased">
@@ -141,9 +159,9 @@
                         <i data-lucide="navigation" class="w-5 h-5 group-hover:text-primary transition-colors"></i>
                         <span class="font-bold text-xs uppercase tracking-widest">Diárias</span>
                     </button>
-                    <button onclick="showSection('representacoes')" class="nav-item w-full flex items-center gap-4 px-4 py-3 rounded-xl text-slate-400 hover:bg-white/5 transition-all group" data-section="representacoes">
-                        <i data-lucide="landmark" class="w-5 h-5 group-hover:text-primary transition-colors"></i>
-                        <span class="font-bold text-xs uppercase tracking-widest">Institucional</span>
+                    <button onclick="showSection('informacoes')" class="nav-item w-full flex items-center gap-4 px-4 py-3 rounded-xl text-slate-400 hover:bg-white/5 transition-all group" data-section="informacoes">
+                        <i data-lucide="info" class="w-5 h-5 group-hover:text-primary transition-colors"></i>
+                        <span class="font-bold text-xs uppercase tracking-widest">Informações</span>
                     </button>
                 </nav>
             </div>
@@ -280,34 +298,65 @@
                 </section>
 
                 <!-- 3. EXPEDIENTE -->
-                <section id="section-expediente" class="content-section hidden animate-fade-in space-y-8">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                        <div class="glass p-6 rounded-2xl">
-                            <h3 class="text-blue-400 font-bold mb-4 flex items-center gap-2">
-                                <i data-lucide="sun" class="w-5 h-5"></i> Chegadas Cedo - Top 7
-                            </h3>
-                            <div id="rankListAntes" class="space-y-2"></div>
+                <section id="section-expediente" class="content-section hidden animate-fade-in space-y-12">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-12">
+                        <!-- Hall of Fame Early -->
+                        <div id="hall-early" class="glass-card hall-of-fame p-10 rounded-[3rem] relative z-10">
+                            <div class="relative z-20">
+                                <i data-lucide="trophy" class="w-12 h-12 text-gold mb-6 animate-bounce"></i>
+                                <h3 class="text-[10px] font-black text-gold uppercase tracking-[0.3em] mb-2">Vanguarda das Operações</h3>
+                                <p class="text-3xl font-black tracking-tighter italic mb-6">Mestre em Chegadas Antecipadas</p>
+                                <div id="top1-early" class="flex items-center gap-4">
+                                     <p class="text-slate-500 text-[10px] font-bold uppercase tracking-widest italic">Aguardando Sincronização...</p>
+                                </div>
+                            </div>
                         </div>
-                        <div class="glass p-6 rounded-2xl">
-                            <h3 class="text-orange-400 font-bold mb-4 flex items-center gap-2">
-                                <i data-lucide="moon" class="w-5 h-5"></i> Saídas Tarde - Top 7
+                        <!-- Hall of Fame Late -->
+                        <div id="hall-late" class="glass-card hall-of-fame p-10 rounded-[3rem] relative z-10" style="background: radial-gradient(circle at top right, rgba(59, 130, 246, 0.15), transparent); border-color: rgba(59, 130, 246, 0.3);">
+                            <div class="relative z-20">
+                                <i data-lucide="crown" class="w-12 h-12 text-blue-400 mb-6 animate-pulse"></i>
+                                <h3 class="text-[10px] font-black text-blue-400 uppercase tracking-[0.3em] mb-2">Guardião do Encerramento</h3>
+                                <p class="text-3xl font-black tracking-tighter italic mb-6">Dedicação em Horário Estendido</p>
+                                <div id="top1-late" class="flex items-center gap-4">
+                                     <p class="text-slate-500 text-[10px] font-bold uppercase tracking-widest italic">Aguardando Sincronização...</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div class="glass-card p-8 rounded-[2.5rem]">
+                            <h3 class="text-xl font-black tracking-tighter italic mb-6 flex items-center gap-3">
+                                <i data-lucide="list-ordered" class="w-5 h-5 text-primary"></i> Ranking Geral: Chegadas
                             </h3>
-                            <div id="rankListDepois" class="space-y-2"></div>
+                            <div id="rankListAntes" class="space-y-4"></div>
+                        </div>
+                        <div class="glass-card p-8 rounded-[2.5rem]">
+                            <h3 class="text-xl font-black tracking-tighter italic mb-6 flex items-center gap-3">
+                                <i data-lucide="list-ordered" class="w-5 h-5 text-secondary"></i> Ranking Geral: Saídas
+                            </h3>
+                            <div id="rankListDepois" class="space-y-4"></div>
                         </div>
                     </div>
                     
-                    <div class="glass rounded-2xl overflow-hidden overflow-x-auto">
-                        <table class="w-full text-left">
-                            <thead class="bg-slate-800/50">
-                                <tr>
-                                    <th class="px-6 py-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Motorista</th>
-                                    <th class="px-6 py-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Data</th>
-                                    <th class="px-6 py-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Horário</th>
-                                    <th class="px-6 py-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Missão</th>
-                                </tr>
-                            </thead>
-                            <tbody id="tableExpediente" class="divide-y divide-slate-800"></tbody>
-                        </table>
+                    <div class="glass-card rounded-[2.5rem] overflow-hidden">
+                        <div class="p-8 border-b border-white/5 flex justify-between items-center bg-white/[0.02]">
+                            <h3 class="text-xl font-black tracking-tighter italic">LOGS DE FLUXO HORÁRIO</h3>
+                            <span class="text-[9px] font-black text-slate-500 uppercase tracking-widest italic">Temporal_Registry</span>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left">
+                                <thead class="bg-white/5">
+                                    <tr>
+                                        <th class="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Motorista</th>
+                                        <th class="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Data</th>
+                                        <th class="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Horário</th>
+                                        <th class="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Missão</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tableExpediente" class="divide-y divide-white/5"></tbody>
+                            </table>
+                        </div>
                     </div>
                 </section>
 
@@ -361,15 +410,32 @@
                     </div>
                 </section>
 
-                <!-- 6. REPRESENTACOES -->
-                <section id="section-representacoes" class="content-section hidden animate-fade-in space-y-8">
-                    <div class="glass p-6 rounded-2xl">
-                        <div id="rankRepresentacoes" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
-                    </div>
-                    <div class="glass rounded-2xl overflow-hidden overflow-x-auto">
-                        <table class="w-full text-left">
-                            <tbody id="tableRepresentacoes" class="divide-y divide-slate-800"></tbody>
-                        </table>
+                <!-- 6. INFORMACOES -->
+                <section id="section-informacoes" class="content-section hidden animate-fade-in space-y-12">
+                    <div class="glass-card p-12 rounded-[3.5rem] bg-gradient-to-br from-primary/5 to-secondary/5 border-primary/20">
+                        <h3 class="text-4xl font-black tracking-tighter italic mb-8 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent italic">MANUAL DE OPERAÇÕES</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-12">
+                            <div class="space-y-6">
+                                <div class="flex items-start gap-5">
+                                    <div class="w-10 h-10 rounded-xl bg-primary/20 flex items-center justify-center text-primary shrink-0"><i data-lucide="shield"></i></div>
+                                    <div>
+                                        <h4 class="font-black text-lg italic tracking-tight">PROTEÇÃO DE DADOS</h4>
+                                        <p class="text-slate-400 text-sm leading-relaxed">As métricas operacionais são protegidas por protocolos de segurança Firebase para garantir integridade absoluta.</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-start gap-5">
+                                    <div class="w-10 h-10 rounded-xl bg-accent/20 flex items-center justify-center text-accent shrink-0"><i data-lucide="zap"></i></div>
+                                    <div>
+                                        <h4 class="font-black text-lg italic tracking-tight">SINCRONIZAÇÃO LIVE</h4>
+                                        <p class="text-slate-400 text-sm leading-relaxed">Conexão direta com o repositório de dados para atualizações em tempo real conforme as planilhas oficiais.</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="p-8 rounded-[2rem] bg-slate-900/50 border border-white/5">
+                                <h4 class="font-black text-xs text-slate-500 uppercase tracking-[0.3em] mb-6">MÉTRICAS DA UNIDADE</h4>
+                                <div id="rankRepresentacoes" class="space-y-4"></div>
+                            </div>
+                        </div>
                     </div>
                 </section>
 
@@ -399,18 +465,14 @@
                 window.loadDashboardData();
             }
         });
-    </script>
-
-    <script>
-        // Config & State
-        const API_URL = "https://script.google.com/macros/s/AKfycbzy_h5lJ-wOHbd41_mwME9mSjJwzpIYygpg0ptfR0h6BdOQ-dhTpVd2rgsitABGPm8UlA/exec";
+    <        const API_URL = "https://script.google.com/macros/s/AKfycbzy_h5lJ-wOHbd41_mwME9mSjJwzpIYygpg0ptfR0h6BdOQ-dhTpVd2rgsitABGPm8UlA/exec";
         const SECTION_TITLES = {
-            dashboard: "Resumo Operacional",
-            telefones: "Central de Contatos",
-            expediente: "Controle de Expediente",
-            comitivas: "Missões em Comitiva",
-            diarias: "Missões em Diárias",
-            representacoes: "Representações Oficiais"
+            dashboard: "VISÃO HOLÍSTICA",
+            telefones: "NÚCLEOS DE COMUNICAÇÃO",
+            expediente: "VETOR DE HORÁRIOS",
+            comitivas: "LOGÍSTICA DE COMITIVAS",
+            diarias: "FLUXO DE DIÁRIAS",
+            informacoes: "PROTOCOLO DE INFORMAÇÕES"
         };
 
         // Navigation
@@ -419,9 +481,10 @@
             document.getElementById(`section-${id}`).classList.remove('hidden');
             
             document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('sidebar-item-active'));
-            document.querySelector(`[data-section="${id}"]`).classList.add('sidebar-item-active');
+            const btn = document.querySelector(`[onclick="showSection('${id}')"]`);
+            if (btn) btn.classList.add('sidebar-item-active');
             
-            document.getElementById('page-title').innerText = SECTION_TITLES[id];
+            document.getElementById('page-title').innerText = SECTION_TITLES[id] || "DASHBOARD";
             
             if(window.innerWidth < 1024) toggleSidebar();
         }
@@ -466,16 +529,17 @@
             if (prodChart) prodChart.destroy();
             
             prodChart = new Chart(ctx, {
-                type: 'bar',
+                type: 'line',
                 data: {
                     labels: data.labels,
                     datasets: [{
-                        label: 'Missões',
+                        label: 'Volume Operacional',
                         data: data.values,
-                        backgroundColor: 'rgba(59, 130, 246, 0.5)',
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
                         borderColor: '#3b82f6',
-                        borderWidth: 1,
-                        borderRadius: 8
+                        borderWidth: 2,
+                        tension: 0.4,
+                        fill: true
                     }]
                 },
                 options: {
@@ -483,7 +547,7 @@
                     maintainAspectRatio: false,
                     plugins: { legend: { display: false } },
                     scales: {
-                        y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#64748b' } },
+                        y: { display: false },
                         x: { grid: { display: false }, ticks: { color: '#64748b' } }
                     }
                 }
@@ -493,36 +557,41 @@
         // Renderers
         function renderTelefones(items) {
             const grid = document.getElementById('telefones-grid');
-            grid.innerHTML = items.map(t => `
-                <div class="glass-card p-6 rounded-[2rem] group cursor-pointer">
-                    <div class="flex items-center gap-5">
-                        <div class="stat-icon p-4 rounded-2xl group-hover:rotate-12 transition-transform">
-                            <i data-lucide="phone-forwarded" class="w-6 h-6 text-white"></i>
-                        </div>
-                        <div>
-                            <h4 class="font-black text-slate-100 italic tracking-tighter text-lg leading-tight">${t.NOME || ''}</h4>
-                            <p class="text-primary font-mono font-black text-xl tracking-tighter mt-1 neon-text">${t.TELEFONE || ''}</p>
-                            ${t.OBSERVACAO ? `<p class="text-[9px] text-slate-500 font-bold uppercase tracking-widest mt-2 px-2 py-1 bg-white/5 rounded-lg inline-block border border-white/5">${t.OBSERVACAO}</p>` : ''}
+            grid.innerHTML = items.map(t => {
+                return `
+                    <div class="glass-card p-6 rounded-[2rem] group cursor-pointer">
+                        <div class="flex items-center gap-5">
+                            <div class="stat-icon p-4 rounded-2xl group-hover:rotate-12 transition-transform">
+                                <i data-lucide="phone-forwarded" class="w-6 h-6 text-white"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-black text-slate-100 italic tracking-tighter text-lg leading-tight text-white">${t.NOME || ''}</h4>
+                                <p class="text-primary font-mono font-black text-xl tracking-tighter mt-1 neon-text">${t.TELEFONE || ''}</p>
+                                ${t.OBSERVACAO ? `<p class="text-[9px] text-slate-500 font-bold uppercase tracking-widest mt-2 px-2 py-1 bg-white/5 rounded-lg inline-block border border-white/5">${t.OBSERVACAO}</p>` : ''}
+                            </div>
                         </div>
                     </div>
-                </div>
-            `).join('');
+                `;
+            }).join('');
             lucide.createIcons();
         }
 
         function renderTable(id, rows, headers, keys) {
             const tbody = document.getElementById(id);
+            if (!rows) return;
             tbody.innerHTML = rows.map(r => {
                 const o = rowToObj(r, headers);
                 return `<tr class="group hover:bg-primary/5 transition-all duration-300">
-                    ${keys.map(k => `
+                    ${keys.map(k => {
+                        const val = o[k] || o[k.replace(' ', '')] || '--';
+                        return `
                         <td class="px-8 py-5">
                             <div class="flex flex-col">
-                                <span class="text-xs font-black text-slate-200 tracking-tighter group-hover:text-primary transition-colors">${o[k] || '--'}</span>
-                                <span class="text-[8px] text-slate-500 font-bold uppercase tracking-[0.1em] mt-0.5 opacity-0 group-hover:opacity-100 transition-opacity">DATA_NODE_VAL</span>
+                                <span class="text-xs font-black text-slate-200 tracking-tighter group-hover:text-primary transition-colors">${val}</span>
+                                <span class="text-[8px] text-slate-500 font-bold uppercase tracking-[0.1em] mt-0.5 opacity-0 group-hover:opacity-100 transition-opacity">LOG_NODE_DATA</span>
                             </div>
                         </td>
-                    `).join('')}
+                    `;}).join('')}
                 </tr>`;
             }).join('');
         }
@@ -542,7 +611,7 @@
                         <div>
                             <p class="font-black text-xs text-slate-300 tracking-tighter uppercase italic group-hover:text-white transition-colors">${item[titleKey]}</p>
                             <div class="w-12 h-0.5 bg-slate-800 mt-1 rounded-full overflow-hidden">
-                                <div class="h-full bg-primary" style="width: ${100 - (i*10)}%"></div>
+                                <div class="h-full bg-primary" style="width: ${Math.max(10, 100 - (i*10))}%"></div>
                             </div>
                         </div>
                     </div>
@@ -554,10 +623,28 @@
             `).join('');
         }
 
+        function renderHallOfFame(id, topItem, label) {
+            const container = document.getElementById(id);
+            if (!topItem) return;
+            container.innerHTML = `
+                <div class="w-20 h-20 rounded-full bg-gradient-to-br from-white via-slate-200 to-slate-400 border-4 border-gold/30 flex items-center justify-center text-slate-900 font-black text-3xl italic shadow-2xl relative z-10">
+                    ${topItem.name.charAt(0)}
+                    <div class="absolute -bottom-2 -right-2 bg-gold text-white p-1 rounded-lg border border-white/20">
+                        <i data-lucide="award" class="w-4 h-4"></i>
+                    </div>
+                </div>
+                <div>
+                   <p class="text-white font-black text-2xl italic tracking-tighter leading-none mb-1">${topItem.name}</p>
+                   <p class="text-gold font-bold text-[10px] uppercase tracking-[0.2em] opacity-80">${topItem.count} ${label}</p>
+                </div>
+            `;
+            lucide.createIcons();
+        }
+
         // Global Data Load
         window.loadDashboardData = async function() {
             const badge = document.getElementById('status-badge');
-            badge.innerHTML = '<i data-lucide="loader" class="w-3 h-3 animate-spin"></i> Sincronizando...';
+            badge.innerHTML = '<i data-lucide="refresh-cw" class="w-3 h-4 animate-spin text-primary"></i> Sincronizando...';
             lucide.createIcons();
 
             const [tel, antes, depois, eventos, diarias, representacoes] = await Promise.all([
@@ -569,20 +656,6 @@
                 fetchSheet("MISSÕES EXTERNAS REPRESENTAÇÕES")
             ]);
 
-            // Stats
-            document.getElementById('stat-saidas').innerText = antes.data.length + depois.data.length;
-            document.getElementById('stat-missoes').innerText = eventos.data.length;
-            document.getElementById('stat-diarias').innerText = diarias.data.length;
-            document.getElementById('stat-ativos').innerText = new Set([...antes.data, ...depois.data, ...eventos.data].map(r => r[0])).size;
-
-            // Page 1: Telefones
-            renderTelefones(tel.data.map(r => rowToObj(r, tel.headers)));
-            
-            // Page 2: Expediente
-            const antesNorm = antes.data.map(r => rowToObj(r, antes.headers));
-            const afterNorm = depois.data.map(r => rowToObj(r, depois.headers));
-            renderTable('tableExpediente', antes.data, antes.headers, ['MOTORISTA', 'DATA', 'HORARIO', 'MISSAO']);
-            
             const countByMotorista = (data) => {
                 const m = {};
                 data.forEach(d => { 
@@ -592,15 +665,30 @@
                 return Object.entries(m).map(([name, count]) => ({ name, count })).sort((a,b) => b.count - a.count);
             };
 
-            renderRanking('rankListAntes', countByMotorista(antesNorm), 'name', 'count', 'chegadas');
-            renderRanking('rankListDepois', countByMotorista(afterNorm), 'name', 'count', 'saídas');
-            renderRanking('top7-ranking-dashboard', countByMotorista([...antesNorm, ...afterNorm, ...eventos.data.map(r => rowToObj(r, eventos.headers))]), 'name', 'count');
+            const antesNorm = antes.data.map(r => rowToObj(r, antes.headers));
+            const afterNorm = depois.data.map(r => rowToObj(r, depois.headers));
+            const eventosNorm = eventos.data.map(r => rowToObj(r, eventos.headers));
+            const representNorm = representacoes.data.map(r => rowToObj(r, representacoes.headers));
+
+            // Hall of Fame
+            const rankAntes = countByMotorista(antesNorm);
+            const rankDepois = countByMotorista(afterNorm);
+            renderHallOfFame('top1-early', rankAntes[0], 'Chegadas Cedo');
+            renderHallOfFame('top1-late', rankDepois[0], 'Saídas Tarde');
+
+            // Page 1: Telefones
+            renderTelefones(tel.data.map(r => rowToObj(r, tel.headers)));
+            
+            // Page 2: Expediente
+            renderTable('tableExpediente', [...antes.data, ...depois.data], antes.headers, ['MOTORISTA', 'DATA', 'HORARIO', 'MISSAO']);
+            renderRanking('rankListAntes', rankAntes, 'name', 'count', 'chegadas');
+            renderRanking('rankListDepois', rankDepois, 'name', 'count', 'saídas');
 
             // Page 3: Comitivas
             renderTable('tableEventos', eventos.data, eventos.headers, ['MOTORISTA', 'DATA', 'HORARIO', 'MISSAO']);
-            renderRanking('rankEventos', countByMotorista(eventos.data.map(r => rowToObj(r, eventos.headers))), 'name', 'count');
+            renderRanking('rankEventos', countByMotorista(eventosNorm), 'name', 'count', 'comitivas');
 
-            // Page 4: Diárias (Logic from original for rows 10+)
+            // Page 4: Diárias
             const dRows = diarias.data || [];
             const dMapMissoes = {};
             const dMapValores = {};
@@ -608,27 +696,37 @@
                 const n1 = String(dRows[i][0]||'').trim(); // Col A
                 const q1 = Number(dRows[i][1]||0);          // Col B
                 if(n1) dMapMissoes[n1] = (dMapMissoes[n1]||0)+q1;
-
                 const n2 = String(dRows[i][3]||'').trim(); // Col D
                 const q2 = Number(dRows[i][4]||0);          // Col E
                 if(n2) dMapValores[n2] = (dMapValores[n2]||0)+q2;
             }
-            renderRanking('rankDiariasMissoes', Object.entries(dMapMissoes).map(([name, count]) => ({name, count})).sort((a,b)=>b.count-a.count), 'name', 'count', 'missões');
-            renderRanking('rankDiariasValores', Object.entries(dMapValores).map(([name, count]) => ({name, count})).sort((a,b)=>b.count-a.count), 'name', 'count', 'diárias');
-            renderTable('tableDiarias', diarias.data, diarias.headers, ['DATA DA VIAGEM', 'MISSAO', 'MOTORISTAS', 'VIATURA', 'DESTINO', 'DIARIAS']);
+            renderRanking('rankDiariasMissoes', Object.entries(dMapMissoes).map(([name, count]) => ({name, count})).sort((a,b)=>b.count-a.count), 'name', 'count', 'viagens');
+            renderRanking('rankDiariasValores', Object.entries(dMapValores).map(([name, count]) => ({name, count})).sort((a,b)=>b.count-a.count), 'name', 'count', 'créditos');
+            renderTable('tableDiarias', diarias.data, diarias.headers, ['DATA VIAGEM', 'MISSAO', 'MOTORISTAS', 'VIATURA', 'DESTINO', 'DIARIAS']);
 
-            // Page 5: Representações
-            renderRanking('rankRepresentacoes', countByMotorista(representacoes.data.map(r => rowToObj(r, representacoes.headers))), 'name', 'count', 'representações');
-            renderTable('tableRepresentacoes', representacoes.data, representacoes.headers, ['MOTORISTA', 'DATA', 'HORARIO', 'MISSAO']);
+            // Page 5: Informações (formerly Representações)
+            renderRanking('rankRepresentacoes', countByMotorista(representNorm), 'name', 'count', 'eventos');
 
-            // Chart Data (Example distribution)
+            // Dashboard
+            renderRanking('top7-ranking-dashboard', countByMotorista([...antesNorm, ...afterNorm, ...eventosNorm]), 'name', 'count', 'total');
             updateCharts({
-                labels: ['C. Cedo', 'S. Tarde', 'Comitivas', 'Diárias', 'Repres.'],
+                labels: ['Cedo', 'Tarde', 'Comit.', 'Diárias', 'Info'],
                 values: [antes.data.length, depois.data.length, eventos.data.length, diarias.data.length, representacoes.data.length]
             });
+            document.getElementById('stat-saidas').innerText = antes.data.length + depois.data.length;
+            document.getElementById('stat-missoes').innerText = eventos.data.length;
+            document.getElementById('stat-diarias').innerText = diarias.data.length;
+            document.getElementById('stat-ativos').innerText = new Set([...antesNorm, ...afterNorm].map(o => o.MOTORISTA)).size;
 
-            badge.className = "flex items-center gap-2 px-3 py-1 bg-green-500/10 text-green-500 rounded-full text-xs font-semibold";
-            badge.innerHTML = '<i data-lucide="check" class="w-3 h-3"></i> Protegido';
+            badge.className = "flex items-center gap-3 px-5 py-2 bg-green-500/10 border border-green-500/20 text-green-500 rounded-2xl text-[10px] font-black uppercase tracking-widest neon-glow";
+            badge.innerHTML = '<i data-lucide="shield-check" class="w-4 h-4"></i> Sincronizado';
+            lucide.createIcons();
+        };
+
+        window.onload = () => {
+            lucide.createIcons();
+        };
+="w-3 h-3"></i> Protegido';
             lucide.createIcons();
         };
 
