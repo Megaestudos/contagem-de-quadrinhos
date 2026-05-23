@@ -339,23 +339,43 @@
                         </div>
                     </div>
                     
-                    <div class="glass-card rounded-[2.5rem] overflow-hidden">
-                        <div class="p-8 border-b border-white/5 flex justify-between items-center bg-white/[0.02]">
-                            <h3 class="text-xl font-black tracking-tighter italic">LOGS DE FLUXO HORÁRIO</h3>
-                            <span class="text-[9px] font-black text-slate-500 uppercase tracking-widest italic">Temporal_Registry</span>
+                    <!-- Separate Logs for Arrivals and Departures -->
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
+                        <div class="glass-card rounded-[2.5rem] overflow-hidden">
+                            <div class="p-8 border-b border-white/5 flex justify-between items-center bg-white/[0.02]">
+                                <h3 class="text-xl font-black tracking-tighter italic">LOGS: CHEGADAS CEDO</h3>
+                                <span class="text-[9px] font-black text-slate-500 uppercase tracking-widest italic">Temporal_Registry_IN</span>
+                            </div>
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-left">
+                                    <thead class="bg-white/5">
+                                        <tr>
+                                            <th class="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Motorista</th>
+                                            <th class="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Data</th>
+                                            <th class="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Horário</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="tableAntes" class="divide-y divide-white/5"></tbody>
+                                </table>
+                            </div>
                         </div>
-                        <div class="overflow-x-auto">
-                            <table class="w-full text-left">
-                                <thead class="bg-white/5">
-                                    <tr>
-                                        <th class="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Motorista</th>
-                                        <th class="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Data</th>
-                                        <th class="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Horário</th>
-                                        <th class="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Missão</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="tableExpediente" class="divide-y divide-white/5"></tbody>
-                            </table>
+                        <div class="glass-card rounded-[2.5rem] overflow-hidden">
+                            <div class="p-8 border-b border-white/5 flex justify-between items-center bg-white/[0.02]">
+                                <h3 class="text-xl font-black tracking-tighter italic">LOGS: SAÍDAS TARDE</h3>
+                                <span class="text-[9px] font-black text-slate-500 uppercase tracking-widest italic">Temporal_Registry_OUT</span>
+                            </div>
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-left">
+                                    <thead class="bg-white/5">
+                                        <tr>
+                                            <th class="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Motorista</th>
+                                            <th class="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Data</th>
+                                            <th class="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Horário</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="tableDepois" class="divide-y divide-white/5"></tbody>
+                                </table>
+                            </div>
                         </div>
                     </div>
                 </section>
@@ -625,16 +645,20 @@
 
         function renderHallOfFame(id, topItem, label) {
             const container = document.getElementById(id);
-            if (!topItem) return;
+            if (!container) return;
+            if (!topItem) {
+                container.innerHTML = '<p class="text-slate-500 text-[10px] font-bold uppercase tracking-widest italic">Análise Pendente...</p>';
+                return;
+            }
             container.innerHTML = `
-                <div class="w-20 h-20 rounded-full bg-gradient-to-br from-white via-slate-200 to-slate-400 border-4 border-gold/30 flex items-center justify-center text-slate-900 font-black text-3xl italic shadow-2xl relative z-10">
-                    ${topItem.name.charAt(0)}
+                <div class="w-20 h-20 rounded-full bg-gradient-to-br from-white via-slate-200 to-slate-400 border-4 border-gold/30 flex items-center justify-center text-slate-900 font-black text-3xl italic shadow-2xl relative z-10 transition-transform hover:scale-110">
+                    ${topItem.name.charAt(0).toUpperCase()}
                     <div class="absolute -bottom-2 -right-2 bg-gold text-white p-1 rounded-lg border border-white/20">
                         <i data-lucide="award" class="w-4 h-4"></i>
                     </div>
                 </div>
                 <div>
-                   <p class="text-white font-black text-2xl italic tracking-tighter leading-none mb-1">${topItem.name}</p>
+                   <p class="text-white font-black text-2xl italic tracking-tighter leading-none mb-1 uppercase">${topItem.name}</p>
                    <p class="text-gold font-bold text-[10px] uppercase tracking-[0.2em] opacity-80">${topItem.count} ${label}</p>
                 </div>
             `;
@@ -680,9 +704,17 @@
             renderTelefones(tel.data.map(r => rowToObj(r, tel.headers)));
             
             // Page 2: Expediente
-            renderTable('tableExpediente', [...antes.data, ...depois.data], antes.headers, ['MOTORISTA', 'DATA', 'HORARIO', 'MISSAO']);
+            const rankAntes = countByMotorista(antesNorm);
+            const rankDepois = countByMotorista(afterNorm);
+            
+            renderHallOfFame('top1-early', rankAntes[0], 'Chegadas Cedo');
+            renderHallOfFame('top1-late', rankDepois[0], 'Saídas Tarde');
+
             renderRanking('rankListAntes', rankAntes, 'name', 'count', 'chegadas');
             renderRanking('rankListDepois', rankDepois, 'name', 'count', 'saídas');
+
+            renderTable('tableAntes', antes.data, antes.headers, ['MOTORISTA', 'DATA', 'HORARIO']);
+            renderTable('tableDepois', depois.data, depois.headers, ['MOTORISTA', 'DATA', 'HORARIO']);
 
             // Page 3: Comitivas
             renderTable('tableEventos', eventos.data, eventos.headers, ['MOTORISTA', 'DATA', 'HORARIO', 'MISSAO']);

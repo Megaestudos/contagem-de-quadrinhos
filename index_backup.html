@@ -324,7 +324,7 @@ tbody td{padding:12px;border-bottom:1px solid #eee}
       </div>
     </div>
   </section>
-  
+
   <section class="panel">
     <h3 class="section-title">Todas as Missões — Comitivas</h3>
     <div class="table-wrap">
@@ -395,7 +395,7 @@ tbody td{padding:12px;border-bottom:1px solid #eee}
       </div>
     </div>
   </section>
-  
+
   <section class="panel">
     <h3 class="section-title">Todas as Missões — Representações</h3>
     <div class="table-wrap">
@@ -643,6 +643,9 @@ function renderTop7Antes(containerId, items){
   const el = document.getElementById(containerId);
   el.innerHTML = '';
 
+  // menor horário por motorista
+  const best = {}; // { motorista: {min, data} }
+  items.forEach(it=>{
   const count = {}; // { motorista: quantidade }
 
   items.forEach(it => {
@@ -650,10 +653,16 @@ function renderTop7Antes(containerId, items){
     const min = parseTimeToMinutes(it.hora);
     if(!m || min === null) return;
 
+    if(!best[m] || min < best[m].min){
+      best[m] = { min, data: it.data || '' };
+    }
     // considera chegada cedo (qualquer registro válido)
     count[m] = (count[m] || 0) + 1;
   });
 
+  const list = Object.entries(best)
+    .map(([motorista, v]) => ({ motorista, min: v.min, data: v.data }))
+    .sort((a,b)=>a.min - b.min)
   const list = Object.entries(count)
     .map(([motorista, qtd]) => ({ motorista, qtd }))
     .sort((a,b) => b.qtd - a.qtd)
@@ -664,8 +673,10 @@ function renderTop7Antes(containerId, items){
     return;
   }
 
+  list.forEach((x, i)=>{
   list.forEach((x, i) => {
     el.innerHTML += `<div class="${i===0?'top1':''}">
+      ${i+1}. <strong>${escapeHtml(x.motorista)}</strong> — ${escapeHtml(minutesToHHMM(x.min))}${x.data ? ` <span style="opacity:.85">(${escapeHtml(x.data)})</span>` : ''}
       ${i+1}. <strong>${escapeHtml(x.motorista)}</strong> — ${x.qtd} chegadas
     </div>`;
   });
@@ -675,6 +686,9 @@ function renderTop7Depois(containerId, items){
   const el = document.getElementById(containerId);
   el.innerHTML = '';
 
+  // maior horário por motorista
+  const best = {}; // { motorista: {max, data} }
+  items.forEach(it=>{
   const count = {}; // { motorista: quantidade }
 
   items.forEach(it => {
@@ -682,10 +696,16 @@ function renderTop7Depois(containerId, items){
     const min = parseTimeToMinutes(it.hora);
     if(!m || min === null) return;
 
+    if(!best[m] || min > best[m].max){
+      best[m] = { max: min, data: it.data || '' };
+    }
     // considera saída tarde (qualquer registro válido)
     count[m] = (count[m] || 0) + 1;
   });
 
+  const list = Object.entries(best)
+    .map(([motorista, v]) => ({ motorista, min: v.max, data: v.data }))
+    .sort((a,b)=>b.min - a.min)
   const list = Object.entries(count)
     .map(([motorista, qtd]) => ({ motorista, qtd }))
     .sort((a,b) => b.qtd - a.qtd)
@@ -696,8 +716,10 @@ function renderTop7Depois(containerId, items){
     return;
   }
 
+  list.forEach((x, i)=>{
   list.forEach((x, i) => {
     el.innerHTML += `<div class="${i===0?'top1':''}">
+      ${i+1}. <strong>${escapeHtml(x.motorista)}</strong> — ${escapeHtml(minutesToHHMM(x.min))}${x.data ? ` <span style="opacity:.85">(${escapeHtml(x.data)})</span>` : ''}
       ${i+1}. <strong>${escapeHtml(x.motorista)}</strong> — ${x.qtd} saídas
     </div>`;
   });
