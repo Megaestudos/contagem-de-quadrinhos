@@ -410,13 +410,37 @@
             renderTable('tableDepois', depois.data, depois.headers, ['MOTORISTA', 'DATA', 'HORARIO', 'MISSAO']);
             renderTable('tableEventos', eventos.data, eventos.headers, ['MOTORISTA', 'DATA', 'HORARIO', 'MISSAO']);
 
+            // Diárias processing
+            const dRows = diarias.data || [];
+            const dMapMissoes = {};
+            const dMapValores = {};
+            // Usually Diárias sheet has headers in the first 9 rows or so, but let's be safe.
+            // If the structure is standard, we skip the top area.
+            for(let i=0; i<dRows.length; i++){
+                // Try to find names in column A (0) and D (3) if they exist
+                const n1 = String(dRows[i][0]||'').trim();
+                const q1 = Number(dRows[i][1]||0);
+                if(n1 && !isNaN(q1) && q1 > 0) dMapMissoes[n1] = (dMapMissoes[n1]||0)+q1;
+                
+                const n2 = String(dRows[i][3]||'').trim();
+                const q2 = Number(dRows[i][4]||0);
+                if(n2 && !isNaN(q2) && q2 > 0) dMapValores[n2] = (dMapValores[n2]||0)+q2;
+            }
+
+            renderRanking('rankDiariasMissoes', Object.entries(dMapMissoes).map(([name, count]) => ({name, count})).sort((a,b)=>b.count-a.count), 'name', 'count', 'viagens');
+            renderRanking('rankDiariasValores', Object.entries(dMapValores).map(([name, count]) => ({name, count})).sort((a,b)=>b.count-a.count), 'name', 'count', 'créditos');
+            renderTable('tableDiarias', diarias.data, diarias.headers, ['DATA VIAGEM', 'MISSAO', 'MOTORISTAS', 'VIATURA', 'DESTINO', 'DIARIAS']);
+
+            // Informações / Representações
+            renderRanking('rankRepresentacoes', countBy(rN, 'MOTORISTA'), 'name', 'count', 'eventos');
+
             const grid = document.getElementById('telefones-grid');
             if (grid) grid.innerHTML = (tel.data || []).map(r => rowToObj(r, tel.headers)).map(t => `<div class="glass-card p-6 rounded-[2rem]"><p class="font-black text-white italic text-lg leading-tight uppercase">${t.NOME || ''}</p><p class="text-primary font-mono font-black text-xl mt-1">${t.TELEFONE || ''}</p></div>`).join('');
 
-            updateCharts({ labels: ['Cedo', 'Tarde', 'Com.', 'Diár.', 'Rep.'], values: [aN.length, dN.length, eN.length, diarias.data?.length||0, rN.length] });
+            updateCharts({ labels: ['Cedo', 'Tarde', 'Com.', 'Diár.', 'Rep.'], values: [aN.length, dN.length, eN.length, dRows.length, rN.length] });
             document.getElementById('stat-saidas').innerText = aN.length + dN.length;
             document.getElementById('stat-missoes').innerText = eN.length;
-            document.getElementById('stat-diarias').innerText = (diarias.data?.length || 9) - 9;
+            document.getElementById('stat-diarias').innerText = dRows.length;
             document.getElementById('stat-ativos').innerText = new Set([...aN, ...dN].map(o => o.MOTORISTA)).size;
 
             if (badge) { badge.innerHTML = '<i data-lucide="shield-check" class="w-4 h-4"></i> Protegido'; lucide.createIcons(); }
