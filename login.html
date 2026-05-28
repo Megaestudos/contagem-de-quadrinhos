@@ -1067,6 +1067,7 @@
                 await signInWithEmailAndPassword(auth, email, password);
                 window.location.href = "index.html";
             } catch (err) {
+                console.error("Erro de Autenticação:", err);
                 setLoginLoading(false);
                 const msgs = {
                     'auth/user-not-found': 'E-mail não cadastrado no sistema.',
@@ -1076,7 +1077,7 @@
                     'auth/user-disabled': 'Esta conta foi desativada.',
                     'auth/network-request-failed': 'Erro de conexão. Verifique sua internet.',
                 };
-                showError(msgs[err.code] || 'Erro ao autenticar. Tente novamente.');
+                showError(msgs[err.code] || `Erro: ${err.code || 'desconhecido'}. Tente novamente.`);
             }
         });
 
