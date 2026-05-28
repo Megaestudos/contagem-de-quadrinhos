@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Acesso — Contagem de Quadrinhos</title>
-    <meta name="description" content="Autenticação segura ao sistema Contagem de Quadrinhos. Login protegido via Firebase.">
+    <title>Acesso — CQ Premium OS</title>
+    <meta name="description" content="Autenticação segura ao sistema CQ Premium OS. Login protegido via Firebase.">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <script>
@@ -614,7 +614,7 @@
                 </div>
             </div>
             <h1 class="text-[28px] font-black tracking-tight text-white leading-none mb-2">
-                Operações - GAP-RF
+                CQ Premium OS
             </h1>
             <p class="text-[11px] font-semibold text-slate-500 tracking-[0.18em] uppercase mb-4">
                 Sistema Operacional de Quadrinhos
@@ -739,6 +739,24 @@
                             </button>
                         </div>
 
+                        <!-- Divider -->
+                        <div class="divider anim-fade-up delay-5" style="margin-top: 4px;">
+                            <span>ou</span>
+                        </div>
+
+                        <!-- Register link -->
+                        <div class="anim-fade-up delay-5" style="text-align:center;">
+                            <span style="font-size:13px;color:#475569;font-weight:500;">Novo por aqui?</span>
+                            <button
+                                type="button"
+                                id="openRegisterModal"
+                                style="background:none;border:none;cursor:pointer;font-size:13px;font-weight:700;color:#3b82f6;margin-left:6px;padding:0;transition:color 0.2s;"
+                                onmouseover="this.style.color='#60a5fa'"
+                                onmouseout="this.style.color='#3b82f6'"
+                                aria-label="Criar nova conta"
+                            >Criar conta</button>
+                        </div>
+
                     </div>
                 </form>
 
@@ -746,7 +764,137 @@
         </div>
 
         <!-- Footer -->
-        <p class="footer-text mt-8 anim-fade-up delay-5">&copy; 2026 Contagem de Quadrinhos — Acesso Restrito</p>
+        <p class="footer-text mt-8 anim-fade-up delay-5">&copy; 2026 CQ Premium OS — Acesso Restrito</p>
+    </div>
+
+    <!-- ─── REGISTER MODAL ─── -->
+    <div id="registerModal" class="modal-backdrop" role="dialog" aria-modal="true" aria-label="Criar conta">
+        <div class="modal-card" style="max-width:440px;">
+            <button id="closeRegisterModal" class="modal-close" aria-label="Fechar">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+            </button>
+
+            <!-- Idle state -->
+            <div id="reg-idle" class="modal-state active">
+                <div class="flex items-center gap-4 mb-6">
+                    <div style="width:44px;height:44px;background:rgba(99,102,241,0.12);border:1px solid rgba(99,102,241,0.25);border-radius:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#818cf8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+                            <circle cx="9" cy="7" r="4"/>
+                            <line x1="19" y1="8" x2="19" y2="14"/>
+                            <line x1="22" y1="11" x2="16" y2="11"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <h2 style="font-size:17px;font-weight:800;color:#f1f5f9;margin-bottom:2px;">Criar Conta</h2>
+                        <p style="font-size:12px;color:#475569;font-weight:500;">Preencha os dados para se registrar</p>
+                    </div>
+                </div>
+
+                <div style="display:flex;flex-direction:column;gap:16px;margin-bottom:20px;">
+
+                    <!-- Name -->
+                    <div class="input-group">
+                        <label for="reg-name" class="input-label">Nome completo</label>
+                        <div class="input-wrap">
+                            <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                                <circle cx="12" cy="7" r="4"/>
+                            </svg>
+                            <input type="text" id="reg-name" name="reg-name" autocomplete="name" class="input-field" placeholder="Seu nome" aria-label="Nome completo">
+                        </div>
+                    </div>
+
+                    <!-- Email -->
+                    <div class="input-group">
+                        <label for="reg-email" class="input-label">Endereço de e-mail</label>
+                        <div class="input-wrap">
+                            <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="2" y="4" width="20" height="16" rx="2"/>
+                                <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>
+                            </svg>
+                            <input type="email" id="reg-email" name="reg-email" autocomplete="email" class="input-field" placeholder="seu@email.com" aria-label="E-mail">
+                        </div>
+                    </div>
+
+                    <!-- Password -->
+                    <div class="input-group">
+                        <label for="reg-password" class="input-label">Senha</label>
+                        <div class="input-wrap">
+                            <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                                <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                            </svg>
+                            <input type="password" id="reg-password" name="reg-password" autocomplete="new-password" class="input-field password-has-icon" placeholder="Mínimo 6 caracteres" aria-label="Senha">
+                            <button type="button" id="toggleRegPassword" class="btn-eye" aria-label="Mostrar senha">
+                                <svg id="reg-eye-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/>
+                                    <circle cx="12" cy="12" r="3"/>
+                                </svg>
+                                <svg id="reg-eye-off-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none;">
+                                    <path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/>
+                                    <path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/>
+                                    <path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/>
+                                    <line x1="2" y1="2" x2="22" y2="22"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Confirm Password -->
+                    <div class="input-group">
+                        <label for="reg-confirm" class="input-label">Confirmar senha</label>
+                        <div class="input-wrap">
+                            <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                                <polyline points="9 12 11 14 15 10"/>
+                            </svg>
+                            <input type="password" id="reg-confirm" name="reg-confirm" autocomplete="new-password" class="input-field" placeholder="Repita a senha" aria-label="Confirmar senha">
+                        </div>
+                    </div>
+
+                    <!-- Register error -->
+                    <div id="reg-error" class="error-msg" role="alert" aria-live="polite">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10"/>
+                            <line x1="12" y1="8" x2="12" y2="12"/>
+                            <line x1="12" y1="16" x2="12.01" y2="16"/>
+                        </svg>
+                        <span id="reg-error-text">Erro ao criar conta.</span>
+                    </div>
+
+                </div>
+
+                <button id="createAccountBtn" class="btn-submit" style="background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%); box-shadow: 0 8px 20px rgba(79,70,229,0.35);">
+                    <span class="btn-content">
+                        Criar Conta
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M5 12h14"/><path d="m12 5 7 7-7 7"/>
+                        </svg>
+                    </span>
+                    <span class="btn-loading">
+                        <div class="spinner"></div>
+                        Criando conta...
+                    </span>
+                </button>
+
+                <p style="text-align:center;margin-top:16px;font-size:12px;color:#475569;">
+                    Já tem conta?
+                    <button type="button" id="switchToLogin" style="background:none;border:none;cursor:pointer;font-size:12px;font-weight:700;color:#3b82f6;margin-left:4px;padding:0;" onmouseover="this.style.color='#60a5fa'" onmouseout="this.style.color='#3b82f6'">Entrar</button>
+                </p>
+            </div>
+
+            <!-- Success state -->
+            <div id="reg-success" class="modal-state">
+                <div style="text-align:center;padding:16px 0;">
+                    <div style="width:56px;height:56px;background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.25);border-radius:20px;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;">
+                        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                    </div>
+                    <h3 style="font-size:18px;font-weight:800;color:#f1f5f9;margin-bottom:8px;">Conta Criada!</h3>
+                    <p style="font-size:13px;color:#64748b;line-height:1.6;">Seu acesso foi configurado com sucesso.<br>Redirecionando...</p>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- ─── FORGOT PASSWORD MODAL ─── -->
@@ -840,7 +988,7 @@
     <!-- ─── FIREBASE AUTH ─── -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-app.js";
-        import { getAuth, signInWithEmailAndPassword, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-auth.js";
+        import { getAuth, signInWithEmailAndPassword, sendPasswordResetEmail, createUserWithEmailAndPassword, updateProfile } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-auth.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyA1QL_UioBdIEqlcTxujW3U6uh3cc0sv6U",
@@ -985,10 +1133,107 @@
         });
 
         document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape' && modal.classList.contains('open')) closeModal();
+            if (e.key === 'Escape') {
+                if (modal.classList.contains('open')) closeModal();
+                if ($('registerModal').classList.contains('open')) closeRegisterModal();
+            }
         });
 
         $('modalRetryBtn').addEventListener('click', () => setModalState('idle'));
+
+        // ─ Register Modal ─
+        const regModal = $('registerModal');
+
+        function openRegisterModal() {
+            regModal.classList.add('open');
+            setRegState('idle');
+            $('reg-name').value = '';
+            $('reg-email').value = '';
+            $('reg-password').value = '';
+            $('reg-confirm').value = '';
+            $('reg-error').classList.remove('visible');
+            setTimeout(() => $('reg-name').focus(), 350);
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeRegisterModal() {
+            regModal.classList.remove('open');
+            document.body.style.overflow = '';
+        }
+
+        function setRegState(state) {
+            ['idle', 'success'].forEach(s => {
+                const el = $(`reg-${s}`);
+                if (el) el.classList.toggle('active', s === state);
+            });
+        }
+
+        function showRegError(msg) {
+            const el = $('reg-error');
+            $('reg-error-text').textContent = msg;
+            el.classList.add('visible');
+            el.animate([
+                { transform: 'translateX(0)' }, { transform: 'translateX(-5px)' },
+                { transform: 'translateX(5px)' }, { transform: 'translateX(0)' }
+            ], { duration: 300, easing: 'ease-out' });
+        }
+
+        function setCreateLoading(on) {
+            const btn = $('createAccountBtn');
+            btn.disabled = on;
+            btn.classList.toggle('loading', on);
+        }
+
+        $('openRegisterModal').addEventListener('click', openRegisterModal);
+        $('closeRegisterModal').addEventListener('click', closeRegisterModal);
+        $('switchToLogin').addEventListener('click', closeRegisterModal);
+
+        regModal.addEventListener('click', (e) => {
+            if (e.target === regModal) closeRegisterModal();
+        });
+
+        // Toggle register password visibility
+        $('toggleRegPassword').addEventListener('click', () => {
+            const input = $('reg-password');
+            const isHidden = input.type === 'password';
+            input.type = isHidden ? 'text' : 'password';
+            $('reg-eye-icon').style.display = isHidden ? 'none' : '';
+            $('reg-eye-off-icon').style.display = isHidden ? '' : 'none';
+            $('toggleRegPassword').setAttribute('aria-label', isHidden ? 'Ocultar senha' : 'Mostrar senha');
+        });
+
+        $('createAccountBtn').addEventListener('click', async () => {
+            const name = $('reg-name').value.trim();
+            const email = $('reg-email').value.trim();
+            const password = $('reg-password').value;
+            const confirm = $('reg-confirm').value;
+
+            if (!name) { showRegError('Informe seu nome.'); return; }
+            if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { showRegError('E-mail inválido.'); return; }
+            if (password.length < 6) { showRegError('A senha precisa ter ao menos 6 caracteres.'); return; }
+            if (password !== confirm) { showRegError('As senhas não coincidem.'); return; }
+
+            $('reg-error').classList.remove('visible');
+            setCreateLoading(true);
+            try {
+                const cred = await createUserWithEmailAndPassword(auth, email, password);
+                await updateProfile(cred.user, { displayName: name });
+                setRegState('success');
+                showToast('Conta criada com sucesso! 🎉', 'success');
+                setTimeout(() => window.location.href = 'index.html', 1800);
+            } catch (err) {
+                const msgs = {
+                    'auth/email-already-in-use': 'Este e-mail já está cadastrado.',
+                    'auth/invalid-email': 'Formato de e-mail inválido.',
+                    'auth/weak-password': 'Senha muito fraca. Use ao menos 6 caracteres.',
+                    'auth/network-request-failed': 'Erro de conexão. Verifique sua internet.',
+                    'auth/operation-not-allowed': 'Criação de contas desabilitada. Contate o administrador.',
+                };
+                showRegError(msgs[err.code] || 'Erro ao criar conta. Tente novamente.');
+            } finally {
+                setCreateLoading(false);
+            }
+        });
 
         $('sendResetBtn').addEventListener('click', async () => {
             const email = $('forgot-email').value.trim();
