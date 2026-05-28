@@ -48,9 +48,10 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 1.5rem;
+            padding: 2rem 1.5rem;
             position: relative;
-            overflow: hidden;
+            overflow-x: hidden;
+            overflow-y: auto;
             -webkit-font-smoothing: antialiased;
         }
 
@@ -147,7 +148,6 @@
                 0 32px 64px -16px rgba(0, 0, 0, 0.7),
                 0 0 80px -20px var(--primary-glow-lg);
             position: relative;
-            overflow: hidden;
         }
         .card::before {
             content: '';
@@ -587,7 +587,7 @@
             .card-inner { padding: 28px 24px; }
         }
         @media (min-width: 481px) {
-            .card-inner { padding: 40px; }
+            .card-inner { padding: 40px 40px 48px 40px; }
         }
     </style>
 </head>
@@ -724,7 +724,7 @@
                         </div>
 
                         <!-- Submit Button -->
-                        <div class="anim-fade-up delay-4" style="margin-top: 8px;">
+                        <div class="anim-fade-up delay-4" style="margin-top: 10px;">
                             <button type="submit" id="loginBtn" class="btn-submit">
                                 <span class="btn-content">
                                     Acessar Sistema
@@ -740,7 +740,7 @@
                         </div>
 
                         <!-- Divider -->
-                        <div class="divider anim-fade-up delay-5" style="margin-top: 4px;">
+                        <div class="divider anim-fade-up delay-5" style="margin-top: 20px; margin-bottom: 16px;">
                             <span>ou</span>
                         </div>
 
@@ -994,6 +994,8 @@
             apiKey: "AIzaSyA1QL_UioBdIEqlcTxujW3U6uh3cc0sv6U",
             authDomain: "contagem-de-quadrinhos.firebaseapp.com",
             projectId: "contagem-de-quadrinhos",
+            storageBucket: "contagem-de-quadrinhos.firebasestorage.app",
+            messagingSenderId: "947344780647",
             appId: "1:947344780647:web:e062a1f039a169104c53c2"
         };
 
